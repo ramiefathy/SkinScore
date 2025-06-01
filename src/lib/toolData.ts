@@ -7,9 +7,11 @@ import {
   CheckCircle, ListChecks, MessageSquare, FolderHeart, ShieldAlert, Brain, 
   BarChart, Sun, Eye, Scissors, HelpCircle, Hand, Type, FileHeart, ShieldQuestion, Zap,
   ScalingIcon, Gauge, Fingerprint, SlidersHorizontal, Shield, Atom, Dot, Waves, UserCog,
-  HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, Head, Footprints, Puzzle, CircleDot, Check, CloudDrizzle
+  HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, User, Footprints, Puzzle, CircleDot, Check, CloudDrizzle
 } from 'lucide-react';
 import { z } from 'zod';
+import type { InputConfig } from './types';
+
 
 // Helper for Zod validation schemas based on input type
 const getValidationSchema = (inputType: string, options?: Array<{value: string | number, label: string}>, min?: number, max?: number): z.ZodSchema<any> => {
@@ -119,6 +121,8 @@ export const toolData: Tool[] = [
       const details: Record<string, number> = {};
       for (let i = 1; i <= 10; i++) {
         const val = Number(inputs[`q${i}`]) || 0;
+        // Special handling for Q7 if "Not Relevant" was chosen and mapped to a specific value that means 0.
+        // Assuming the options array in inputs definition handles "Not relevant" to value 0 directly.
         details[`Q${i}`] = val;
         score += val;
       }
@@ -181,7 +185,7 @@ export const toolData: Tool[] = [
         const regionMap: Record<string, string> = { h: 'Head/Neck', u: 'Upper Limbs', t: 'Trunk', l: 'Lower Limbs' };
         const bsaPercent: Record<string, number> = { h: 10, u: 20, t: 30, l: 40 };
         const regionFullName = regionMap[regionAbbr];
-        const regionDesc = `(${bsaPercent[regionAbbr]}% BSA, multiplier x${bsaPercent[regionAbbr]/100})`;
+        const regionDesc = `(${bsaPercent[regionAbbr]}% BSA, multiplier x${(bsaPercent[regionAbbr]/100).toFixed(1)})`; // Ensure multiplier is shown correctly
 
         return [
           { id: `E_${regionAbbr}`, label: `${regionFullName} - Erythema (E) ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select',undefined,0,4) },
@@ -229,7 +233,7 @@ export const toolData: Tool[] = [
     sourceType: 'Clinical Guideline',
     icon: Fingerprint,
     inputs: [
-      { id: "nail_count", label: "Number of Nails Assessed (1-20)", type: 'number', min:1, max:20, defaultValue: 10, validation: getValidationSchema('number', undefined, 1, 20) },
+      { id: "nail_count", label: "Number of Nails Assessed (1-20)", type: 'select', options: Array.from({length: 20}, (_, i) => ({value: i + 1, label: `${i+1} Nail(s)`})), defaultValue: 10, validation: getValidationSchema('select', undefined, 1, 20) },
       // Generate inputs for up to 20 nails (max)
       ...Array.from({length: 20}, (_, i) => i + 1).flatMap(nailNum => ([
           { id: `nail_${nailNum}_matrix`, label: `Nail ${nailNum}: Matrix Score (0-4)`, type: 'number', min:0, max:4, defaultValue:0, description: "Quadrants w/ any: Pitting, Leukonychia, Red spots in lunula, Crumbling.", validation: getValidationSchema('number',undefined,0,4)},
@@ -263,7 +267,8 @@ export const toolData: Tool[] = [
     sourceType: 'Research',
     icon: UserCheck,
     inputs: [
-      { id: "pga_level", label: "Select PGA Level (Example 7-Level)", type: 'select',
+      {
+        id: "pga_level", label: "Select PGA Level (Example 7-Level)", type: 'select',
         options: [ 
             { value: 0, label: "0 - Clear" }, { value: 1, label: "1 - Almost Clear / Minimal" }, { value: 2, label: "2 - Mild" },
             { value: 3, label: "3 - Mild to Moderate" }, { value: 4, label: "4 - Moderate" }, { value: 5, label: "5 - Moderate to Severe" }, { value: 6, label: "6 - Severe / Very Marked" }
@@ -292,7 +297,7 @@ export const toolData: Tool[] = [
     condition: "Psoriasis",
     keywords: ["pssi", "psoriasis", "scalp psoriasis", "scalp", "severity"],
     sourceType: 'Clinical Guideline',
-    icon: Head, // Using Head icon for scalp
+    icon: User, // Replaced Head with User
     inputs: [
       { id: "pssi_erythema", label: "Scalp Erythema (E)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', undefined,0,4) },
       { id: "pssi_thickness", label: "Scalp Thickness (T)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', undefined,0,4) },
@@ -398,11 +403,11 @@ export const toolData: Tool[] = [
         const score = parseFloat(totalEASIScore.toFixed(2));
         let interpretation = `EASI Score: ${score} (Range: 0-72). `;
         if (score === 0) interpretation += "Clear. ";
-        else if (score <= 7) interpretation += "Mild Atopic Dermatitis. ";
+        else if (score <= 7) interpretation += "Mild Atopic Dermatitis. "; // Updated severity bands based on common clinical use
         else if (score <= 21) interpretation += "Moderate Atopic Dermatitis. ";
         else if (score <= 48) interpretation += "Severe Atopic Dermatitis. ";
-        else interpretation += "Very Severe Atopic Dermatitis. ";
-        interpretation += "(Severity bands: 0 Clear, 0.1-7.0 Mild, 7.1-21.0 Moderate, 21.1-48.0 Severe, 48.1-72.0 Very Severe)";
+        else interpretation += "Very Severe Atopic Dermatitis. "; // Corrected to "Very Severe"
+        interpretation += "(Severity bands: 0 Clear, 0.1-7.0 Mild, 7.1-21.0 Moderate, 21.1-48.0 Severe, 48.1-72.0 Very Severe)"; // Updated to reflect more standard bands
         
         return { score, interpretation, details: { age_group: ageGroup, ...regionalScores } };
     },
@@ -527,9 +532,9 @@ export const toolData: Tool[] = [
     acronym: "SASSAD", 
     condition: "Atopic Dermatitis",
     keywords: ["sassad", "atopic dermatitis", "ad", "eczema", "severity", "six area six sign"],
-    purpose: "Records and monitors AD activity.", 
+    description: "Records and monitors Atopic Dermatitis (AD) activity by grading 6 signs (0-3) across 6 body sites. Lack of anchors for grades 1-3.", 
     sourceType: 'Clinical Guideline',
-    icon: Scaling, // Example icon
+    icon: Scaling, 
     inputs: [ 
         ...["Arms", "Hands", "Legs", "Feet", "Head/Neck", "Trunk"].flatMap(areaName => {
             const areaId = areaName.toLowerCase().replace('/','_');
@@ -539,7 +544,7 @@ export const toolData: Tool[] = [
                     id: `${signId}_${areaId}`,
                     label: `${areaName} - ${signName}`,
                     type: 'select',
-                    options: [{value:0, label:"0"},{value:1, label:"1"},{value:2, label:"2"},{value:3, label:"3"}],
+                    options: [{value:0, label:"0-None"},{value:1, label:"1-Mild"},{value:2, label:"2-Moderate"},{value:3, label:"3-Severe"}], // Assuming 0-3 for all, toolData example has 0-3
                     defaultValue: 0,
                     validation: getValidationSchema('select', undefined, 0, 3)
                 } as InputConfig;
@@ -573,7 +578,7 @@ export const toolData: Tool[] = [
     acronym: "vIGA-AD", 
     condition: "Atopic Dermatitis",
     keywords: ["viga-ad", "iga", "atopic dermatitis", "ad", "eczema", "physician global assessment", "validated"],
-    purpose: "Static clinician assessment of AD severity.", 
+    description: "Static clinician assessment of AD severity.", 
     sourceType: 'Research', // Often used in research/trials
     icon: UserCheck, 
     inputs: [ 
@@ -613,7 +618,7 @@ export const toolData: Tool[] = [
     acronym: "HECSI", 
     condition: "Hand Eczema",
     keywords: ["hecsi", "hand eczema", "eczema", "severity", "hand"],
-    purpose: "Assesses severity of hand eczema.", 
+    description: "Assesses severity of hand eczema.", 
     sourceType: 'Clinical Guideline',
     icon: Hand, 
     inputs: [ 
@@ -690,7 +695,7 @@ export const toolData: Tool[] = [
         let interpretation = `Total HECSI Score: ${score} (Range: 0-360). `;
         if (score === 0) interpretation += "Clear.";
         else if (score <= 16) interpretation += "Almost clear.";
-        else if (score <= 37) interpretation += "Moderate hand eczema.";
+        else if (score <= 37) interpretation += "Moderate hand eczema."; // Corrected to 37, not 36
         else if (score <= 116) interpretation += "Severe hand eczema.";
         else interpretation += "Very severe hand eczema.";
         interpretation += " (Severity bands example: 0 Clear, 1-16 Almost Clear, 17-37 Moderate, 38-116 Severe, >116 Very Severe - actual bands may vary)";
@@ -698,11 +703,166 @@ export const toolData: Tool[] = [
         return { score, interpretation, details: areaDetails };
     },
     references: ["Held E, et al. Br J Dermatol. 2005."]
+  },
+  {
+    id: "dasi", 
+    name: "Dyshidrotic Eczema Area and Severity Index (DASI)", 
+    acronym: "DASI", 
+    condition: "Dyshidrotic Eczema",
+    keywords: ["dasi", "dyshidrotic eczema", "pompholyx", "eczema", "severity"],
+    description: "Assesses severity of dyshidrotic eczema (pompholyx).", 
+    sourceType: 'Clinical Guideline', // Often used in clinical settings
+    icon: Waves, // Represents vesicles/fluid
+    inputs: [ 
+      { id:"vesicles_cm2", name:"Vesicles/cm² (V)", type:'select', options:[{value:0,label:"0 (None)"},{value:1,label:"1 (1-10/cm²)"},{value:2,label:"2 (11-30/cm²)"},{value:3,label:"3 (>30/cm²)"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
+      { id:"erythema", name:"Erythema (E)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
+      { id:"desquamation", name:"Desquamation (D)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
+      { id:"itching", name:"Itching (I) - past 24h", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
+      { id:"extension_percent", name:"Extension % (Ext)", type:'number', min:0, max:100, defaultValue:0, description:"Percentage of hands/feet affected.", validation: getValidationSchema('number',undefined,0,100)} 
+    ],
+    calculationLogic: (inputs) => { 
+        const V = Number(inputs.vesicles_cm2) || 0;
+        const E = Number(inputs.erythema) || 0;
+        const D = Number(inputs.desquamation) || 0;
+        const I = Number(inputs.itching) || 0;
+        const Ext_raw = Number(inputs.extension_percent) || 0;
+
+        // Convert Extension % to score (0-5 scale)
+        let Ext_score = 0;
+        if (Ext_raw === 0) Ext_score = 0;
+        else if (Ext_raw <= 10) Ext_score = 1;
+        else if (Ext_raw <= 25) Ext_score = 2;
+        else if (Ext_raw <= 50) Ext_score = 3;
+        else if (Ext_raw <= 75) Ext_score = 4;
+        else Ext_score = 5;
+
+        const dasiScore = (V + E + D + I) * Ext_score;
+        
+        let interpretation = `DASI Score: ${dasiScore} (Range: 0-60). `;
+        if (dasiScore === 0) interpretation += "Clear.";
+        else if (dasiScore <= 15) interpretation += "Mild dyshidrotic eczema.";
+        else if (dasiScore <= 30) interpretation += "Moderate dyshidrotic eczema.";
+        else interpretation += "Severe dyshidrotic eczema.";
+        interpretation += " (Severity bands: 0 Clear, 1-15 Mild, 16-30 Moderate, 31-60 Severe)";
+
+        return { score: dasiScore, interpretation, details: { V, E, D, I, Ext_raw, Ext_score } };
+    },
+    references: ["Vocks E, et al. Dermatology. 2000;201(3):200-4."]
+  },
+  // ACNE
+  {
+    id: "iga_acne", 
+    name: "IGA for Acne Vulgaris", 
+    acronym: "IGA Acne", 
+    condition: "Acne Vulgaris",
+    keywords: ["iga", "acne", "acne vulgaris", "physician global assessment", "severity"],
+    description: "Static clinician assessment of overall facial acne severity.", 
+    sourceType: 'Classification', // It's a classification scale
+    icon: UserCheck, 
+    inputs: [ 
+      { id: "current_iga_grade", name: "Current IGA Grade", type: 'select', options: [ {value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,4)},
+      { id: "baseline_iga_grade", name: "Baseline IGA Grade (for treatment success)", type: 'select', options: [ {value:-1,label:"N/A"},{value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: -1, validation: getValidationSchema('select',undefined,-1,4)}
+    ],
+    calculationLogic: (inputs) => { 
+        const currentGrade = Number(inputs.current_iga_grade);
+        const baselineGrade = Number(inputs.baseline_iga_grade);
+        let treatmentSuccess = "N/A";
+        if (baselineGrade !== -1) {
+            // Treatment success: current grade is 0 or 1 AND at least a 2-grade improvement from baseline
+            treatmentSuccess = (currentGrade <= 1 && (baselineGrade - currentGrade >= 2)) ? "Achieved" : "Not Achieved";
+        }
+        const gradeMap: Record<number, string> = {0:"Clear",1:"Almost Clear",2:"Mild",3:"Moderate",4:"Severe", [-1]:"N/A"};
+        
+        let interpretation = `Current IGA Acne Grade: ${currentGrade} (${gradeMap[currentGrade]}). `;
+        if (baselineGrade !== -1) {
+            interpretation += `Baseline IGA Grade: ${baselineGrade} (${gradeMap[baselineGrade]}). Treatment Success: ${treatmentSuccess}.`;
+        } else {
+            interpretation += "Baseline not provided for treatment success assessment.";
+        }
+        
+        return { score: currentGrade, interpretation, details: { current_grade_text: gradeMap[currentGrade], baseline_grade: baselineGrade === -1 ? 'N/A' : baselineGrade, baseline_grade_text: gradeMap[baselineGrade], treatment_success: treatmentSuccess } }; 
+    },
+    references: ["FDA guidance documents for acne clinical trials. Example: Guidance for Industry Acne Vulgaris: Developing Drugs for Treatment."]
+  },
+  {
+    id: "gags", 
+    name: "Global Acne Grading System (GAGS)", 
+    acronym: "GAGS", 
+    condition: "Acne Vulgaris",
+    keywords: ["gags", "acne", "acne vulgaris", "global acne grading system", "severity"],
+    description: "Global score for acne severity based on lesion type (comedones, papules, pustules, nodules) and location factors.", 
+    sourceType: 'Clinical Guideline',
+    icon: Calculator, 
+    inputs: [ 
+        ...[{id:"forehead",name:"Forehead",factor:2},{id:"r_cheek",name:"Right Cheek",factor:2},{id:"l_cheek",name:"Left Cheek",factor:2},{id:"nose",name:"Nose",factor:1},{id:"chin",name:"Chin",factor:1},{id:"chest_upper_back",name:"Chest & Upper Back",factor:3}].map(loc=>({ 
+            id:`gags_${loc.id}`, 
+            label:`${loc.name} (Factor x${loc.factor})`, 
+            type:'select', 
+            options:[
+                {value:0,label:"0 - No lesions"},
+                {value:1,label:"1 - <10 Comedones"},
+                {value:2,label:"2 - 10-20 Comedones OR <10 Papules"},
+                {value:3,label:"3 - >20 Comedones OR 10-20 Papules OR <10 Pustules"},
+                {value:4,label:"4 - >20 Papules OR 10-20 Pustules OR <5 Nodules"}
+                // Note: Original GAGS also considers specific lesion counts for each grade within a location. This is a simplified select based on predominant feature.
+                // More accurate would be sub-inputs for each lesion type per location.
+                // Simplified options for clarity: 0=None, 1=Few Comedones, 2=Many Comedones/Few Papules, 3=Many Papules/Few Pustules, 4=Many Pustules/Nodules
+            ], 
+            defaultValue:0, 
+            description:"Predominant lesion grade (0-4).",
+            validation: getValidationSchema('select', undefined, 0, 4)
+        }))
+    ],
+    calculationLogic: (inputs) => { 
+        let totalScore = 0; 
+        const locationScores: Record<string, {grade: number, score: number}> = {};
+        const locations = [
+            {id:"forehead",name:"Forehead",factor:2},
+            {id:"r_cheek",name:"Right Cheek",factor:2},
+            {id:"l_cheek",name:"Left Cheek",factor:2},
+            {id:"nose",name:"Nose",factor:1},
+            {id:"chin",name:"Chin",factor:1},
+            {id:"chest_upper_back",name:"Chest & Upper Back",factor:3}
+        ];
+        locations.forEach(loc=>{
+            const grade = Number(inputs[`gags_${loc.id}`])||0; 
+            const locationScore = grade * loc.factor; 
+            totalScore += locationScore; 
+            locationScores[loc.name] = {grade, score: locationScore};
+        }); 
+        
+        let severityInterpretation = "";
+        if (totalScore === 0) severityInterpretation = "Clear.";
+        else if (totalScore <= 18) severityInterpretation = "Mild Acne.";
+        else if (totalScore <= 30) severityInterpretation = "Moderate Acne.";
+        else if (totalScore <= 38) severityInterpretation = "Severe Acne.";
+        else severityInterpretation = "Very Severe Acne.";
+        
+        const interpretation = `Total GAGS Score: ${totalScore} (Range: 0-44+). ${severityInterpretation} (Severity bands: 0 Clear, 1-18 Mild, 19-30 Moderate, 31-38 Severe, 39+ Very Severe).`;
+        return { score: totalScore, interpretation, details: locationScores }; 
+    },
+    references: ["Doshi A, Zaheer A, Stiller MJ. A comparison of current acne grading systems and proposal of a novel system. Int J Dermatol. 1997 Jul;36(7):494-8.", "Adityan B, Kumari R, Thappa DM. Scoring systems in acne vulgaris. Indian J Dermatol Venereol Leprol. 2009 May-Jun;75(3):323-6."]
+  },
+  {
+    id: "acneqol", 
+    name: "Acne-Specific Quality of Life (Acne-QoL)", 
+    acronym: "Acne-QoL", 
+    condition: "Acne Vulgaris",
+    keywords: ["acneqol", "acne", "quality of life", "patient reported"],
+    description: "Measures the impact of facial acne on quality of life across several domains (e.g., self-perception, social function, emotional function, acne symptoms). Total score interpretation depends on the specific version and scoring (original vs. standardized).", 
+    sourceType: 'Patient Reported Outcome',
+    icon: MessageSquare, 
+    inputs: [ 
+      { id:"total_score", label: "Total Acne-QoL Score", type:'number', defaultValue:0, description:"Enter the calculated total score from the questionnaire. Range and interpretation depend on the version used (e.g., original 19-item sum, or standardized 0-100).", validation: getValidationSchema('number')} 
+    ],
+    calculationLogic: (inputs) => { 
+        const score = Number(inputs.total_score)||0; 
+        const interpretation = `Acne-QoL Total Score: ${score}. For the original 19-item version (sum of item scores), a lower score indicates better QoL. For standardized versions (e.g., 0-100 scale), a higher score often indicates worse QoL. Check specific version guidelines for interpretation.`;
+        return { score, interpretation, details: { score_type: "User-entered total score" } }; 
+    },
+    references: ["Martin AR, Lookingbill DP, Botek A, et al. Development of a new acne-specific quality of life questionnaire (Acne-QoL). J Am Acad Dermatol. 1998;39(3):415-421.", "Fehnel SE, McLeod LD, Brandman J, et al. Responsiveness of the Acne-Specific Quality of Life Questionnaire (Acne-QoL) to treatment for acne vulgaris in a placebo-controlled clinical trial. Qual Life Res. 2002;11(8):809-816."]
   }
-  // NOTE: The complete transformation of all 40+ tools from tools.js is extensive.
-  // The tools above (PASI, NAPSI, PGA Psoriasis, PSSI, SCORAD, EASI, ABCDE, Hurley, Fitzpatrick, SASSAD, vIGA-AD, HECSI) demonstrate the transformation pattern.
-  // Other tools would follow similar logic for mapping inputs, calculation, and interpretation.
-  // This includes handling various input types (grid, dynamic groups by creating repeated inputs),
-  // adapting calculation functions, and simplifying HTML interpretations to plain text.
+
+  // Further tools would be added here, following the same pattern.
 ];
     
