@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form'; // Added FormField here
 import { Textarea } from '@/components/ui/textarea';
 
 
@@ -46,7 +46,7 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                   className={error ? 'border-destructive' : ''}
                 />
               )}
-              {type === 'text' && ( // Assuming text might mean textarea for longer descriptions
+              {type === 'text' && ( 
                 <Textarea
                   {...field}
                   value={field.value ?? ''}
