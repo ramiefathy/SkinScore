@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { Tool } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
@@ -10,21 +11,22 @@ interface ToolInfoProps {
   tool: Tool;
 }
 
-const getSourceTypeColor = (sourceType: Tool['sourceType']) => {
+const getSourceTypeBadgeProps = (sourceType: Tool['sourceType']): { variant?: "default" | "secondary" | "destructive" | "outline", className?: string } => {
   switch (sourceType) {
     case 'Research':
-      return 'bg-blue-500 hover:bg-blue-600'; // Using specific Tailwind color for now, ideally theme based
+      return { variant: "default" }; // Uses primary color
     case 'Clinical Guideline':
-      return 'bg-green-500 hover:bg-green-600';
+      return { className: "bg-accent text-accent-foreground border-transparent hover:bg-accent/80" }; // Uses accent color
     case 'Expert Consensus':
-      return 'bg-purple-500 hover:bg-purple-600';
+      return { variant: "secondary" };
     default:
-      return 'bg-gray-500 hover:bg-gray-600';
+      return { variant: "outline" }; // Fallback
   }
 };
 
 export function ToolInfo({ tool }: ToolInfoProps) {
   const IconComponent = tool.icon;
+  const badgeProps = getSourceTypeBadgeProps(tool.sourceType);
 
   return (
     <div className="space-y-4">
@@ -33,7 +35,7 @@ export function ToolInfo({ tool }: ToolInfoProps) {
           {IconComponent && <IconComponent className="h-8 w-8 text-primary" />}
           <CardTitle className="text-2xl font-headline">{tool.name} {tool.acronym && `(${tool.acronym})`}</CardTitle>
         </div>
-        <Badge variant="secondary" className={`${getSourceTypeColor(tool.sourceType)} text-white`}>
+        <Badge variant={badgeProps.variant} className={badgeProps.className}>
           {tool.sourceType}
         </Badge>
       </CardHeader>
@@ -42,7 +44,7 @@ export function ToolInfo({ tool }: ToolInfoProps) {
         <span className="font-semibold">Condition:</span> {tool.condition}
       </CardDescription>
       
-      <ScrollArea className="h-[100px] pr-3">
+      <ScrollArea className="h-auto max-h-[120px] pr-3">
          <p className="text-sm text-muted-foreground">{tool.description}</p>
       </ScrollArea>
 

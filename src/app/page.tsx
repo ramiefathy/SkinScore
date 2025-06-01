@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { toolData } from '@/lib/toolData';
 import type { Tool, CalculationResult } from '@/lib/types';
 import { ToolSearchList } from '@/components/dermscore/ToolSearchList';
@@ -15,6 +16,11 @@ export default function DermScorePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const selectedTool = useMemo(() => {
     return toolData.find(tool => tool.id === selectedToolId) || null;
@@ -30,21 +36,26 @@ export default function DermScorePage() {
       const result = selectedTool.calculationLogic(inputs);
       setCalculationResult(result);
       // Scroll to results if needed, e.g. on mobile
-      const resultsElement = document.getElementById('results-section');
-      resultsElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (isClient) {
+        const resultsElement = document.getElementById('results-section');
+        resultsElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
+  const currentYear = isClient ? new Date().getFullYear() : '';
+
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="bg-card border-b p-4 shadow-sm">
         <h1 className="text-3xl font-headline text-primary text-center md:text-left">DermScore</h1>
         <p className="text-sm text-muted-foreground text-center md:text-left">Clinical Scoring Tools for Dermatology</p>
       </header>
 
-      <div className="flex flex-col md:flex-row p-4 gap-6">
+      <div className="flex flex-col md:flex-row p-4 gap-6 flex-grow">
         <aside className="w-full md:w-1/3 lg:w-1/4">
-          <Card className="sticky top-4 h-[calc(100vh-5rem)] overflow-hidden flex flex-col">
+          <Card className="sticky top-4 md:h-[calc(100vh-8rem)] overflow-hidden flex flex-col shadow-lg">
             <CardHeader>
               <CardTitle className="text-lg font-headline">Available Tools</CardTitle>
             </CardHeader>
@@ -104,9 +115,9 @@ export default function DermScorePage() {
           </div>
         </main>
       </div>
-      <footer className="text-center p-4 border-t mt-auto">
+      <footer className="text-center p-4 border-t">
         <p className="text-xs text-muted-foreground">
-          DermScore &copy; {new Date().getFullYear()}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
+          DermScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
         </p>
       </footer>
     </div>
