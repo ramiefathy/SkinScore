@@ -10,11 +10,11 @@ import {
   HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, User, Footprints, Puzzle, CircleDot, Check, CloudDrizzle
 } from 'lucide-react';
 import { z } from 'zod';
-import type { InputConfig } from './types';
+import type { InputConfig, InputOption } from './types';
 
 
 // Helper for Zod validation schemas based on input type
-const getValidationSchema = (inputType: string, options?: Array<{value: string | number, label: string}>, min?: number, max?: number): z.ZodSchema<any> => {
+const getValidationSchema = (inputType: string, options?: Array<InputOption>, min?: number, max?: number): z.ZodSchema<any> => {
   switch (inputType) {
     case 'number':
       let numSchema = z.coerce.number(); // coerce to handle string inputs from forms
@@ -41,6 +41,12 @@ const getValidationSchema = (inputType: string, options?: Array<{value: string |
   }
 };
 
+const pasiHeadErythemaOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${['None', 'Slight', 'Moderate', 'Severe', 'Very Severe'][i]}` }));
+const pasiHeadIndurationOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${['None', 'Slight', 'Moderate', 'Severe', 'Very Severe'][i]}` }));
+const pasiHeadDesquamationOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${['None', 'Slight', 'Moderate', 'Severe', 'Very Severe'][i]}` }));
+const pasiHeadAreaOptions: InputOption[] = Array.from({ length: 7 }, (_, i) => ({ value: i, label: `${i} - ${['0%', '1-9%', '10-29%', '30-49%', '50-69%', '70-89%', '90-100%'][i]}` }));
+
+
 export const toolData: Tool[] = [
   // Existing tools from original file (slightly updated for consistency if needed)
   {
@@ -53,10 +59,10 @@ export const toolData: Tool[] = [
     sourceType: 'Research',
     icon: Stethoscope,
     inputs: [
-      { id: 'head_erythema', label: 'Head: Erythema (Redness)', type: 'select', options: Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${['None', 'Slight', 'Moderate', 'Severe', 'Very Severe'][i]}` })), defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'head_induration', label: 'Head: Induration (Thickness)', type: 'select', options: Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${['None', 'Slight', 'Moderate', 'Severe', 'Very Severe'][i]}` })), defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'head_desquamation', label: 'Head: Desquamation (Scaling)', type: 'select', options: Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${['None', 'Slight', 'Moderate', 'Severe', 'Very Severe'][i]}` })), defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'head_area', label: 'Head: Area Affected (%)', type: 'select', options: Array.from({ length: 7 }, (_, i) => ({ value: i, label: `${i} - ${['0%', '1-9%', '10-29%', '30-49%', '50-69%', '70-89%', '90-100%'][i]}` })), defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 6) },
+      { id: 'head_erythema', label: 'Head: Erythema (Redness)', type: 'select', options: pasiHeadErythemaOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadErythemaOptions, 0, 4) },
+      { id: 'head_induration', label: 'Head: Induration (Thickness)', type: 'select', options: pasiHeadIndurationOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadIndurationOptions, 0, 4) },
+      { id: 'head_desquamation', label: 'Head: Desquamation (Scaling)', type: 'select', options: pasiHeadDesquamationOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadDesquamationOptions, 0, 4) },
+      { id: 'head_area', label: 'Head: Area Affected (%)', type: 'select', options: pasiHeadAreaOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadAreaOptions, 0, 6) },
     ],
     calculationLogic: (inputs) => {
       const h_e = Number(inputs.head_erythema);
@@ -79,9 +85,9 @@ export const toolData: Tool[] = [
     name: 'Dermatology Life Quality Index',
     acronym: 'DLQI',
     description: 'A 10-question questionnaire to measure the impact of skin disease on a person\'s quality of life.',
-    condition: 'Various Skin Conditions',
+    condition: 'Quality of Life',
     keywords: ['dlqi', 'quality of life', 'skin disease', 'impact', 'patient reported'],
-    sourceType: 'Expert Consensus', // Was Clinical Guideline, changing to match tools.js derived type
+    sourceType: 'Expert Consensus', 
     icon: ClipboardList,
     inputs: [
       ...Array.from({ length: 10 }, (_, i) => {
@@ -97,22 +103,22 @@ export const toolData: Tool[] = [
             "Over the last week, how much has your skin caused any sexual difficulties?",
             "Over the last week, how much of a problem has the treatment for your skin been, for example by making your home messy, or by taking up time?"
         ];
-        let options = [
+        let q_options: InputOption[] = [
             { value: 3, label: 'Very much' },
             { value: 2, label: 'A lot' },
             { value: 1, label: 'A little' },
             { value: 0, label: 'Not at all' },
         ];
         if (i === 6) { // Question 7
-            options.push({ value: 0, label: 'Not relevant (Scores 0)' }); // "Not relevant" scores 0 for Q7
+            q_options.push({ value: 0, label: 'Not relevant (Scores 0)' }); 
         }
         return {
           id: `q${i + 1}`,
           label: `Q${i + 1}: ${questionTexts[i]}`,
           type: 'select' as 'select',
-          options: options,
+          options: q_options,
           defaultValue: 0,
-          validation: getValidationSchema('select', undefined, 0, 3),
+          validation: getValidationSchema('select', q_options, 0, 3),
         };
       })
     ],
@@ -121,8 +127,6 @@ export const toolData: Tool[] = [
       const details: Record<string, number> = {};
       for (let i = 1; i <= 10; i++) {
         const val = Number(inputs[`q${i}`]) || 0;
-        // Special handling for Q7 if "Not Relevant" was chosen and mapped to a specific value that means 0.
-        // Assuming the options array in inputs definition handles "Not relevant" to value 0 directly.
         details[`Q${i}`] = val;
         score += val;
       }
@@ -141,21 +145,21 @@ export const toolData: Tool[] = [
     name: 'Simplified Cutaneous QoL Index (SCQOLI-10)',
     acronym: 'SCQOLI-10',
     description: 'A 10-item questionnaire for assessing quality of life in patients with chronic skin diseases.',
-    condition: 'Chronic Skin Diseases',
+    condition: 'Quality of Life',
     keywords: ['scqoli-10', 'quality of life', 'chronic skin disease', 'patient reported'],
     sourceType: 'Expert Consensus',
     icon: Users,
     inputs: [
-      { id: 'symptoms', label: 'Symptoms (itching, pain, discomfort)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'emotions', label: 'Emotions (sadness, anxiety, anger)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'daily_activities', label: 'Daily activities (work, household chores)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'sleep', label: 'Sleep', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'social_life', label: 'Social life and leisure', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'self_perception', label: 'Self-perception (feeling ashamed or embarrassed)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'relationships', label: 'Relationships with others', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'treatment_burden', label: 'Treatment burden (time, cost, side effects)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'concentration', label: 'Concentration and memory', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
-      { id: 'energy_vitality', label: 'Energy and vitality', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', undefined, 0, 4) },
+      { id: 'symptoms', label: 'Symptoms (itching, pain, discomfort)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'emotions', label: 'Emotions (sadness, anxiety, anger)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'daily_activities', label: 'Daily activities (work, household chores)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'sleep', label: 'Sleep', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'social_life', label: 'Social life and leisure', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'self_perception', label: 'Self-perception (feeling ashamed or embarrassed)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'relationships', label: 'Relationships with others', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'treatment_burden', label: 'Treatment burden (time, cost, side effects)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'concentration', label: 'Concentration and memory', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
+      { id: 'energy_vitality', label: 'Energy and vitality', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
     ],
     calculationLogic: (inputs) => {
       const score = Object.values(inputs).reduce((sum: number, value) => sum + Number(value), 0);
@@ -168,15 +172,12 @@ export const toolData: Tool[] = [
     },
     references: ["Misery L, et al. Development and validation of a new tool for the global assessment of quality of life in patients with chronic skin disorders: the SCQOLI-10. J Eur Acad Dermatol Venereol. 2021."]
   },
-
-  // Tools from tools.js start here
-  // PSORIASIS
   {
     id: "pasi",
     name: "Psoriasis Area and Severity Index (PASI)",
     acronym: "PASI",
     description: "Gold standard for assessing severity of extensive plaque psoriasis and monitoring treatment response.",
-    condition: "Psoriasis", // Taking first from array
+    condition: "Psoriasis", 
     keywords: ["pasi", "psoriasis", "plaque psoriasis", "severity", "index"],
     sourceType: 'Clinical Guideline',
     icon: Gauge,
@@ -185,15 +186,16 @@ export const toolData: Tool[] = [
         const regionMap: Record<string, string> = { h: 'Head/Neck', u: 'Upper Limbs', t: 'Trunk', l: 'Lower Limbs' };
         const bsaPercent: Record<string, number> = { h: 10, u: 20, t: 30, l: 40 };
         const regionFullName = regionMap[regionAbbr];
-        const regionDesc = `(${bsaPercent[regionAbbr]}% BSA, multiplier x${(bsaPercent[regionAbbr]/100).toFixed(1)})`; // Ensure multiplier is shown correctly
+        const regionDesc = `(${bsaPercent[regionAbbr]}% BSA, multiplier x${(bsaPercent[regionAbbr]/100).toFixed(1)})`; 
+        
+        const severityOptions: InputOption[] = [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ];
+        const areaOptions: InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90-100%)"} ];
 
         return [
-          { id: `E_${regionAbbr}`, label: `${regionFullName} - Erythema (E) ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select',undefined,0,4) },
-          { id: `I_${regionAbbr}`, label: `${regionFullName} - Induration (I) ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select',undefined,0,4) },
-          { id: `S_${regionAbbr}`, label: `${regionFullName} - Scaling (S) ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select',undefined,0,4) },
-          { id: `A_${regionAbbr}`, label: `${regionFullName} - Area (A) ${regionDesc}`, type: 'select', options: [
-            {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90-100%)"}
-           ], defaultValue:0, description: "% region affected.", validation: getValidationSchema('select',undefined,0,6) },
+          { id: `E_${regionAbbr}`, label: `${regionFullName} - Erythema (E) ${regionDesc}`, type: 'select', options: severityOptions, defaultValue:0, validation: getValidationSchema('select',severityOptions,0,4) },
+          { id: `I_${regionAbbr}`, label: `${regionFullName} - Induration (I) ${regionDesc}`, type: 'select', options: severityOptions, defaultValue:0, validation: getValidationSchema('select',severityOptions,0,4) },
+          { id: `S_${regionAbbr}`, label: `${regionFullName} - Scaling (S) ${regionDesc}`, type: 'select', options: severityOptions, defaultValue:0, validation: getValidationSchema('select',severityOptions,0,4) },
+          { id: `A_${regionAbbr}`, label: `${regionFullName} - Area (A) ${regionDesc}`, type: 'select', options: areaOptions, defaultValue:0, description: "% region affected.", validation: getValidationSchema('select',areaOptions,0,6) },
         ];
       })
     ],
@@ -233,8 +235,7 @@ export const toolData: Tool[] = [
     sourceType: 'Clinical Guideline',
     icon: Fingerprint,
     inputs: [
-      { id: "nail_count", label: "Number of Nails Assessed (1-20)", type: 'select', options: Array.from({length: 20}, (_, i) => ({value: i + 1, label: `${i+1} Nail(s)`})), defaultValue: 10, validation: getValidationSchema('select', undefined, 1, 20) },
-      // Generate inputs for up to 20 nails (max)
+      { id: "nail_count", label: "Number of Nails Assessed (1-20)", type: 'select', options: Array.from({length: 20}, (_, i) => ({value: i + 1, label: `${i+1} Nail(s)`})), defaultValue: 10, validation: getValidationSchema('select', Array.from({length: 20}, (_, i) => ({value: i + 1, label: `${i+1} Nail(s)`})), 1, 20) },
       ...Array.from({length: 20}, (_, i) => i + 1).flatMap(nailNum => ([
           { id: `nail_${nailNum}_matrix`, label: `Nail ${nailNum}: Matrix Score (0-4)`, type: 'number', min:0, max:4, defaultValue:0, description: "Quadrants w/ any: Pitting, Leukonychia, Red spots in lunula, Crumbling.", validation: getValidationSchema('number',undefined,0,4)},
           { id: `nail_${nailNum}_bed`, label: `Nail ${nailNum}: Bed Score (0-4)`, type: 'number', min:0, max:4, defaultValue:0, description: "Quadrants w/ any: Onycholysis, Splinter hemorrhages, Subungual hyperkeratosis, Oil drop discoloration.", validation: getValidationSchema('number',undefined,0,4)}
@@ -242,7 +243,7 @@ export const toolData: Tool[] = [
     ],
     calculationLogic: (inputs) => {
         let totalNapsiScore = 0;
-        const nailCount = Math.min(Math.max(Number(inputs.nail_count) || 0, 1), 20); // Clamp between 1 and 20
+        const nailCount = Math.min(Math.max(Number(inputs.nail_count) || 0, 1), 20); 
         const perNailScores: Record<string, any> = {};
         for(let i=1; i<=nailCount; i++) {
             const matrixScore = Number(inputs[`nail_${i}_matrix`]) || 0;
@@ -273,7 +274,7 @@ export const toolData: Tool[] = [
             { value: 0, label: "0 - Clear" }, { value: 1, label: "1 - Almost Clear / Minimal" }, { value: 2, label: "2 - Mild" },
             { value: 3, label: "3 - Mild to Moderate" }, { value: 4, label: "4 - Moderate" }, { value: 5, label: "5 - Moderate to Severe" }, { value: 6, label: "6 - Severe / Very Marked" }
         ],
-        defaultValue: 0, validation: getValidationSchema('select',undefined,0,6)
+        defaultValue: 0, validation: getValidationSchema('select',[ { value: 0, label: "0 - Clear" } ],0,6)
       }
     ],
     calculationLogic: (inputs) => {
@@ -297,12 +298,12 @@ export const toolData: Tool[] = [
     condition: "Psoriasis",
     keywords: ["pssi", "psoriasis", "scalp psoriasis", "scalp", "severity"],
     sourceType: 'Clinical Guideline',
-    icon: User, // Replaced Head with User
+    icon: User, 
     inputs: [
-      { id: "pssi_erythema", label: "Scalp Erythema (E)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', undefined,0,4) },
-      { id: "pssi_thickness", label: "Scalp Thickness (T)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', undefined,0,4) },
-      { id: "pssi_scaling", label: "Scalp Scaling (S)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', undefined,0,4) },
-      { id: "pssi_area", label: "Scalp Area (A)", type: 'select', options: [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90+%"} ], defaultValue:0, description: "% scalp area.", validation: getValidationSchema('select', undefined,0,6) }
+      { id: "pssi_erythema", label: "Scalp Erythema (E)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', [ {value:0, label:"0-None"} ],0,4) },
+      { id: "pssi_thickness", label: "Scalp Thickness (T)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', [ {value:0, label:"0-None"} ],0,4) },
+      { id: "pssi_scaling", label: "Scalp Scaling (S)", type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Slight"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}, {value:4, label:"4-Very Severe"} ], defaultValue:0, validation: getValidationSchema('select', [ {value:0, label:"0-None"} ],0,4) },
+      { id: "pssi_area", label: "Scalp Area (A)", type: 'select', options: [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90+%"} ], defaultValue:0, description: "% scalp area.", validation: getValidationSchema('select', [ {value:0, label:"0 (0%)"} ],0,6) }
     ],
     calculationLogic: (inputs) => {
         const E = Number(inputs.pssi_erythema) || 0;
@@ -327,12 +328,12 @@ export const toolData: Tool[] = [
     icon: ScalingIcon,
     inputs: [
       { id: "A_extent", label: "A: Extent (BSA %)", type: 'number', min: 0, max: 100, defaultValue: 0, description: "Use Rule of Nines.", validation: getValidationSchema('number',undefined,0,100) },
-      { id: "B_erythema", label: "B: Intensity - Erythema", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-      { id: "B_oedema", label: "B: Intensity - Oedema/Papulation", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-      { id: "B_oozing", label: "B: Intensity - Oozing/Crusting", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-      { id: "B_excoriations", label: "B: Intensity - Excoriations", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-      { id: "B_lichenification", label: "B: Intensity - Lichenification", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-      { id: "B_dryness", label: "B: Intensity - Dryness (non-inflamed areas)", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
+      { id: "B_erythema", label: "B: Intensity - Erythema", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+      { id: "B_oedema", label: "B: Intensity - Oedema/Papulation", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+      { id: "B_oozing", label: "B: Intensity - Oozing/Crusting", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+      { id: "B_excoriations", label: "B: Intensity - Excoriations", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+      { id: "B_lichenification", label: "B: Intensity - Lichenification", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+      { id: "B_dryness", label: "B: Intensity - Dryness (non-inflamed areas)", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
       { id: "C_pruritus", label: "C: Subjective - Pruritus (VAS 0-10, avg last 3 days/nights)", type: 'number', min: 0, max: 10, defaultValue: 0, validation: getValidationSchema('number',undefined,0,10) },
       { id: "C_sleeplessness", label: "C: Subjective - Sleeplessness (VAS 0-10, avg last 3 days/nights)", type: 'number', min: 0, max: 10, defaultValue: 0, validation: getValidationSchema('number',undefined,0,10) },
     ],
@@ -341,7 +342,7 @@ export const toolData: Tool[] = [
         const B_sum = (Number(inputs.B_erythema)||0) + (Number(inputs.B_oedema)||0) + (Number(inputs.B_oozing)||0) + (Number(inputs.B_excoriations)||0) + (Number(inputs.B_lichenification)||0) + (Number(inputs.B_dryness)||0);
         const C_sum = (Number(inputs.C_pruritus)||0) + (Number(inputs.C_sleeplessness)||0);
         const scorad = (A/5) + (7*B_sum/2) + C_sum;
-        const oScorad = (A/5) + (7*B_sum/2); // Objective SCORAD
+        const oScorad = (A/5) + (7*B_sum/2); 
 
         const score = parseFloat(scorad.toFixed(2));
         let interpretation = `SCORAD: ${score} (Range: 0-103). oSCORAD: ${oScorad.toFixed(2)} (Range: 0-83). `;
@@ -362,18 +363,20 @@ export const toolData: Tool[] = [
     sourceType: 'Clinical Guideline',
     icon: SlidersHorizontal,
     inputs: [
-      { id: "age_group", label: "Age Group", type: 'select', options: [ {value: "adult", label: ">7 years"}, {value: "child", label: "0-7 years"} ], defaultValue: "adult", validation: getValidationSchema('select')},
+      { id: "age_group", label: "Age Group", type: 'select', options: [ {value: "adult", label: ">7 years"}, {value: "child", label: "0-7 years"} ], defaultValue: "adult", validation: getValidationSchema('select', [ {value: "adult", label: ">7 years"}])},
       ...(['head_neck', 'trunk', 'upper_limbs', 'lower_limbs'] as const).flatMap(regionId => {
         const regionNames: Record<string, string> = { head_neck: 'Head/Neck', trunk: 'Trunk', upper_limbs: 'Upper Limbs', lower_limbs: 'Lower Limbs' };
         const multipliers: Record<string, {adult: number, child: number}> = { head_neck: {adult: 0.1, child: 0.2}, trunk: {adult: 0.3, child: 0.3}, upper_limbs: {adult: 0.2, child: 0.2}, lower_limbs: {adult: 0.4, child: 0.3} };
         const regionFullName = regionNames[regionId];
         const regionDesc = `(Adult x${multipliers[regionId].adult}, Child x${multipliers[regionId].child})`;
+        const areaOptions:InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90+%"} ];
+        const severityOptions:InputOption[] = [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ];
         return [
-          { id: `${regionId}_area`, label: `${regionFullName} - Area (A) ${regionDesc}`, type: 'select', options: [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90+%"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,6) },
-          { id: `${regionId}_erythema`, label: `${regionFullName} - Erythema ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-          { id: `${regionId}_induration`, label: `${regionFullName} - Induration/Papulation ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-          { id: `${regionId}_excoriation`, label: `${regionFullName} - Excoriation ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
-          { id: `${regionId}_lichenification`, label: `${regionFullName} - Lichenification ${regionDesc}`, type: 'select', options: [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,3) },
+          { id: `${regionId}_area`, label: `${regionFullName} - Area (A) ${regionDesc}`, type: 'select', options: areaOptions, defaultValue: 0, validation: getValidationSchema('select',areaOptions,0,6) },
+          { id: `${regionId}_erythema`, label: `${regionFullName} - Erythema ${regionDesc}`, type: 'select', options: severityOptions, defaultValue: 0, validation: getValidationSchema('select',severityOptions,0,3) },
+          { id: `${regionId}_induration`, label: `${regionFullName} - Induration/Papulation ${regionDesc}`, type: 'select', options: severityOptions, defaultValue: 0, validation: getValidationSchema('select',severityOptions,0,3) },
+          { id: `${regionId}_excoriation`, label: `${regionFullName} - Excoriation ${regionDesc}`, type: 'select', options: severityOptions, defaultValue: 0, validation: getValidationSchema('select',severityOptions,0,3) },
+          { id: `${regionId}_lichenification`, label: `${regionFullName} - Lichenification ${regionDesc}`, type: 'select', options: severityOptions, defaultValue: 0, validation: getValidationSchema('select',severityOptions,0,3) },
         ];
       })
     ],
@@ -403,11 +406,11 @@ export const toolData: Tool[] = [
         const score = parseFloat(totalEASIScore.toFixed(2));
         let interpretation = `EASI Score: ${score} (Range: 0-72). `;
         if (score === 0) interpretation += "Clear. ";
-        else if (score <= 7) interpretation += "Mild Atopic Dermatitis. "; // Updated severity bands based on common clinical use
+        else if (score <= 7) interpretation += "Mild Atopic Dermatitis. "; 
         else if (score <= 21) interpretation += "Moderate Atopic Dermatitis. ";
         else if (score <= 48) interpretation += "Severe Atopic Dermatitis. ";
-        else interpretation += "Very Severe Atopic Dermatitis. "; // Corrected to "Very Severe"
-        interpretation += "(Severity bands: 0 Clear, 0.1-7.0 Mild, 7.1-21.0 Moderate, 21.1-48.0 Severe, 48.1-72.0 Very Severe)"; // Updated to reflect more standard bands
+        else interpretation += "Very Severe Atopic Dermatitis. "; 
+        interpretation += "(Severity bands: 0 Clear, 0.1-7.0 Mild, 7.1-21.0 Moderate, 21.1-48.0 Severe, 48.1-72.0 Very Severe)"; 
         
         return { score, interpretation, details: { age_group: ageGroup, ...regionalScores } };
     },
@@ -420,7 +423,7 @@ export const toolData: Tool[] = [
     description: "A mnemonic for common signs of melanoma. If any are present, further evaluation is recommended.",
     condition: "Melanoma Screening",
     keywords: ["abcde", "melanoma", "skin cancer", "screening", "mole"],
-    sourceType: 'Research', // Classification tool
+    sourceType: 'Research', 
     icon: SearchCheck,
     inputs: [
       { id: "A_asymmetry", label: "A - Asymmetry (one half of the mole doesn't match the other)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
@@ -437,7 +440,7 @@ export const toolData: Tool[] = [
       if (inputs.D_diameter) features.push("Diameter >6mm");
       if (inputs.E_evolving) features.push("Evolving");
 
-      const score = features.length; // Number of positive features
+      const score = features.length; 
       let interpretation = "";
       if (score > 0) {
         interpretation = `Warning: ${features.join(', ')} present. ${score} feature(s) noted. Lesion requires further evaluation by a healthcare professional.`;
@@ -455,7 +458,7 @@ export const toolData: Tool[] = [
     description: "A simple clinical staging system to classify the severity of Hidradenitis Suppurativa.",
     condition: "Hidradenitis Suppurativa",
     keywords: ["hurley", "hs", "hidradenitis suppurativa", "staging", "severity"],
-    sourceType: 'Research', // Classification tool
+    sourceType: 'Research', 
     icon: AlignLeft,
     inputs: [
       {
@@ -468,7 +471,7 @@ export const toolData: Tool[] = [
           { value: 3, label: "Stage 3: Diffuse or almost diffuse involvement, or multiple interconnected tracts and abscesses across an entire area." }
         ],
         defaultValue: 1,
-        validation: getValidationSchema('select',undefined,1,3)
+        validation: getValidationSchema('select',[{ value: 1, label: "Stage 1" }],1,3)
       }
     ],
     calculationLogic: (inputs) => {
@@ -507,7 +510,7 @@ export const toolData: Tool[] = [
           { value: 6, label: "Type VI: Never burns, tans very easily (deeply pigmented dark brown to black skin)." }
         ],
         defaultValue: 3,
-        validation: getValidationSchema('select',undefined,1,6)
+        validation: getValidationSchema('select', [{ value: 1, label: "Type I" }],1,6)
       }
     ],
     calculationLogic: (inputs) => {
@@ -520,7 +523,7 @@ export const toolData: Tool[] = [
         5: "Type V: Very rarely burns, tans very easily. Sun insensitive.",
         6: "Type VI: Never burns, tans very easily. Sun insensitive."
       };
-      const score = type; // The type itself is the score/classification
+      const score = type; 
       const interpretation = `Fitzpatrick Skin Type ${type}. ${typeDescriptions[type] || "Invalid type selected."}`;
       return { score, interpretation, details: { classification_description: typeDescriptions[type] || "N/A" } };
     },
@@ -536,17 +539,18 @@ export const toolData: Tool[] = [
     sourceType: 'Clinical Guideline',
     icon: Scaling, 
     inputs: [ 
-        ...["Arms", "Hands", "Legs", "Feet", "Head/Neck", "Trunk"].flatMap(areaName => {
+        ...["Arms", "Hands", "Legs", "Feet", "Head_Neck", "Trunk"].flatMap(areaName => {
             const areaId = areaName.toLowerCase().replace('/','_');
+            const signOptions: InputOption[] = [{value:0, label:"0-None"},{value:1, label:"1-Mild"},{value:2, label:"2-Moderate"},{value:3, label:"3-Severe"}];
             return ["Erythema", "Exudation", "Excoriation", "Dryness", "Cracking", "Lichenification"].map(signName => {
                 const signId = signName.toLowerCase();
                 return {
                     id: `${signId}_${areaId}`,
-                    label: `${areaName} - ${signName}`,
+                    label: `${areaName.replace('_','/')} - ${signName}`,
                     type: 'select',
-                    options: [{value:0, label:"0-None"},{value:1, label:"1-Mild"},{value:2, label:"2-Moderate"},{value:3, label:"3-Severe"}], // Assuming 0-3 for all, toolData example has 0-3
+                    options: signOptions,
                     defaultValue: 0,
-                    validation: getValidationSchema('select', undefined, 0, 3)
+                    validation: getValidationSchema('select', signOptions, 0, 3)
                 } as InputConfig;
             });
         })
@@ -554,7 +558,7 @@ export const toolData: Tool[] = [
     calculationLogic: (inputs) => { 
         let totalScore = 0; 
         const siteScores: Record<string, number> = {};
-        const areas = ["Arms", "Hands", "Legs", "Feet", "Head/Neck", "Trunk"];
+        const areas = ["Arms", "Hands", "Legs", "Feet", "Head_Neck", "Trunk"];
         const signs = ["Erythema", "Exudation", "Excoriation", "Dryness", "Cracking", "Lichenification"];
 
         areas.forEach(areaName => {
@@ -564,7 +568,7 @@ export const toolData: Tool[] = [
                 const signId = signName.toLowerCase();
                 currentSiteScore += Number(inputs[`${signId}_${areaId}`]) || 0;
             });
-            siteScores[areaName] = currentSiteScore;
+            siteScores[areaName.replace('_','/')] = currentSiteScore;
             totalScore += currentSiteScore;
         });
         const interpretation = `Total SASSAD Score: ${totalScore} (Range: 0-108). Higher score indicates more severe AD. No standard severity bands universally defined.`;
@@ -579,7 +583,7 @@ export const toolData: Tool[] = [
     condition: "Atopic Dermatitis",
     keywords: ["viga-ad", "iga", "atopic dermatitis", "ad", "eczema", "physician global assessment", "validated"],
     description: "Static clinician assessment of AD severity.", 
-    sourceType: 'Research', // Often used in research/trials
+    sourceType: 'Research', 
     icon: UserCheck, 
     inputs: [ 
       { 
@@ -594,7 +598,7 @@ export const toolData: Tool[] = [
           { value: 4, label: "4 - Severe: Marked erythema, marked induration/papulation/lichenification, and +/- oozing/crusting." } 
         ], 
         defaultValue: 0,
-        validation: getValidationSchema('select', undefined, 0, 4)
+        validation: getValidationSchema('select', [ { value: 0, label: "0 - Clear" } ], 0, 4)
       }
     ],
     calculationLogic: (inputs) => { 
@@ -622,7 +626,7 @@ export const toolData: Tool[] = [
     sourceType: 'Clinical Guideline',
     icon: Hand, 
     inputs: [ 
-        ...["Fingertips", "Fingers (excluding tips)", "Palms", "Backs of Hands", "Wrists"].flatMap(areaName => {
+        ...["Fingertips", "Fingers_excluding_tips", "Palms", "Backs_of_Hands", "Wrists"].flatMap(areaName => {
             const areaId = areaName.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
             const signs = [
                 {id: "erythema", name: "Erythema"}, 
@@ -632,28 +636,24 @@ export const toolData: Tool[] = [
                 {id: "scaling", name: "Scaling"},
                 {id: "oedema", name: "Oedema"}
             ];
+            const signOptions: InputOption[] = [{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}];
+            const areaAffectedOptions: InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-25%)"}, {value:2, label:"2 (26-50%)"}, {value:3, label:"3 (51-75%)"}, {value:4, label:"4 (76-100%)"} ];
             return [
                 ...signs.map(sign => ({
                     id: `${areaId}_${sign.id}`,
-                    label: `${areaName} - ${sign.name} (0-3)`,
+                    label: `${areaName.replace(/_/g, ' ')} - ${sign.name} (0-3)`,
                     type: 'select',
-                    options: [{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}],
+                    options: signOptions,
                     defaultValue: 0,
-                    validation: getValidationSchema('select', undefined, 0, 3)
+                    validation: getValidationSchema('select', signOptions, 0, 3)
                 } as InputConfig)),
                 {
                     id: `${areaId}_area_affected`,
-                    label: `${areaName} - Area Affected (0-4)`,
+                    label: `${areaName.replace(/_/g, ' ')} - Area Affected (0-4)`,
                     type: 'select',
-                    options: [
-                        {value:0, label:"0 (0%)"},
-                        {value:1, label:"1 (1-25%)"},
-                        {value:2, label:"2 (26-50%)"},
-                        {value:3, label:"3 (51-75%)"},
-                        {value:4, label:"4 (76-100%)"}
-                    ],
+                    options: areaAffectedOptions,
                     defaultValue: 0,
-                    validation: getValidationSchema('select', undefined, 0, 4)
+                    validation: getValidationSchema('select', areaAffectedOptions, 0, 4)
                 } as InputConfig
             ];
         })
@@ -695,7 +695,7 @@ export const toolData: Tool[] = [
         let interpretation = `Total HECSI Score: ${score} (Range: 0-360). `;
         if (score === 0) interpretation += "Clear.";
         else if (score <= 16) interpretation += "Almost clear.";
-        else if (score <= 37) interpretation += "Moderate hand eczema."; // Corrected to 37, not 36
+        else if (score <= 37) interpretation += "Moderate hand eczema."; 
         else if (score <= 116) interpretation += "Severe hand eczema.";
         else interpretation += "Very severe hand eczema.";
         interpretation += " (Severity bands example: 0 Clear, 1-16 Almost Clear, 17-37 Moderate, 38-116 Severe, >116 Very Severe - actual bands may vary)";
@@ -711,14 +711,14 @@ export const toolData: Tool[] = [
     condition: "Dyshidrotic Eczema",
     keywords: ["dasi", "dyshidrotic eczema", "pompholyx", "eczema", "severity"],
     description: "Assesses severity of dyshidrotic eczema (pompholyx).", 
-    sourceType: 'Clinical Guideline', // Often used in clinical settings
-    icon: Waves, // Represents vesicles/fluid
+    sourceType: 'Clinical Guideline', 
+    icon: Waves, 
     inputs: [ 
-      { id:"vesicles_cm2", name:"Vesicles/cm² (V)", type:'select', options:[{value:0,label:"0 (None)"},{value:1,label:"1 (1-10/cm²)"},{value:2,label:"2 (11-30/cm²)"},{value:3,label:"3 (>30/cm²)"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
-      { id:"erythema", name:"Erythema (E)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
-      { id:"desquamation", name:"Desquamation (D)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
-      { id:"itching", name:"Itching (I) - past 24h", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', undefined, 0,3) }, 
-      { id:"extension_percent", name:"Extension % (Ext)", type:'number', min:0, max:100, defaultValue:0, description:"Percentage of hands/feet affected.", validation: getValidationSchema('number',undefined,0,100)} 
+      { id:"vesicles_cm2", label:"Vesicles/cm² (V)", type:'select', options:[{value:0,label:"0 (None)"},{value:1,label:"1 (1-10/cm²)"},{value:2,label:"2 (11-30/cm²)"},{value:3,label:"3 (>30/cm²)"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0 (None)"}], 0,3) }, 
+      { id:"erythema", label:"Erythema (E)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0-None"}], 0,3) }, 
+      { id:"desquamation", label:"Desquamation (D)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0-None"}], 0,3) }, 
+      { id:"itching", label:"Itching (I) - past 24h", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0-None"}], 0,3) }, 
+      { id:"extension_percent", label:"Extension % (Ext)", type:'number', min:0, max:100, defaultValue:0, description:"Percentage of hands/feet affected.", validation: getValidationSchema('number',undefined,0,100)} 
     ],
     calculationLogic: (inputs) => { 
         const V = Number(inputs.vesicles_cm2) || 0;
@@ -727,7 +727,6 @@ export const toolData: Tool[] = [
         const I = Number(inputs.itching) || 0;
         const Ext_raw = Number(inputs.extension_percent) || 0;
 
-        // Convert Extension % to score (0-5 scale)
         let Ext_score = 0;
         if (Ext_raw === 0) Ext_score = 0;
         else if (Ext_raw <= 10) Ext_score = 1;
@@ -757,18 +756,17 @@ export const toolData: Tool[] = [
     condition: "Acne Vulgaris",
     keywords: ["iga", "acne", "acne vulgaris", "physician global assessment", "severity"],
     description: "Static clinician assessment of overall facial acne severity.", 
-    sourceType: 'Classification', // It's a classification scale
+    sourceType: 'Research', 
     icon: UserCheck, 
     inputs: [ 
-      { id: "current_iga_grade", name: "Current IGA Grade", type: 'select', options: [ {value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: 0, validation: getValidationSchema('select',undefined,0,4)},
-      { id: "baseline_iga_grade", name: "Baseline IGA Grade (for treatment success)", type: 'select', options: [ {value:-1,label:"N/A"},{value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: -1, validation: getValidationSchema('select',undefined,-1,4)}
+      { id: "current_iga_grade", label: "Current IGA Grade", type: 'select', options: [ {value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: 0, validation: getValidationSchema('select', [ {value:0,label:"0 - Clear"} ],0,4)},
+      { id: "baseline_iga_grade", label: "Baseline IGA Grade (for treatment success)", type: 'select', options: [ {value:-1,label:"N/A"},{value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: -1, validation: getValidationSchema('select', [ {value:-1,label:"N/A"} ],-1,4)}
     ],
     calculationLogic: (inputs) => { 
         const currentGrade = Number(inputs.current_iga_grade);
         const baselineGrade = Number(inputs.baseline_iga_grade);
         let treatmentSuccess = "N/A";
         if (baselineGrade !== -1) {
-            // Treatment success: current grade is 0 or 1 AND at least a 2-grade improvement from baseline
             treatmentSuccess = (currentGrade <= 1 && (baselineGrade - currentGrade >= 2)) ? "Achieved" : "Not Achieved";
         }
         const gradeMap: Record<number, string> = {0:"Clear",1:"Almost Clear",2:"Mild",3:"Moderate",4:"Severe", [-1]:"N/A"};
@@ -804,13 +802,10 @@ export const toolData: Tool[] = [
                 {value:2,label:"2 - 10-20 Comedones OR <10 Papules"},
                 {value:3,label:"3 - >20 Comedones OR 10-20 Papules OR <10 Pustules"},
                 {value:4,label:"4 - >20 Papules OR 10-20 Pustules OR <5 Nodules"}
-                // Note: Original GAGS also considers specific lesion counts for each grade within a location. This is a simplified select based on predominant feature.
-                // More accurate would be sub-inputs for each lesion type per location.
-                // Simplified options for clarity: 0=None, 1=Few Comedones, 2=Many Comedones/Few Papules, 3=Many Papules/Few Pustules, 4=Many Pustules/Nodules
             ], 
             defaultValue:0, 
             description:"Predominant lesion grade (0-4).",
-            validation: getValidationSchema('select', undefined, 0, 4)
+            validation: getValidationSchema('select', [{value:0,label:"0 - No lesions"}], 0, 4)
         }))
     ],
     calculationLogic: (inputs) => { 
@@ -847,10 +842,10 @@ export const toolData: Tool[] = [
     id: "acneqol", 
     name: "Acne-Specific Quality of Life (Acne-QoL)", 
     acronym: "Acne-QoL", 
-    condition: "Acne Vulgaris",
+    condition: "Quality of Life",
     keywords: ["acneqol", "acne", "quality of life", "patient reported"],
-    description: "Measures the impact of facial acne on quality of life across several domains (e.g., self-perception, social function, emotional function, acne symptoms). Total score interpretation depends on the specific version and scoring (original vs. standardized).", 
-    sourceType: 'Patient Reported Outcome',
+    description: "Measures the impact of facial acne on quality of life across several domains. Total score interpretation depends on the specific version and scoring.", 
+    sourceType: 'Research',
     icon: MessageSquare, 
     inputs: [ 
       { id:"total_score", label: "Total Acne-QoL Score", type:'number', defaultValue:0, description:"Enter the calculated total score from the questionnaire. Range and interpretation depend on the version used (e.g., original 19-item sum, or standardized 0-100).", validation: getValidationSchema('number')} 
@@ -862,7 +857,5 @@ export const toolData: Tool[] = [
     },
     references: ["Martin AR, Lookingbill DP, Botek A, et al. Development of a new acne-specific quality of life questionnaire (Acne-QoL). J Am Acad Dermatol. 1998;39(3):415-421.", "Fehnel SE, McLeod LD, Brandman J, et al. Responsiveness of the Acne-Specific Quality of Life Questionnaire (Acne-QoL) to treatment for acne vulgaris in a placebo-controlled clinical trial. Qual Life Res. 2002;11(8):809-816."]
   }
-
-  // Further tools would be added here, following the same pattern.
 ];
     
