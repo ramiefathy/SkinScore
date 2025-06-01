@@ -41,19 +41,10 @@ export function ToolSearchList({
       tool.keywords.some(keyword => keyword.toLowerCase().includes(lowerSearchTerm))
     );
 
-    if (!searchTerm) { // If no search term, group all tools
-        return tools.reduce((acc, tool) => {
-        const condition = tool.condition || 'Other';
-        if (!acc[condition]) {
-            acc[condition] = [];
-        }
-        acc[condition].push(tool);
-        return acc;
-        }, {} as Record<string, Tool[]>);
-    }
+    // Always group, even if search term is empty, to maintain consistent structure
+    const baseToolsToGroup = searchTerm ? filtered : tools;
     
-    // If search term exists, group the filtered tools
-    return filtered.reduce((acc, tool) => {
+    return baseToolsToGroup.reduce((acc, tool) => {
       const condition = tool.condition || 'Other';
       if (!acc[condition]) {
         acc[condition] = [];
@@ -64,14 +55,19 @@ export function ToolSearchList({
 
   }, [tools, searchTerm]);
 
-  const allFilteredToolsCount = Object.values(groupedAndFilteredTools).reduce((sum, group) => sum + group.length, 0);
-
-  // Determine active accordion items: if searching, open all groups that have matching tools. Otherwise, open none by default.
+  const allFilteredToolsCount = useMemo(() => {
+    // Make a shallow copy before using Object.values
+    const plainGroupedTools = { ...groupedAndFilteredTools };
+    return Object.values(plainGroupedTools).reduce((sum, group) => sum + group.length, 0);
+  }, [groupedAndFilteredTools]);
+  
   const activeAccordionItems = useMemo(() => {
     if (searchTerm) {
-      return Object.keys(groupedAndFilteredTools).filter(condition => groupedAndFilteredTools[condition].length > 0);
+      // Make a shallow copy before using Object.keys
+      const plainGroupedTools = { ...groupedAndFilteredTools };
+      return Object.keys(plainGroupedTools).filter(condition => plainGroupedTools[condition]?.length > 0);
     }
-    return []; // Or you could return a default open group, e.g., the first one: Object.keys(groupedAndFilteredTools)[0] ? [Object.keys(groupedAndFilteredTools)[0]] : []
+    return []; 
   }, [searchTerm, groupedAndFilteredTools]);
 
 
@@ -90,8 +86,10 @@ export function ToolSearchList({
       <ScrollArea className="flex-grow pr-2">
         {allFilteredToolsCount > 0 ? (
           <Accordion type="multiple" defaultValue={activeAccordionItems} className="w-full">
-            {Object.entries(groupedAndFilteredTools).map(([condition, conditionTools]) => {
-              if (conditionTools.length === 0 && searchTerm) return null; // Don't show empty groups when searching
+            {/* Make a shallow copy before using Object.entries */}
+            {Object.entries({ ...groupedAndFilteredTools }).map(([condition, conditionTools]) => {
+              // Only hide empty groups if a search term is active
+              if (searchTerm && conditionTools.length === 0) return null; 
               return (
                 <AccordionItem value={condition} key={condition}>
                   <AccordionTrigger className="text-sm font-medium hover:no-underline">
@@ -111,7 +109,6 @@ export function ToolSearchList({
                           >
                             <div className="flex flex-col">
                               <span className="font-semibold text-sm">{tool.name} {tool.acronym && `(${tool.acronym})`}</span>
-                              {/* Removed condition display here as it's redundant with accordion group */}
                             </div>
                           </Button>
                         </li>
