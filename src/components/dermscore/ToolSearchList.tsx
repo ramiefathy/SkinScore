@@ -92,11 +92,14 @@ export function ToolSearchList({
               if (searchTerm && conditionTools.length === 0) return null; 
               return (
                 <AccordionItem value={condition} key={condition}>
-                  <AccordionTrigger className="text-sm font-medium hover:no-underline">
-                    {condition} ({conditionTools.length})
+                  <AccordionTrigger className="text-sm font-medium hover:no-underline py-3">
+                    <div className="flex justify-between w-full items-center pr-1">
+                      <span className="truncate">{condition}</span>
+                      <span className="text-xs text-muted-foreground ml-2">({conditionTools.length})</span>
+                    </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <ul className="space-y-2 pt-1 pb-2">
+                    <ul className="space-y-1.5 py-2">
                       {conditionTools.map(tool => (
                         <li key={tool.id}>
                           <Button
@@ -126,3 +129,4 @@ export function ToolSearchList({
     </div>
   );
 }
+
