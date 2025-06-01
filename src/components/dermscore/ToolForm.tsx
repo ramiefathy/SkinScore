@@ -1,3 +1,4 @@
+
  "use client";
 
 import React, { useEffect } from 'react';
@@ -8,7 +9,7 @@ import type { Tool, CalculationResult } from '@/lib/types';
 import { DynamicFormField } from './DynamicFormField';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
-import { CardContent, CardFooter } from '@/components/ui/card';
+import { CardContent, CardFooter } from '@/components/ui/card'; // CardFooter for consistency
 
 interface ToolFormProps {
   tool: Tool;
@@ -16,11 +17,10 @@ interface ToolFormProps {
 }
 
 export function ToolForm({ tool, onCalculate }: ToolFormProps) {
-  // Dynamically create Zod schema
   const generateSchema = () => {
     const shape: Record<string, z.ZodSchema<any>> = {};
     tool.inputs.forEach(input => {
-      shape[input.id] = input.validation || z.any(); // Default to z.any() if no validation provided
+      shape[input.id] = input.validation || z.any();
     });
     return z.object(shape);
   };
@@ -51,7 +51,7 @@ export function ToolForm({ tool, onCalculate }: ToolFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <CardContent className="p-0 grid gap-4 md:grid-cols-2">
+        <CardContent className="p-6 grid gap-x-6 gap-y-5 md:grid-cols-2"> {/* Adjusted padding and gap */}
           {tool.inputs.map((inputConfig) => (
             <DynamicFormField
               key={inputConfig.id}
@@ -60,8 +60,8 @@ export function ToolForm({ tool, onCalculate }: ToolFormProps) {
             />
           ))}
         </CardContent>
-        <CardFooter className="p-0">
-          <Button type="submit" className="w-full md:w-auto">
+        <CardFooter className="p-6 pt-0"> {/* Standard padding for footer */}
+          <Button type="submit" size="lg" className="w-full md:w-auto"> {/* Slightly larger button */}
             Calculate Score
           </Button>
         </CardFooter>

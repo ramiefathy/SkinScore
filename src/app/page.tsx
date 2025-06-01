@@ -10,7 +10,7 @@ import { ToolForm } from '@/components/dermscore/ToolForm';
 import { ResultsDisplay } from '@/components/dermscore/ResultsDisplay';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Info, CheckSquare } from 'lucide-react';
+import { FileText, Info, CheckSquare, Settings } from 'lucide-react';
 
 export default function DermScorePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,14 +28,13 @@ export default function DermScorePage() {
 
   const handleToolSelect = (toolId: string) => {
     setSelectedToolId(toolId);
-    setCalculationResult(null); 
+    setCalculationResult(null);
   };
 
   const handleCalculate = (inputs: Record<string, any>) => {
     if (selectedTool && selectedTool.calculationLogic) {
       const result = selectedTool.calculationLogic(inputs);
       setCalculationResult(result);
-      // Scroll to results if needed, e.g. on mobile
       if (isClient) {
         const resultsElement = document.getElementById('results-section');
         resultsElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -43,23 +42,29 @@ export default function DermScorePage() {
     }
   };
 
-  const currentYear = isClient ? new Date().getFullYear() : '';
-
+  const currentYear = useMemo(() => isClient ? new Date().getFullYear().toString() : '', [isClient]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <header className="bg-card border-b p-4 shadow-sm">
-        <h1 className="text-3xl font-headline text-primary text-center md:text-left">DermScore</h1>
-        <p className="text-sm text-muted-foreground text-center md:text-left">Clinical Scoring Tools for Dermatology</p>
+      <header className="bg-card border-b p-6 shadow-md sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <Settings className="h-8 w-8 text-primary" />
+                <div>
+                    <h1 className="text-4xl font-headline text-primary">DermScore</h1>
+                    <p className="text-sm text-muted-foreground">Clinical Scoring Tools for Dermatology</p>
+                </div>
+            </div>
+        </div>
       </header>
 
-      <div className="flex flex-col md:flex-row p-4 gap-6 flex-grow">
+      <div className="container mx-auto flex flex-col md:flex-row p-6 md:p-8 gap-8 flex-grow">
         <aside className="w-full md:w-1/3 lg:w-1/4">
-          <Card className="sticky top-4 md:h-[calc(100vh-8rem)] overflow-hidden flex flex-col shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-headline">Available Tools</CardTitle>
+          <Card className="sticky top-28 md:h-[calc(100vh-9rem)] overflow-hidden flex flex-col shadow-xl border"> {/* Adjusted top to account for taller sticky header */}
+            <CardHeader className="py-4 px-5">
+              <CardTitle className="text-xl font-headline">Available Tools</CardTitle>
             </CardHeader>
-            <CardContent className="flex-grow overflow-y-auto p-4">
+            <CardContent className="flex-grow overflow-y-auto p-5 pt-0">
                <ToolSearchList
                 tools={toolData}
                 onSelectTool={handleToolSelect}
@@ -71,16 +76,16 @@ export default function DermScorePage() {
           </Card>
         </aside>
 
-        <main className="flex-1 space-y-6">
+        <main className="flex-1 space-y-8">
           {!selectedTool && (
-            <Card className="shadow-lg">
+            <Card className="shadow-xl border">
               <CardHeader>
-                <CardTitle className="text-xl font-headline flex items-center gap-2"><Info className="text-primary"/>Welcome to DermScore</CardTitle>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to DermScore</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Select a dermatological scoring tool from the list on the left to get started. 
-                  You can search for tools by name, acronym, condition, or keywords. 
+                <p className="text-muted-foreground text-base leading-relaxed">
+                  Select a dermatological scoring tool from the list on the left to get started.
+                  You can search for tools by name, acronym, condition, or keywords.
                   All calculations are performed locally in your browser, ensuring data privacy.
                 </p>
               </CardContent>
@@ -88,9 +93,9 @@ export default function DermScorePage() {
           )}
 
           {selectedTool && (
-            <Card className="shadow-lg">
+            <Card className="shadow-xl border">
               <CardHeader>
-                 <CardTitle className="text-xl font-headline flex items-center gap-2"><FileText className="text-primary"/>Tool Information</CardTitle>
+                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><FileText className="text-primary h-7 w-7"/>Tool Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <ToolInfo tool={selectedTool} />
@@ -99,24 +104,23 @@ export default function DermScorePage() {
           )}
 
           {selectedTool && (
-            <Card className="shadow-lg">
+            <Card className="shadow-xl border">
               <CardHeader>
-                 <CardTitle className="text-xl font-headline flex items-center gap-2"><CheckSquare className="text-primary"/>Scoring Inputs</CardTitle>
+                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><CheckSquare className="text-primary h-7 w-7"/>Scoring Inputs</CardTitle>
               </CardHeader>
-              {/* Content is inside ToolForm component */}
               <ToolForm tool={selectedTool} onCalculate={handleCalculate} />
             </Card>
           )}
           
-          <div id="results-section">
+          <div id="results-section" className="pt-4"> {/* Added padding top for visual separation */}
             {calculationResult && selectedTool && (
                 <ResultsDisplay result={calculationResult} />
             )}
           </div>
         </main>
       </div>
-      <footer className="text-center p-4 border-t">
-        <p className="text-xs text-muted-foreground">
+      <footer className="text-center p-6 border-t mt-auto">
+        <p className="text-sm text-muted-foreground">
           DermScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
         </p>
       </footer>
