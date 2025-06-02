@@ -8,15 +8,15 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput, // Standard CommandInput
+  CommandInput, 
   CommandItem,
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { Command as CommandPrimitive } from 'cmdk'; // For direct input usage if needed
+import { Command as CommandPrimitive } from 'cmdk'; 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Kbd } from '@/components/ui/kbd';
-import { Check, ChevronsUpDown, Search as SearchIcon, Clock } from 'lucide-react';
+import { Check, Search as SearchIcon, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderToolSelectorProps {
@@ -40,9 +40,8 @@ export function HeaderToolSelector({
     return tools.find(tool => tool.id === selectedToolId)?.name || "Select a tool...";
   }, [tools, selectedToolId]);
 
-  // Group tools by condition only when not searching
   const groupedTools = useMemo(() => {
-    if (searchValue) return {}; // No grouping when searching
+    if (searchValue) return {}; 
     return tools.reduce((acc, tool) => {
       const condition = tool.condition || 'Other';
       if (!acc[condition]) {
@@ -54,7 +53,7 @@ export function HeaderToolSelector({
   }, [tools, searchValue]);
 
   const filteredTools = useMemo(() => {
-    if (!searchValue) return []; // No flat filtering if not searching
+    if (!searchValue) return []; 
     const lowerSearchValue = searchValue.toLowerCase();
     return tools.filter(tool =>
       tool.name.toLowerCase().includes(lowerSearchValue) ||
@@ -72,21 +71,26 @@ export function HeaderToolSelector({
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && (e.target as HTMLElement)?.tagName !== 'INPUT' && (e.target as HTMLElement)?.tagName !== 'TEXTAREA'))) {
+      const target = e.target as HTMLElement;
+      const isInputFocused = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setOpen((prevOpen) => !prevOpen);
+      } else if (e.key === '/' && !isInputFocused) {
         e.preventDefault();
         setOpen((prevOpen) => !prevOpen);
       }
     };
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, []);
+  }, []); // Removed setOpen from dependency array as it's a stable setState function
 
   useEffect(() => {
     if (open) {
-      // Focus input when popover opens
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
-      setSearchValue(''); // Clear search on close
+      setSearchValue(''); 
     }
   }, [open]);
 
@@ -109,8 +113,11 @@ export function HeaderToolSelector({
           <span className="truncate flex-1 text-left">
             {selectedToolId ? selectedToolName : "Search tools..."}
           </span>
-          <Kbd className="ml-auto hidden md:inline-flex">⌘K</Kbd>
-          {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> Removed to simplify for Kbd */}
+          <div className="flex items-center ml-auto">
+            <Kbd className="hidden md:inline-flex">⌘K</Kbd>
+            <span className="text-muted-foreground mx-1 hidden md:inline-flex">or</span>
+            <Kbd className="hidden md:inline-flex">/</Kbd>
+          </div>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[calc(100vw-2rem)] max-w-md md:w-[450px] lg:w-[550px] p-0" align="start">
@@ -229,3 +236,4 @@ const CommandPrimitiveInput = React.forwardRef<
   />
 ));
 CommandPrimitiveInput.displayName = "CommandPrimitiveInput";
+
