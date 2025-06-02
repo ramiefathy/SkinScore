@@ -939,6 +939,7 @@ export const toolData: Tool[] = [
         const q3_val = Number(inputs.q3_treatment)||0;
         const q4_val = Number(inputs.q4_control)||0;
 
+        // UCT scoring is reversed for the first 3 questions then direct for the last
         const uct_q1 = 4 - q1_val;
         const uct_q2 = 4 - q2_val;
         const uct_q3 = 4 - q3_val;
@@ -991,10 +992,10 @@ export const toolData: Tool[] = [
     sourceType: 'Clinical Guideline',
     icon: Palette,
     inputs: [
-      { id:"masi_type", label:"MASI Type", type:"select", options:[{value:"masi",label:"MASI (includes Homogeneity)"},{value:"mmasi",label:"mMASI (excludes Homogeneity)"}], defaultValue:"masi", validation:getValidationSchema('select')},
+      { id:"masi_type", label:"MASI Type", type:"select", options:[{value:"masi",label:"MASI (includes Homogeneity)"},{value:"mmasi",label:"mMASI (excludes Homogeneity)"}], defaultValue:"masi", validation:getValidationSchema('select', [{value:"masi",label:"MASI"}])},
       ...(["Forehead", "Right Malar", "Left Malar", "Chin"] as const).flatMap(regionName => {
-          const regionId = regionName.toLowerCase().replace(/\s+/g, '_');
-          const regionMultiplier = masiRegionMultiplierMap[regionId as MasiRegionKey]; // Use predefined map and typed key
+          const regionId = regionName.toLowerCase().replace(/\s+/g, '_') as MasiRegionKey;
+          const regionMultiplier = masiRegionMultiplierMap[regionId];
           const areaOptionsMASI: InputOption[] = Array.from({length:7}, (_,i)=>({value:i, label:`${i} (${["0%", "<10%", "10-29%", "30-49%", "50-69%", "70-89%", "90-100%"][i]})`}));
           const darknessHomogeneityOptions: InputOption[] = Array.from({length:5}, (_,i)=>({value:i, label:`${i} (${["None", "Slight", "Mild", "Moderate", "Marked"][i]})`}));
           return [
@@ -1008,16 +1009,16 @@ export const toolData: Tool[] = [
         const type = inputs.masi_type as "masi" | "mmasi";
         let totalScore = 0;
         const regionDetails: Record<string, any> = {};
-        const regions = [ // Use the predefined map for multipliers here too
-            {name:"Forehead", id:"forehead", multiplier: masiRegionMultiplierMap["forehead"]},
-            {name:"Right Malar", id:"right_malar", multiplier: masiRegionMultiplierMap["right_malar"]},
-            {name:"Left Malar", id:"left_malar", multiplier: masiRegionMultiplierMap["left_malar"]},
-            {name:"Chin", id:"chin", multiplier: masiRegionMultiplierMap["chin"]}
+        const regions = [
+            {name:"Forehead", id:"forehead" as MasiRegionKey, multiplier: masiRegionMultiplierMap["forehead"]},
+            {name:"Right Malar", id:"right_malar" as MasiRegionKey, multiplier: masiRegionMultiplierMap["right_malar"]},
+            {name:"Left Malar", id:"left_malar" as MasiRegionKey, multiplier: masiRegionMultiplierMap["left_malar"]},
+            {name:"Chin", id:"chin" as MasiRegionKey, multiplier: masiRegionMultiplierMap["chin"]}
         ];
         regions.forEach(r => {
             const A = Number(inputs[`${r.id}_area`])||0;
             const D = Number(inputs[`${r.id}_darkness`])||0;
-            const H = (type === "masi") ? (Number(inputs[`${r.id}_homogeneity`])||0) : 0;
+            const H = (type === "masi") ? (Number(inputs[`${r.id}_homogeneity`])||0) : 0; // Homogeneity is 0 for mMASI
             const regionalScore = (type === "masi") ? ((D+H)*A*r.multiplier) : (D*A*r.multiplier);
             totalScore += regionalScore;
             regionDetails[r.name] = {Area:A, Darkness:D, Homogeneity: type === "masi" ? H : 'N/A', Regional_Score: parseFloat(regionalScore.toFixed(2))};
@@ -1051,7 +1052,7 @@ export const toolData: Tool[] = [
     sourceType: 'Research',
     icon: Users2,
     inputs: [
-      { id:"total_score", label:"Total MELASQOL Score", type:'number', min:10, max:70, defaultValue:10, description:"Enter the sum of scores from the 10 questions (each question 1-7).", validation:getValidationSchema('number', [], 10, 70)}
+      {id:"total_score", label:"Total MELASQOL Score", type:'number', min:10, max:70, defaultValue:10, description:"Enter the sum of scores from the 10 questions (each question 1-7).", validation:getValidationSchema('number', [], 10, 70)}
     ],
     calculationLogic: (inputs) => {
         const score = Number(inputs.total_score)||10;
@@ -1078,7 +1079,7 @@ export const toolData: Tool[] = [
             ];
             return [
                 {id:`${regionId}_hand_units`, label:`${regionName} - Hand Units (HU)`, type:'number', min:0, defaultValue:0, description:"Area in patient's hand units (1 HU ~ 1% BSA).", validation:getValidationSchema('number', [], 0)},
-                {id:`${regionId}_depigmentation_percent`, label:`${regionName} - Depigmentation %`, type:'select', options:depigmentationOptions, defaultValue:0, validation:getValidationSchema('select',depigmentationOptions)}
+                {id:`${regionId}_depigmentation_percent`, label:`${regionName} - Depigmentation %`, type:'select', options:depigmentationOptions, defaultValue:0, validation:getValidationSchema('select',depigmentationOptions)} // Default to 0 for depig if not explicitly 100%
             ];
         }).flat()
     ],
@@ -1094,7 +1095,7 @@ export const toolData: Tool[] = [
 
         regions.forEach(r => {
             const hu = Number(inputs[`${r.id}_hand_units`])||0;
-            const depig = Number(inputs[`${r.id}_depigmentation_percent`]); // No ||0 here, as 0 is a valid depig value from select
+            const depig = Number(inputs[`${r.id}_depigmentation_percent`]); 
             const regionalScore = hu * depig;
             totalVASI += regionalScore;
             if (r.id === "head_neck") {
@@ -1103,9 +1104,8 @@ export const toolData: Tool[] = [
             regionDetails[r.name] = {Hand_Units: hu, Depigmentation_Multiplier: depig, Regional_VASI_Score: parseFloat(regionalScore.toFixed(2))};
         });
 
-        // VASI is capped at 100 (representing 100% BSA involvement with 100% depigmentation)
         const finalTotalVASI = Math.min(totalVASI, 100);
-        const finalFacialVASI = Math.min(facialVASI, 100); // Though unlikely for face alone to be > 100HU
+        const finalFacialVASI = Math.min(facialVASI, 100); 
 
         const interpretation = `Total VASI (T-VASI): ${finalTotalVASI.toFixed(2)} (Range: 0-100). Facial VASI (F-VASI): ${finalFacialVASI.toFixed(2)}. Higher score indicates more extensive depigmentation. VASI is used to track changes over time (e.g., VASI50 for 50% improvement). No universal baseline severity bands defined.`;
         return { score: finalTotalVASI, interpretation, details: { Total_VASI_Uncapped: parseFloat(totalVASI.toFixed(2)), Facial_VASI_Uncapped: parseFloat(facialVASI.toFixed(2)), ...regionDetails } };
@@ -1120,7 +1120,7 @@ export const toolData: Tool[] = [
     keywords: ["vida", "vitiligo", "activity", "patient reported"],
     description: "Assesses current vitiligo activity based on patient's perception of new lesions, existing lesion spread, or repigmentation over specific timeframes.",
     sourceType: 'Research',
-    icon: Activity, // Or UserCog
+    icon: Activity,
     inputs: [
       { id:"activity_status", label:"Current Vitiligo Activity Status", type:"select",
         options:[
@@ -1157,7 +1157,7 @@ export const toolData: Tool[] = [
     id: "vitiqol",
     name: "Vitiligo-specific Quality of Life (VitiQoL)",
     acronym: "VitiQoL",
-    condition: "Quality of Life", // Also "Vitiligo"
+    condition: "Quality of Life", 
     keywords: ["vitiqol", "vitiligo", "quality of life", "patient reported"],
     description: "Measures the impact of vitiligo on a patient's quality of life. Scores depend on the specific version used (e.g., 15-item, each 0-6, total 0-90).",
     sourceType: 'Research',
@@ -1218,7 +1218,7 @@ export const toolData: Tool[] = [
       minorCriteria.forEach(crit => {
         if (inputs[crit.key]) {
           presentFeatures.push(crit.label + " (Minor)");
-          score += 1; // Minor criteria are 1 point in both versions effectively
+          score += 1;
         }
       });
 
@@ -1228,10 +1228,6 @@ export const toolData: Tool[] = [
       } else {
         interpretation += "Score < 3, does not meet criteria for urgent referral based on this checklist alone. Clinical correlation advised.";
       }
-      if (version === "weighted" && score >= 3) {
-         // No separate threshold usually cited for weighted, just that major count more. Common threshold is 3.
-      }
-
       return { score, interpretation, details: { Version: version, Present_Features: presentFeatures.join(', ') || "None" } };
     },
     references: ["MacKie RM. An aid to pre-operative assessment of pigmented lesions of the skin. Br J Dermatol. 1983.", "Walter FM, et al. The 7-point checklist for melanoma: a prospective validation study in primary care. Br J Gen Pract. 2013.", "NICE guideline [NG12] Melanoma: assessment and management. (Recommends 7-point checklist)"]
@@ -1278,9 +1274,9 @@ export const toolData: Tool[] = [
       const nodulesScore = (Number(inputs.nodules_count) || 0) * 2;
       const fistulasScore = (Number(inputs.fistulas_tunnels_count) || 0) * 4;
       const scarsScore = (Number(inputs.scars_count) || 0) * 1;
-      const otherLesionsScore = (Number(inputs.other_lesions_count) || 0) * 1; // Note: "Other" less defined in original, often for comedones if severe
+      const otherLesionsScore = (Number(inputs.other_lesions_count) || 0) * 1; 
       const distanceScore = Number(inputs.longest_distance) || 0;
-      const separatedScore = Number(inputs.lesions_separated) || 0; // 0 if separated, 6 if not
+      const separatedScore = Number(inputs.lesions_separated) || 0;
 
       const totalScore = regionsScore + nodulesScore + fistulasScore + scarsScore + otherLesionsScore + distanceScore + separatedScore;
 
@@ -1298,7 +1294,7 @@ export const toolData: Tool[] = [
     condition: "Hidradenitis Suppurativa",
     keywords: ["hspga", "hs", "hidradenitis suppurativa", "pga", "physician global assessment", "severity"],
     description: "A static, 6-point scale for clinicians to globally assess the severity of Hidradenitis Suppurativa. Specific definitions for each grade vary slightly across trials.",
-    sourceType: 'Research', // Or Clinical Guideline if a specific version is adopted
+    sourceType: 'Research', 
     icon: UserCheck,
     inputs: [
       { id: "abscesses_count", label: "Number of Abscesses (A)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
@@ -1312,77 +1308,76 @@ export const toolData: Tool[] = [
       const DF = Number(inputs.draining_fistulas_count) || 0;
       const NIN = Number(inputs.non_inflammatory_nodules_count) || 0;
 
-      let pgaScore = -1; // Default for undefined state
-      let description = "";
-
-      // Example PGA logic (can vary slightly based on specific trial definitions)
+      let pgaScore = -1;
+      let description = "Undetermined - complex presentation or use manual override.";
+      
+      // Derived from common HS-PGA definitions (e.g., FDA Adalimumab label, PIONEER trials)
       if (A === 0 && IN === 0 && DF === 0 && NIN === 0) {
-        pgaScore = 0; description = "Clear: No HS lesions.";
+          pgaScore = 0; description = "Clear: No inflammatory or non-inflammatory HS lesions.";
       } else if (A === 0 && IN === 0 && DF === 0 && NIN > 0) {
-        pgaScore = 1; description = "Minimal: No abscesses, inflammatory nodules, or draining fistulas; only non-inflammatory nodules present.";
-      } else if ( (A === 0 && DF === 0 && IN >= 1 && IN <= 4) || ((A === 1 || DF === 1) && IN === 0) ) { // Simplified "Mild"
-        pgaScore = 2; description = "Mild: Few inflammatory nodules (e.g., 1-4) OR at most one abscess OR one draining fistula, but no combination of these beyond single types if IN=0.";
-      } else if ( (A === 0 && DF === 0 && IN >=5) || ((A === 1 || DF === 1) && IN >=1) || (A >=2 && A <=5) || (DF >=2 && DF <=5) || ((A+DF) >=2 && (A+DF)<=5) && IN <10 ) { // Simplified "Moderate"
-        pgaScore = 3; description = "Moderate: Multiple inflammatory nodules (e.g., >=5) OR few abscesses/fistulas (e.g., 1 of each, or 2-5 total A/DF) with limited IN OR more extensive A/DF but limited IN.";
-      } else if ( (A >=2 && A <=5 || DF >=2 && DF <=5) && IN >=10 ) { // Part of "Severe"
-        pgaScore = 4; description = "Severe: Multiple abscesses or draining fistulas (e.g., 2-5 of one type) AND numerous (e.g., >=10) inflammatory nodules OR more extensive individual lesion types.";
-      } else if (A >= 6 || DF >= 6 || (A+DF) >=6 ) { // Part of "Very Severe"
-         pgaScore = 5; description = "Very Severe: Multiple (e.g., >=6) abscesses OR multiple (e.g., >=6) draining fistulas, or extensive/confluent lesions.";
-      } else { // Fallback if conditions are complex and not perfectly met by above simplified logic
-         // This part needs more robust logic or a select dropdown for HS-PGA if direct calculation is too complex.
-         // For now, if not perfectly matched, it remains -1 or could be a simpler heuristic based on dominant lesion.
-         // A common approach is for the clinician to select the PGA based on gestalt after counting.
-         // If we assume the numbers lead to a distinct category:
-         if (A > 0 || IN > 0 || DF > 0) { // if any lesions, it's at least minimal/mild
-            if ((A + DF + IN) <= 5 && (A+DF) <=1) {pgaScore = 2; description="Mild (heuristic)";}
-            else if ((A+DF) >=5 || IN >=10) {pgaScore=4; description="Severe (heuristic)";}
-            else {pgaScore=3; description="Moderate (heuristic)";}
-         } else if (NIN > 0) {
-            pgaScore=1; description="Minimal (NIN only)";
-         } else {
-            pgaScore=0; description="Clear";
-         }
+          pgaScore = 1; description = "Minimal: No abscesses, inflammatory nodules, or draining fistulas; only non-inflammatory nodules present.";
+      } else if (A === 0 && DF === 0 && IN > 0) { // Only INs
+          pgaScore = 2; description = "Mild: ≥1 inflammatory nodule(s); no abscess(es) or draining fistula(s).";
+      } else if (A > 0 && DF === 0 && IN === 0) { // Only Abscesses
+          if (A <= 2) { pgaScore = 2; description = "Mild: ≤2 abscess(es); no inflammatory nodule(s) or draining fistula(s)."; }
+          else { pgaScore = 3; description = "Moderate: >2 abscess(es); no inflammatory nodule(s) or draining fistula(s)."; }
+      } else if (DF > 0 && A === 0 && IN === 0) { // Only Fistulas
+          if (DF <= 2) { pgaScore = 2; description = "Mild: ≤2 draining fistula(s); no inflammatory nodule(s) or abscess(es)."; }
+          else { pgaScore = 3; description = "Moderate: >2 draining fistula(s); no inflammatory nodule(s) or abscess(es)."; }
+      } else if (A > 0 || DF > 0 || IN > 0) { // Combinations - this is where it gets complex, often a gestalt
+          const totalLesions = A + DF + IN;
+          const totalInflammatory = A + DF + IN; // NIN are not typically counted in higher grades of active disease
+
+          if (totalInflammatory > 0 && (A + DF) <= 1 && IN < 5) { // Few lesions, mostly INs or a single A/DF
+              pgaScore = 2; description = "Mild: Few inflammatory lesions, at most one abscess or draining fistula.";
+          } else if ((A + DF) >= 1 && (A + DF) <= 5 && IN < 10) { // Moderate number of A/DF, or more INs
+              pgaScore = 3; description = "Moderate: Some abscesses/fistulas and/or several inflammatory nodules.";
+          } else if ((A + DF) > 5 || ( (A+DF) >=1 && IN >= 10 ) ) { // More A/DF, or many INs with some A/DF
+              pgaScore = 4; description = "Severe: Multiple abscesses/fistulas and/or numerous inflammatory nodules.";
+          } else if ( (A + DF) > 10 || ( (A+DF) >= 5 && IN >=20 ) || (IN > 30) ) { // Extensive/confluent lesions
+              pgaScore = 5; description = "Very Severe: Extensive/confluent abscesses, fistulas, or inflammatory nodules.";
+          }
+      }
+      // Fallback if not perfectly matched, this may need a select input for the clinician to choose final PGA grade
+      if (pgaScore === -1 && (A > 0 || IN > 0 || DF > 0)) {
+          pgaScore = 3; description = "Moderate (Heuristic fallback - use clinical judgment or a direct PGA selection field for precise grading).";
       }
 
 
-      const interpretation = `HS-PGA Score: ${pgaScore} - ${description}. This score is a global assessment.`;
+      const interpretation = `HS-PGA Score: ${pgaScore === -1 ? 'N/A' : pgaScore} - ${description}. This score is a global assessment based on lesion counts. Precise grading definitions can vary slightly between specific HS-PGA versions.`;
       return { score: pgaScore, interpretation, details: { Abscesses: A, Inflammatory_Nodules: IN, Draining_Fistulas: DF, Non_Inflammatory_Nodules: NIN, Calculated_Description: description } };
     },
-    references: ["HS-PGA scales are often defined in specific clinical trial protocols (e.g., for adalimumab, secukinumab in HS). Example: Kimball AB, et al. JAMA Dermatol. 2012 (early HS-PGA usage)."]
+    references: ["HS-PGA scales are often defined in specific clinical trial protocols (e.g., for adalimumab, secukinumab in HS). Example: Kimball AB, et al. JAMA Dermatol. 2012 (early HS-PGA usage). FDA Adalimumab Prescribing Information."]
   },
   {
     id: "cdlqi",
     name: "Children's Dermatology Life Quality Index (CDLQI)",
     acronym: "CDLQI",
-    condition: "Quality of Life", // And "Pediatric Dermatology"
+    condition: "Quality of Life",
     keywords: ["cdlqi", "quality of life", "children", "pediatric", "skin disease", "patient reported"],
     description: "A 10-question questionnaire to measure the impact of skin disease on the quality of life of children aged 4-16 years.",
-    sourceType: 'Expert Consensus', // Often considered this or Research Tool
-    icon: Baby, // Or Users
+    sourceType: 'Expert Consensus',
+    icon: Baby,
     inputs: [
       ...Array.from({ length: 10 }, (_, i) => {
-        const questionPrompts = [ // Example prompts, actual CDLQI questions are specific
-            "Q1: Skin itchy, sore, painful, or stinging?",
-            "Q2: Skin embarrassing or made you self-conscious?",
-            "Q3: Skin interfering with looking after home/garden or shopping?", // Parent may answer some
-            "Q4: Skin influencing clothes worn?",
-            "Q5: Skin affecting social/leisure activities?",
-            "Q6: Skin making sport difficult?",
-            "Q7: Skin preventing school/study or affecting it?",
-            "Q8: Skin creating problems with friends/relatives?",
-            "Q9: Skin causing sleep problems?", // Adapted from DLQI sexual q
-            "Q10: Treatment being a problem (messy, time-consuming)?"
+        const questionPrompts = [ 
+            "Q1: Over the last week, how itchy, sore, painful or stinging has your skin been?",
+            "Q2: Over the last week, how embarrassed or self-conscious have you been because of your skin?",
+            "Q3: Over the last week, how much has your skin interfered with you playing with friends or going to school?",
+            "Q4: Over the last week, how much has your skin influenced the clothes you wear?",
+            "Q5: Over the last week, how much has your skin affected any hobbies or pastimes?",
+            "Q6: Over the last week, how much has your skin made it difficult for you to do any sport?",
+            "Q7: Over the last week, has your skin prevented you from going to school or nursery?",
+            "Q8: Over the last week, how much has your skin made you feel fed up or sad?",
+            "Q9: Over the last week, how much has your skin caused problems with your sleep?",
+            "Q10: Over the last week, how much of a problem has the treatment for your skin been, for example by making your home messy, or by taking up time?"
         ];
-        // CDLQI scoring is typically: Very much (3), A lot (2), A little (1), Not at all (0)
-        // Question 7 (school) might have a "Not relevant" option scoring 0.
         let cdlqi_options: InputOption[] = [
-            { value: 3, label: 'Very much / Yes' },
-            { value: 2, label: 'A lot' },
-            { value: 1, label: 'A little' },
-            { value: 0, label: 'Not at all / No' },
+            { value: 3, label: 'Very much' }, { value: 2, label: 'A lot' },
+            { value: 1, label: 'A little' }, { value: 0, label: 'Not at all' },
         ];
-         if (i === 6) { // Example for Q7 (school)
-             cdlqi_options.push({ value: 0, label: 'Not relevant (Scores 0)' });
+         if (i === 6) { // Question 7 (school)
+             cdlqi_options.push({ value: 0, label: 'Not relevant / Does not apply (Scores 0)' });
          }
 
         return {
@@ -1447,7 +1442,7 @@ export const toolData: Tool[] = [
     keywords: ["vas", "visual analogue scale", "pruritus", "itch", "intensity", "patient reported"],
     description: "A simple scale for patients to rate the intensity of their itch, typically on a 10 cm line (0=no itch, 10=worst imaginable itch).",
     sourceType: 'Research',
-    icon: SlidersHorizontal, // Represents a scale
+    icon: SlidersHorizontal, 
     inputs: [
       { id: "vas_score_cm", label: "VAS Score (cm or 0-10)", type: 'number', min:0, max:10, step:0.1, defaultValue:0, description:"Enter score from 0 (no itch) to 10 (worst imaginable itch).", validation: getValidationSchema('number',[],0,10)}
     ],
@@ -1460,7 +1455,7 @@ export const toolData: Tool[] = [
       else if (score < 9) severity = "Severe itch";
       else severity = "Very severe itch";
 
-      const interpretation = `VAS for Pruritus: ${score} (Range 0-10). Severity: ${severity}. (Example severity bands: 0 No itch, >0-2.9 Mild, 3-6.9 Moderate, 7-8.9 Severe, 9-10 Very severe).`;
+      const interpretation = `VAS for Pruritus: ${score.toFixed(1)} (Range 0-10). Severity: ${severity}. (Example severity bands: 0 No itch, >0-2.9 Mild, 3-6.9 Moderate, 7-8.9 Severe, 9-10 Very severe).`;
       return { score, interpretation, details: { Reported_VAS_Score: score, Assessed_Severity: severity } };
     },
     references: ["Huskisson EC. Measurement of pain. Lancet. 1974.", "Phan NQ, Blome C, Fritz F, et al. Assessment of pruritus intensity: prospective study on validity and reliability of the visual analogue scale, numerical rating scale and verbal rating scale in patients with chronic pruritus. Acta Derm Venereol. 2012."]
@@ -1473,7 +1468,7 @@ export const toolData: Tool[] = [
     keywords: ["nrs", "numeric rating scale", "pruritus", "itch", "intensity", "patient reported"],
     description: "A simple scale for patients to rate the intensity of their itch on an 11-point scale (0=no itch, 10=worst imaginable itch).",
     sourceType: 'Research',
-    icon: CircleDot, // Represents discrete points on a scale
+    icon: CircleDot, 
     inputs: [
       { id: "nrs_score", label: "NRS Score (0-10)", type: 'number', min:0, max:10, step:1, defaultValue:0, description:"Enter score from 0 (no itch) to 10 (worst imaginable itch).", validation: getValidationSchema('number',[],0,10)}
     ],
@@ -1481,7 +1476,7 @@ export const toolData: Tool[] = [
       const score = Number(inputs.nrs_score) || 0;
       let severity = "";
       if (score === 0) severity = "No itch";
-      else if (score <= 3) severity = "Mild itch"; // NRS bands can differ slightly from VAS
+      else if (score <= 3) severity = "Mild itch"; 
       else if (score <= 6) severity = "Moderate itch";
       else if (score <= 8) severity = "Severe itch";
       else severity = "Very severe itch";
@@ -1499,7 +1494,7 @@ export const toolData: Tool[] = [
     keywords: ["5d itch", "pruritus", "itch", "multidimensional", "patient reported"],
     description: "A multidimensional patient-reported outcome measure for chronic pruritus, assessing Duration, Degree, Direction, Disability, and Distribution.",
     sourceType: 'Research',
-    icon: Puzzle, // Represents multiple dimensions
+    icon: Puzzle, 
     inputs: [
       { id: "d1_duration", label: "Domain 1: Duration (Total hours itching per day)", type: 'select', options: [{value:1, label:"1 (<1 hr)"}, {value:2, label:"2 (1-3 hrs)"}, {value:3, label:"3 (4-6 hrs)"}, {value:4, label:"4 (7-12 hrs)"}, {value:5, label:"5 (>12 hrs)"}], defaultValue:1, validation: getValidationSchema('select',[],1,5)},
       { id: "d2_degree", label: "Domain 2: Degree (Severity of worst itch episode)", type: 'select', options: [{value:1, label:"1 (Mild)"}, {value:2, label:"2 (Mild-Moderate)"}, {value:3, label:"3 (Moderate)"}, {value:4, label:"4 (Moderate-Severe)"}, {value:5, label:"5 (Severe)"}], defaultValue:1, validation: getValidationSchema('select',[],1,5)},
@@ -1519,6 +1514,286 @@ export const toolData: Tool[] = [
       return { score: totalScore, interpretation, details: { D1_Duration_Score: d1, D2_Degree_Score: d2, D3_Direction_Score: d3, D4_Disability_Score: d4, D5_Distribution_Score: d5 } };
     },
     references: ["Elman S, Hynan LS, Gabriel V, Mayo MJ. The 5-D Itch Scale: a new measure of pruritus. Br J Dermatol. 2010 Mar;162(3):587-93."]
+  },
+  {
+    id: "hiscr",
+    name: "HiSCR (Hidradenitis Suppurativa Clinical Response)",
+    acronym: "HiSCR",
+    condition: "Hidradenitis Suppurativa",
+    keywords: ["hiscr", "hs", "hidradenitis suppurativa", "treatment response", "clinical trial"],
+    description: "Defines treatment response in HS clinical trials based on changes in abscesses, inflammatory nodules, and draining fistulas.",
+    sourceType: 'Clinical Guideline', 
+    icon: ListChecks,
+    inputs: [
+      { id: "baseline_abscesses", label: "Baseline: Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "baseline_inflammatory_nodules", label: "Baseline: Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "baseline_draining_fistulas", label: "Baseline: Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "followup_abscesses", label: "Follow-up: Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "followup_inflammatory_nodules", label: "Follow-up: Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "followup_draining_fistulas", label: "Follow-up: Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+    ],
+    calculationLogic: (inputs) => {
+      const Ab = Number(inputs.baseline_abscesses) || 0;
+      const INb = Number(inputs.baseline_inflammatory_nodules) || 0;
+      const DFb = Number(inputs.baseline_draining_fistulas) || 0;
+      const Af = Number(inputs.followup_abscesses) || 0;
+      const INf = Number(inputs.followup_inflammatory_nodules) || 0;
+      const DFf = Number(inputs.followup_draining_fistulas) || 0;
+
+      const AINb = Ab + INb;
+      const AINf = Af + INf;
+
+      let reductionAIN = 0;
+      if (AINb > 0) {
+        reductionAIN = (AINb - AINf) / AINb;
+      } else if (AINf === 0) { // Baseline AIN was 0, and follow-up is also 0
+        reductionAIN = 1.0; // Considered 100% reduction or maintained clear
+      }
+
+      const criterion1_reduction = reductionAIN >= 0.5; // At least 50% reduction in A+IN count
+      const criterion2_no_increase_A = Af <= Ab;
+      const criterion3_no_increase_DF = DFf <= DFb;
+
+      const achieved = criterion1_reduction && criterion2_no_increase_A && criterion3_no_increase_DF;
+      const score = achieved ? 1 : 0; // 1 for achieved, 0 for not achieved
+
+      const interpretation = `HiSCR: ${achieved ? "Achieved" : "Not Achieved"}. 
+      Criteria: 
+      1. ≥50% reduction in (Abscesses + Inflammatory Nodules) count: ${criterion1_reduction ? "Yes" : "No"} (${(reductionAIN * 100).toFixed(1)}% reduction).
+      2. No increase in Abscess count from baseline: ${criterion2_no_increase_A ? "Yes" : "No"}.
+      3. No increase in Draining Fistula count from baseline: ${criterion3_no_increase_DF ? "Yes" : "No"}.`;
+      
+      return { 
+        score, 
+        interpretation, 
+        details: {
+          AIN_Reduction_Percent: parseFloat((reductionAIN * 100).toFixed(1)),
+          Criterion1_AIN_Reduction_Met: criterion1_reduction ? "Yes" : "No",
+          Criterion2_No_Abscess_Increase_Met: criterion2_no_increase_A ? "Yes" : "No",
+          Criterion3_No_Fistula_Increase_Met: criterion3_no_increase_DF ? "Yes" : "No",
+          Baseline_A_plus_IN: AINb,
+          Followup_A_plus_IN: AINf,
+        } 
+      };
+    },
+    references: ["Kimball AB, et al. Hidradenitis suppurativa: a disease with U.S. prevalence of 1% to 4% that requires new therapies. J Am Acad Dermatol. 2014.", "Original definition often cited in clinical trial protocols for HS therapies."]
+  },
+  {
+    id: "ihs4",
+    name: "International Hidradenitis Suppurativa Severity Score System (IHS4)",
+    acronym: "IHS4",
+    condition: "Hidradenitis Suppurativa",
+    keywords: ["ihs4", "hs", "hidradenitis suppurativa", "severity", "dynamic score"],
+    description: "A validated, dynamic scoring system for HS severity based on lesion counts.",
+    sourceType: 'Clinical Guideline',
+    icon: SquarePen,
+    inputs: [
+      { id: "nodules_count", label: "Number of Inflammatory Nodules (x1 point each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "abscesses_count", label: "Number of Abscesses (x2 points each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+      { id: "draining_tunnels_count", label: "Number of Draining Tunnels/Fistulas (x4 points each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+    ],
+    calculationLogic: (inputs) => {
+      const Nn = Number(inputs.nodules_count) || 0;
+      const Na = Number(inputs.abscesses_count) || 0;
+      const Ndt = Number(inputs.draining_tunnels_count) || 0;
+      const score = (Nn * 1) + (Na * 2) + (Ndt * 4);
+
+      let severity = "";
+      if (score <= 3) severity = "Mild HS";
+      else if (score <= 10) severity = "Moderate HS";
+      else severity = "Severe HS";
+      
+      const interpretation = `IHS4 Score: ${score}. Assessed Severity: ${severity}. (Severity bands: ≤3 Mild; 4-10 Moderate; ≥11 Severe).`;
+      return { 
+        score, 
+        interpretation, 
+        details: {
+          Nodules_Contribution: Nn * 1,
+          Abscesses_Contribution: Na * 2,
+          Draining_Tunnels_Contribution: Ndt * 4,
+          Severity_Category: severity
+        }
+      };
+    },
+    references: ["Zouboulis CC, et al. Development and validation of the International Hidradenitis Suppurativa Severity Score System (IHS4), a novel dynamic scoring system to assess HS severity. Br J Dermatol. 2017 Dec;177(6):1401-1409."]
+  },
+  {
+    id: "iga_rosacea",
+    name: "Investigator's Global Assessment (IGA) for Rosacea",
+    acronym: "IGA-R",
+    condition: "Rosacea",
+    keywords: ["iga", "rosacea", "physician global assessment", "severity", "erythema", "papules", "pustules"],
+    description: "A clinician-rated assessment of overall rosacea severity, typically on a 5-point scale (0=Clear to 4=Severe). Definitions vary slightly.",
+    sourceType: 'Research',
+    icon: UserCheck,
+    inputs: [
+      {
+        id: "iga_grade_rosacea",
+        label: "Select IGA Grade for Rosacea",
+        type: 'select',
+        options: [
+          { value: 0, label: "0 - Clear: No inflammatory lesions (papules/pustules), no erythema." },
+          { value: 1, label: "1 - Almost Clear: Rare inflammatory lesions; faint erythema." },
+          { value: 2, label: "2 - Mild: Few inflammatory lesions (papules/pustules); mild erythema." },
+          { value: 3, label: "3 - Moderate: Several to many inflammatory lesions; moderate erythema." },
+          { value: 4, label: "4 - Severe: Numerous inflammatory lesions; severe erythema; may include plaques/nodules." }
+        ],
+        defaultValue: 0,
+        validation: getValidationSchema('select', [{ value: 0, label: "0 - Clear" }], 0, 4)
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const grade = Number(inputs.iga_grade_rosacea);
+      const gradeMap: Record<number, string> = {
+        0: "Clear", 1: "Almost Clear", 2: "Mild", 3: "Moderate", 4: "Severe"
+      };
+      const interpretation = `IGA for Rosacea: Grade ${grade} (${gradeMap[grade] || 'N/A'}). This reflects the overall severity of rosacea based on inflammatory lesions and erythema.`;
+      return { 
+        score: grade, 
+        interpretation, 
+        details: { 
+          Selected_Grade_Description: gradeMap[grade] || "N/A" 
+        }
+      };
+    },
+    references: ["Various versions used in clinical trials for rosacea treatments. Example: Fowler J, et al. Efficacy and safety of once-daily ivermectin 1% cream in treatment of papulopustular rosacea: results of two randomized, double-blind, vehicle-controlled pivotal studies. J Drugs Dermatol. 2014."]
+  },
+  {
+    id: "cea_rosacea",
+    name: "Clinician's Erythema Assessment (CEA) for Rosacea",
+    acronym: "CEA Rosacea",
+    condition: "Rosacea",
+    keywords: ["cea", "rosacea", "erythema", "redness", "severity"],
+    description: "A clinician-rated assessment of the severity of facial erythema associated with rosacea, typically on a 5-point scale.",
+    sourceType: 'Research',
+    icon: Palette,
+    inputs: [
+      {
+        id: "cea_grade_rosacea",
+        label: "Select CEA Grade for Rosacea Erythema",
+        type: 'select',
+        options: [
+          { value: 0, label: "0 - Clear skin with no signs of erythema." },
+          { value: 1, label: "1 - Almost clear; slight redness." },
+          { value: 2, label: "2 - Mild erythema; definite redness, easily recognized." },
+          { value: 3, label: "3 - Moderate erythema; marked redness." },
+          { value: 4, label: "4 - Severe erythema; fiery redness." }
+        ],
+        defaultValue: 0,
+        validation: getValidationSchema('select', [{ value: 0, label: "0 - Clear" }], 0, 4)
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const grade = Number(inputs.cea_grade_rosacea);
+      const gradeMap: Record<number, string> = {
+        0: "Clear", 1: "Almost Clear", 2: "Mild Erythema", 3: "Moderate Erythema", 4: "Severe Erythema"
+      };
+      const interpretation = `CEA for Rosacea: Grade ${grade} (${gradeMap[grade] || 'N/A'}). This score reflects the severity of facial erythema.`;
+      return { 
+        score: grade, 
+        interpretation, 
+        details: {
+          Selected_Grade_Description: gradeMap[grade] || "N/A"
+        } 
+      };
+    },
+    references: ["Used in clinical trials evaluating treatments for rosacea-associated erythema. Example: Fowler J Jr, et al. J Drugs Dermatol. 2013;12(6):650-6 (brimonidine trials)."]
+  },
+  {
+    id: "iss_vis",
+    name: "Ichthyosis Severity Score (ISS) / Visual Index for Ichthyosis Severity (VIS)",
+    acronym: "ISS/VIS",
+    condition: "Ichthyosis",
+    keywords: ["ichthyosis", "severity score", "iss", "vis", "scaling", "erythema"],
+    description: "Assesses overall ichthyosis severity. Specific components and scoring can vary (e.g., Yale VIS-ISS, Gånemo ISS). This tool accepts a pre-calculated total score.",
+    sourceType: 'Clinical Guideline',
+    icon: ScalingIcon,
+    inputs: [
+      { id: "total_iss_vis_score", label: "Total ISS/VIS Score", type: 'number', min:0, defaultValue: 0, description: "Enter the pre-calculated total score from the specific ISS/VIS version used.", validation: getValidationSchema('number',[],0) }
+    ],
+    calculationLogic: (inputs) => {
+      const score = Number(inputs.total_iss_vis_score) || 0;
+      const interpretation = `ISS/VIS Score: ${score}. Higher score indicates more severe ichthyosis. Interpretation and range depend on the specific version of the ISS/VIS used.`;
+      return { 
+        score, 
+        interpretation, 
+        details: { 
+          User_Entered_Score: score 
+        } 
+      };
+    },
+    references: ["Gånemo A, et al. Severity assessment in ichthyoses: a validation study. Acta Derm Venereol. 2003.", "Milstone LM, et al. The Visual Index for Ichthyosis Severity (VIIS): a validatedỀinstrument for use in ichthyosis clinical trials. Br J Dermatol. 2020 (describes VIIS which is related)."]
+  },
+  {
+    id: "loscat",
+    name: "Localized Scleroderma Cutaneous Assessment Tool (LoSCAT)",
+    acronym: "LoSCAT",
+    condition: "Localized Scleroderma (Morphea)",
+    keywords: ["loscat", "morphea", "localized scleroderma", "activity", "damage", "pga", "mrss"],
+    description: "Assesses disease activity and damage in morphea, incorporating Physician Global Assessments (PGA) and modified Rodnan Skin Score (mRSS) components.",
+    sourceType: 'Clinical Guideline',
+    icon: ClipboardList,
+    inputs: [
+      { id: "pga_activity", label: "PGA of Activity (PGA-A, 0-100mm VAS)", type: 'number', min: 0, max: 100, defaultValue: 0, validation: getValidationSchema('number',[],0,100) },
+      { id: "pga_damage", label: "PGA of Damage (PGA-D, 0-100mm VAS)", type: 'number', min: 0, max: 100, defaultValue: 0, validation: getValidationSchema('number',[],0,100) },
+      { id: "mrss_sum_affected", label: "mRSS Sum of Affected Sites (0-51 for full body, or sum of only affected sites)", type: 'number', min: 0, defaultValue: 0, description: "Sum of mRSS scores from affected sites.", validation: getValidationSchema('number',[],0) },
+      { id: "loscat_activity_score", label: "LoSCAT Activity Score (Calculated Externally)", type: 'number', min: 0, defaultValue: 0, description: "Enter the calculated LoSCAT activity score based on its specific items.", validation: getValidationSchema('number',[],0) },
+      { id: "loscat_damage_score", label: "LoSCAT Damage Score (Calculated Externally)", type: 'number', min: 0, defaultValue: 0, description: "Enter the calculated LoSCAT damage score based on its specific items.", validation: getValidationSchema('number',[],0) },
+    ],
+    calculationLogic: (inputs) => {
+      // LoSCAT typically results in multiple scores rather than one single summative score.
+      // The 'score' field here might represent the activity score for primary display.
+      const pgaA = Number(inputs.pga_activity) || 0;
+      const pgaD = Number(inputs.pga_damage) || 0;
+      const mrss = Number(inputs.mrss_sum_affected) || 0;
+      const loscatAct = Number(inputs.loscat_activity_score) || 0;
+      const loscatDam = Number(inputs.loscat_damage_score) || 0;
+
+      const score = loscatAct; // Using LoSCAT Activity as the primary score for display
+      const interpretation = `LoSCAT Assessment: 
+      PGA-Activity: ${pgaA}, PGA-Damage: ${pgaD}. 
+      mRSS (Affected Sites Sum): ${mrss}. 
+      LoSCAT Activity Score: ${loscatAct}, LoSCAT Damage Score: ${loscatDam}. 
+      Higher scores generally indicate greater activity or damage respectively.`;
+      
+      return { 
+        score, 
+        interpretation, 
+        details: {
+          PGA_Activity: pgaA,
+          PGA_Damage: pgaD,
+          mRSS_Affected_Sites_Sum: mrss,
+          LoSCAT_Activity_Score: loscatAct,
+          LoSCAT_Damage_Score: loscatDam
+        } 
+      };
+    },
+    references: ["Kelsey CE, Torok KS. The Localized Scleroderma Cutaneous Assessment Tool: responsiveness to change in a pediatric clinical population. J Rheumatol. 2013.", "Arkachaisri T, et al. Development and initial validation of the localized scleroderma skin damage index and physician global assessment of disease damage: a proof-of-concept study. Rheumatology (Oxford). 2010."]
+  },
+  {
+    id: "mswat",
+    name: "Modified Severity-Weighted Assessment Tool (mSWAT)",
+    acronym: "mSWAT",
+    condition: "Cutaneous T-Cell Lymphoma (CTCL)",
+    keywords: ["mswat", "ctcl", "mycosis fungoides", "sezary syndrome", "skin severity"],
+    description: "Assesses skin severity in Mycosis Fungoides (MF) and Sézary Syndrome (SS) by evaluating percentage of BSA involved by patches, plaques, and tumors/ulcers, with weighting factors.",
+    sourceType: 'Clinical Guideline',
+    icon: ShieldHalf,
+    inputs: [
+      { id: "total_mswat_score", label: "Total mSWAT Score (Pre-calculated)", type: 'number', min: 0, max: 400, defaultValue: 0, description: "Enter the total mSWAT score calculated from BSA involvement of patches (x1), plaques (x2), and tumors/ulcers (x4).", validation: getValidationSchema('number',[],0,400) }
+    ],
+    calculationLogic: (inputs) => {
+      const score = Number(inputs.total_mswat_score) || 0;
+      const interpretation = `mSWAT Score: ${score} (Range: 0-400). Higher score indicates greater skin tumor burden in CTCL. Used to monitor disease activity and treatment response.`;
+      return { 
+        score, 
+        interpretation, 
+        details: { 
+          User_Entered_mSWAT_Score: score 
+        } 
+      };
+    },
+    references: ["Olsen E, Whittaker S, Kim YH, et al. Clinical end points and response criteria in mycosis fungoides and Sézary syndrome: a consensus statement of the International Society for Cutaneous Lymphomas, the United States Cutaneous Lymphoma Consortium, and the Cutaneous Lymphoma Task Force of the European Organisation for Research and Treatment of Cancer. J Clin Oncol. 2011."]
   }
 ];
     
