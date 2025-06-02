@@ -6,13 +6,12 @@ import type { Tool } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Command,
-  CommandDialog,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from '@/components/ui/command'; // Standard ShadCN Command components
+import { Command as CommandPrimitive } from 'cmdk'; // Direct import from cmdk for the primitive input
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown, Search as SearchIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -35,7 +34,6 @@ export function HeaderToolSelector({
     return tools.find(tool => tool.id === selectedToolId)?.name || "Select a tool...";
   }, [tools, selectedToolId]);
 
-  // Group tools by condition for display in Command Group
   const groupedTools = useMemo(() => {
     return tools.reduce((acc, tool) => {
       const condition = tool.condition || 'Other';
@@ -63,7 +61,7 @@ export function HeaderToolSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[calc(100vw-2rem)] max-w-md md:w-[400px] lg:w-[500px] p-0" align="start">
-        <Command shouldFilter={false} // We handle filtering manually for grouping
+        <Command shouldFilter={false} 
         > 
           <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
             <SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
@@ -82,21 +80,21 @@ export function HeaderToolSelector({
                 tool.name.toLowerCase().includes(lowerSearchValue) ||
                 (tool.acronym && tool.acronym.toLowerCase().includes(lowerSearchValue)) ||
                 tool.condition.toLowerCase().includes(lowerSearchValue) ||
-                tool.keywords.some(keyword => keyword.toLowerCase().includes(lowerSearchValue))
+                (tool.keywords && tool.keywords.some(keyword => keyword.toLowerCase().includes(lowerSearchValue)))
               );
 
-              if (filteredTools.length === 0 && searchValue) return null; // Hide group if search term exists and no tools match in this group
+              if (filteredTools.length === 0 && searchValue) return null; 
 
               return (
                 <CommandGroup key={condition} heading={filteredTools.length > 0 ? condition : undefined}>
                   {filteredTools.map((tool) => (
                     <CommandItem
                       key={tool.id}
-                      value={tool.name} // CMDK uses this for its internal filtering if enabled, and for accessibility
+                      value={tool.name} 
                       onSelect={() => {
                         onSelectTool(tool.id);
                         setOpen(false);
-                        setSearchValue(''); // Clear search on select
+                        setSearchValue(''); 
                       }}
                       className="flex items-center justify-between"
                     >
@@ -122,7 +120,6 @@ export function HeaderToolSelector({
   );
 }
 
-// Minimal CommandPrimitiveInput for direct use, as CommandInput from ui/command has Search icon baked in
 const CommandPrimitiveInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
