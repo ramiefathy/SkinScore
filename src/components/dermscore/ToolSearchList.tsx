@@ -93,9 +93,12 @@ export function ToolSearchList({
               return (
                 <AccordionItem value={condition} key={condition}>
                   <AccordionTrigger className="text-sm font-medium hover:no-underline py-3">
-                    <div className="flex justify-between w-full items-center pr-1">
-                      <span className="truncate">{condition}</span>
-                      <span className="text-xs text-muted-foreground ml-2">({conditionTools.length})</span>
+                    {/* Changed items-center to items-start for better multiline alignment */}
+                    <div className="flex justify-between w-full items-start pr-1">
+                      {/* Removed truncate, added flex-1 and min-w-0 to allow wrapping */}
+                      <span className="flex-1 min-w-0 mr-2 text-left">{condition}</span>
+                      {/* Added whitespace-nowrap to keep count on one line */}
+                      <span className="text-xs text-muted-foreground ml-1 whitespace-nowrap">({conditionTools.length})</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
