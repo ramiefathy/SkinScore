@@ -8,16 +8,16 @@ import { ToolInfo } from '@/components/dermscore/ToolInfo';
 import { ToolForm } from '@/components/dermscore/ToolForm';
 import { ResultsDisplay } from '@/components/dermscore/ResultsDisplay';
 import { HeaderToolSelector } from '@/components/dermscore/HeaderToolSelector';
-import { CategoryToolDropdown } from '@/components/dermscore/CategoryToolDropdown'; // Import new component
+import { CategoryToolDropdown } from '@/components/dermscore/CategoryToolDropdown';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { FileText, Info, CheckSquare, LayoutGrid, Zap } from 'lucide-react';
 
 const MAX_RECENT_TOOLS = 3;
-const RECENT_TOOLS_STORAGE_KEY = 'dermscore_recently_used_tools';
+const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools';
 
-export default function DermScorePage() {
+export default function SkinScorePage() {
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -80,15 +80,15 @@ export default function DermScorePage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="bg-card border-b p-4 shadow-md sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between flex-wrap gap-x-4 gap-y-2"> {/* Added flex-wrap and gap-y */}
-            <div className="flex items-center gap-2 shrink-0"> {/* Logo and Title */}
+        <div className="container mx-auto flex items-center justify-between flex-wrap gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2 shrink-0">
                 <LayoutGrid className="h-8 w-8 text-primary" />
                 <div>
-                    <h1 className="text-3xl font-headline text-primary">DermScore</h1>
+                    <h1 className="text-3xl font-headline text-primary">SkinScore</h1>
                     <p className="text-xs text-muted-foreground">Clinical Scoring Tools</p>
                 </div>
             </div>
-            <div className="flex items-center gap-2 flex-1 justify-end min-w-[280px] sm:min-w-0"> {/* Tool Selectors Container, added flex-1 and min-w for small screens */}
+            <div className="flex items-center gap-2 flex-1 justify-end min-w-[280px] sm:min-w-0">
                 <CategoryToolDropdown tools={toolData} onSelectTool={handleToolSelect} />
                 <div className="flex-grow max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
                  <HeaderToolSelector
@@ -107,7 +107,7 @@ export default function DermScorePage() {
           {!selectedTool && (
             <Card className="shadow-xl border">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to DermScore</CardTitle>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to SkinScore</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-base leading-relaxed">
@@ -180,7 +180,7 @@ export default function DermScorePage() {
       </div>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">
-          DermScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
+          SkinScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
         </p>
       </footer>
     </div>

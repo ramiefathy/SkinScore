@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'DermScore - Dermatological Scoring Tools',
+  title: 'SkinScore - Dermatological Scoring Tools',
   description: 'A collection of dermatological scoring tools with local calculation.',
 };
 
