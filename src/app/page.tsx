@@ -173,7 +173,7 @@ export default function SkinScorePage() {
           
           <div id="results-section" className="pt-4">
             {calculationResult && selectedTool && (
-                <ResultsDisplay result={calculationResult} />
+                <ResultsDisplay result={calculationResult} tool={selectedTool} />
             )}
           </div>
         </main>
