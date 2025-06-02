@@ -1,36 +1,62 @@
 
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { toolData } from '@/lib/toolData';
 import type { Tool, CalculationResult } from '@/lib/types';
 import { ToolInfo } from '@/components/dermscore/ToolInfo';
 import { ToolForm } from '@/components/dermscore/ToolForm';
 import { ResultsDisplay } from '@/components/dermscore/ResultsDisplay';
 import { HeaderToolSelector } from '@/components/dermscore/HeaderToolSelector';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Info, CheckSquare, Settings, LayoutGrid } from 'lucide-react';
+import { FileText, Info, CheckSquare, Settings, LayoutGrid, Zap, Activity, SearchCheck as SearchCheckIconLucide } from 'lucide-react'; // Renamed SearchCheck to avoid conflict if Kbd uses it
+
+const MAX_RECENT_TOOLS = 3;
+const RECENT_TOOLS_STORAGE_KEY = 'dermscore_recently_used_tools';
 
 export default function DermScorePage() {
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedToolId, setSelectedToolId] = useState<string | null>(null);
   const [calculationResult, setCalculationResult] = useState<CalculationResult | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [recentlyUsedTools, setRecentlyUsedTools] = useState<string[]>([]);
 
   useEffect(() => {
     setIsClient(true);
+    if (typeof window !== 'undefined') {
+      const storedRecent = localStorage.getItem(RECENT_TOOLS_STORAGE_KEY);
+      if (storedRecent) {
+        setRecentlyUsedTools(JSON.parse(storedRecent));
+      }
+    }
   }, []);
 
   const selectedTool = useMemo(() => {
     return toolData.find(tool => tool.id === selectedToolId) || null;
   }, [selectedToolId]);
 
-  const handleToolSelect = (toolId: string) => {
+  const handleToolSelect = useCallback((toolId: string) => {
     setSelectedToolId(toolId);
-    setCalculationResult(null); 
-    // Close popover if search selector is in a popover - handled internally by HeaderToolSelector
-  };
+    setCalculationResult(null);
+
+    if (typeof window !== 'undefined') {
+      setRecentlyUsedTools(prevRecent => {
+        const updatedRecent = [toolId, ...prevRecent.filter(id => id !== toolId)].slice(0, MAX_RECENT_TOOLS);
+        localStorage.setItem(RECENT_TOOLS_STORAGE_KEY, JSON.stringify(updatedRecent));
+        return updatedRecent;
+      });
+    }
+
+    // Scroll to tool info smoothly
+    if (isClient) {
+        // Use a slight delay to ensure the new content is rendered before scrolling
+        setTimeout(() => {
+            const toolInfoElement = document.getElementById('tool-info-section');
+            toolInfoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }
+  }, [isClient]);
 
   const handleCalculate = (inputs: Record<string, any>) => {
     if (selectedTool && selectedTool.calculationLogic) {
@@ -44,6 +70,13 @@ export default function DermScorePage() {
   };
 
   const currentYear = useMemo(() => isClient ? new Date().getFullYear().toString() : '', [isClient]);
+
+  const popularTools: Tool[] = useMemo(() => {
+    const popularIds = ['pasi', 'dlqi', 'abcde_melanoma'];
+    return toolData.filter(tool => popularIds.includes(tool.id));
+  }, []);
+
+  const SelectedToolIcon = selectedTool?.icon;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -61,6 +94,7 @@ export default function DermScorePage() {
                     tools={toolData}
                     onSelectTool={handleToolSelect}
                     selectedToolId={selectedToolId}
+                    recentlyUsedToolIds={recentlyUsedTools}
                   />
             </div>
         </div>
@@ -73,13 +107,46 @@ export default function DermScorePage() {
               <CardHeader>
                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to DermScore</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-base leading-relaxed">
                   Search and select a dermatological scoring tool from the top bar to get started.
                   All calculations are performed locally in your browser, ensuring data privacy.
                 </p>
+                <Separator />
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-foreground/90">Popular Tools</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {popularTools.map(tool => {
+                      const ToolIcon = tool.icon || Zap; // Fallback icon
+                      return (
+                        <Button
+                          key={tool.id}
+                          variant="outline"
+                          className="justify-start h-auto py-3 px-4 text-left"
+                          onClick={() => handleToolSelect(tool.id)}
+                        >
+                          <ToolIcon className="h-5 w-5 mr-3 shrink-0 text-primary/80" />
+                          <div>
+                            <div className="font-medium text-foreground">{tool.name}</div>
+                            <div className="text-xs text-muted-foreground">{tool.condition}</div>
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
               </CardContent>
             </Card>
+          )}
+
+          {selectedTool && (
+             <div id="tool-info-section" className="space-y-1 mb-6 pt-2"> {/* Added pt-2 for scroll offset */}
+              <div className="flex items-center gap-3">
+                {SelectedToolIcon && <SelectedToolIcon className="h-10 w-10 text-primary" />}
+                <h2 className="text-4xl font-headline text-foreground">{selectedTool.name}</h2>
+              </div>
+              {selectedTool.acronym && <p className="text-lg text-muted-foreground ml-12 -mt-2">{selectedTool.acronym}</p>}
+            </div>
           )}
 
           {selectedTool && (

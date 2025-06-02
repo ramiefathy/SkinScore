@@ -8,7 +8,7 @@ import {
   BarChart, Sun, Eye, Scissors, HelpCircle, Hand, Type, FileHeart, ShieldQuestion, Zap,
   ScalingIcon, Gauge, Fingerprint, SlidersHorizontal, Shield, Atom, Dot, Waves, UserCog,
   HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, User, Footprints, Puzzle, CircleDot, Check, CloudDrizzle, Presentation,
-  Calendar, ZoomIn // Added ZoomIn
+  Calendar, ZoomIn, Clock // Added Clock
 } from 'lucide-react';
 import { z } from 'zod';
 import type { InputConfig, InputOption } from './types';
@@ -50,14 +50,13 @@ const pasiHeadAreaOptions: InputOption[] = Array.from({ length: 7 }, (_, i) => (
 const severityOptions0to4: InputOption[] = [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ];
 const areaOptions0to6: InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90-100%)"} ];
 
-// Define MASI multipliers and keys here for clarity and reuse
-const masiRegionMultiplierMap: Record<string, number> = {
+const masiRegionMultiplierMapData: Record<string, number> = {
   "forehead": 0.3,
   "right_malar": 0.3,
   "left_malar": 0.3,
   "chin": 0.1
 };
-type MasiRegionKey = keyof typeof masiRegionMultiplierMap;
+type MasiRegionKey = keyof typeof masiRegionMultiplierMapData;
 
 
 export const toolData: Tool[] = [
@@ -995,7 +994,7 @@ export const toolData: Tool[] = [
       { id:"masi_type", label:"MASI Type", type:"select", options:[{value:"masi",label:"MASI (includes Homogeneity)"},{value:"mmasi",label:"mMASI (excludes Homogeneity)"}], defaultValue:"masi", validation:getValidationSchema('select', [{value:"masi",label:"MASI"}])},
       ...(["Forehead", "Right Malar", "Left Malar", "Chin"] as const).flatMap(regionName => {
           const regionId = regionName.toLowerCase().replace(/\s+/g, '_') as MasiRegionKey;
-          const regionMultiplier = masiRegionMultiplierMap[regionId];
+          const regionMultiplier = masiRegionMultiplierMapData[regionId];
           const areaOptionsMASI: InputOption[] = Array.from({length:7}, (_,i)=>({value:i, label:`${i} (${["0%", "<10%", "10-29%", "30-49%", "50-69%", "70-89%", "90-100%"][i]})`}));
           const darknessHomogeneityOptions: InputOption[] = Array.from({length:5}, (_,i)=>({value:i, label:`${i} (${["None", "Slight", "Mild", "Moderate", "Marked"][i]})`}));
           return [
@@ -1010,10 +1009,10 @@ export const toolData: Tool[] = [
         let totalScore = 0;
         const regionDetails: Record<string, any> = {};
         const regions = [
-            {name:"Forehead", id:"forehead" as MasiRegionKey, multiplier: masiRegionMultiplierMap["forehead"]},
-            {name:"Right Malar", id:"right_malar" as MasiRegionKey, multiplier: masiRegionMultiplierMap["right_malar"]},
-            {name:"Left Malar", id:"left_malar" as MasiRegionKey, multiplier: masiRegionMultiplierMap["left_malar"]},
-            {name:"Chin", id:"chin" as MasiRegionKey, multiplier: masiRegionMultiplierMap["chin"]}
+            {name:"Forehead", id:"forehead" as MasiRegionKey, multiplier: masiRegionMultiplierMapData["forehead"]},
+            {name:"Right Malar", id:"right_malar" as MasiRegionKey, multiplier: masiRegionMultiplierMapData["right_malar"]},
+            {name:"Left Malar", id:"left_malar" as MasiRegionKey, multiplier: masiRegionMultiplierMapData["left_malar"]},
+            {name:"Chin", id:"chin" as MasiRegionKey, multiplier: masiRegionMultiplierMapData["chin"]}
         ];
         regions.forEach(r => {
             const A = Number(inputs[`${r.id}_area`])||0;
@@ -1818,30 +1817,32 @@ export const toolData: Tool[] = [
     keywords: ["bwat", "wound assessment", "ulcers", "pressure injury", "healing"],
     description: "A comprehensive tool for assessing and monitoring wound status. It consists of 13 items, each rated on a 1-5 scale (1=best, 5=worst).",
     sourceType: 'Clinical Guideline',
-    icon: ClipboardList,
+    icon: ClipboardList, // Or a specific wound icon if available
     inputs: [
       ...(["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"].map(itemName => {
-        const itemId = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_')}`;
+        const itemId = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`; // Sanitize ID
+        const itemOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1}` }));
         return {
           id: itemId,
           label: itemName.replace(/_/g, ' '),
           type: 'select' as 'select',
-          options: Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1}` })),
+          options: itemOptions,
           defaultValue: 3, // A mid-range default
-          description: "1=Best, 5=Worst",
-          validation: getValidationSchema('select', [], 1, 5)
+          description: "1=Best, 5=Worst. Refer to BWAT guide for specific item descriptions.",
+          validation: getValidationSchema('select', itemOptions, 1, 5)
         };
       }))
     ],
     calculationLogic: (inputs) => {
       let totalScore = 0;
       const itemScores: Record<string, number> = {};
-      const itemKeys = ["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"].map(name => `bwat_${name.toLowerCase().replace(/\s+/g, '_')}`);
+      const itemNames = ["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"];
       
-      itemKeys.forEach(key => {
-        const score = Number(inputs[key]) || 0;
+      itemNames.forEach(itemName => {
+        const key = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`;
+        const score = Number(inputs[key]) || 0; // Default to 0 if undefined, though validation should ensure 1-5
         totalScore += score;
-        itemScores[key.replace('bwat_', '').replace(/_/g, ' ')] = score;
+        itemScores[itemName.replace(/_/g, ' ')] = score;
       });
 
       const interpretation = `BWAT Score: ${totalScore} (Range: 13-65). Higher score indicates a worse wound status. Lower score indicates healing.`;
@@ -1857,7 +1858,7 @@ export const toolData: Tool[] = [
     keywords: ["fitzpatrick", "wrinkle", "elastosis", "photoaging", "skin aging"],
     description: "Classifies the degree of wrinkling and elastosis, often used in conjunction with Glogau scale.",
     sourceType: 'Research',
-    icon: User,
+    icon: User, // Consider an icon depicting wrinkles or aging skin
     inputs: [
       {
         id: "fitzpatrick_wrinkle_class",
@@ -1874,8 +1875,13 @@ export const toolData: Tool[] = [
     ],
     calculationLogic: (inputs) => {
       const score = inputs.fitzpatrick_wrinkle_class || "I";
-      const interpretation = `Fitzpatrick Wrinkle and Elastosis Scale: Class ${score}. This is a descriptive classification.`;
-      return { score, interpretation, details: { Selected_Class: score } };
+      const scoreToDescriptionMap: Record<string, string> = {
+          "I": "Class I: Fine wrinkles",
+          "II": "Class II: Fine to moderate depth wrinkles, moderate number of lines",
+          "III": "Class III: Fine to deep wrinkles, numerous lines, +/- redundant skin folds"
+      };
+      const interpretation = `Fitzpatrick Wrinkle and Elastosis Scale: ${scoreToDescriptionMap[score as string]}. This is a descriptive classification.`;
+      return { score, interpretation, details: { Selected_Class: scoreToDescriptionMap[score as string] } };
     },
     references: ["Fitzpatrick RE, Goldman MP, Satur NM, Tope WD. Pulsed carbon dioxide laser resurfacing of photo-aged facial skin. Arch Dermatol. 1996 Mar;132(3):395-402."]
   },
@@ -1905,8 +1911,14 @@ export const toolData: Tool[] = [
     ],
     calculationLogic: (inputs) => {
       const score = inputs.glogau_type || "I";
-      const interpretation = `Glogau Photoaging Classification: Type ${score}. This is a descriptive classification based on the level of wrinkling and makeup use.`;
-      return { score, interpretation, details: { Selected_Type: score } };
+       const scoreToDescriptionMap: Record<string, string> = {
+          "I": "Type I (Mild): No wrinkles, early photoaging, minimal or no makeup.",
+          "II": "Type II (Moderate): Wrinkles in motion, early to moderate photoaging, usually wears some makeup.",
+          "III": "Type III (Advanced): Wrinkles at rest, advanced photoaging, always wears makeup.",
+          "IV": "Type IV (Severe): Only wrinkles, severe photoaging, cannot wear makeup as it cakes and cracks."
+      };
+      const interpretation = `Glogau Photoaging Classification: ${scoreToDescriptionMap[score as string]}. This is a descriptive classification based on the level of wrinkling and makeup use.`;
+      return { score, interpretation, details: { Selected_Type: scoreToDescriptionMap[score as string] } };
     },
     references: ["Glogau RG. Aesthetic and anatomic analysis of the aging skin. Semin Cutan Med Surg. 1996 Sep;15(3):134-8."]
   },
@@ -1996,6 +2008,7 @@ export const toolData: Tool[] = [
 ];
     
     
+
 
 
 
