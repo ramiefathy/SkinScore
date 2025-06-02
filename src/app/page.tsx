@@ -8,10 +8,11 @@ import { ToolInfo } from '@/components/dermscore/ToolInfo';
 import { ToolForm } from '@/components/dermscore/ToolForm';
 import { ResultsDisplay } from '@/components/dermscore/ResultsDisplay';
 import { HeaderToolSelector } from '@/components/dermscore/HeaderToolSelector';
+import { CategoryToolDropdown } from '@/components/dermscore/CategoryToolDropdown'; // Import new component
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Info, CheckSquare, Settings, LayoutGrid, Zap, Activity, SearchCheck as SearchCheckIconLucide } from 'lucide-react'; // Renamed SearchCheck to avoid conflict if Kbd uses it
+import { FileText, Info, CheckSquare, LayoutGrid, Zap } from 'lucide-react';
 
 const MAX_RECENT_TOOLS = 3;
 const RECENT_TOOLS_STORAGE_KEY = 'dermscore_recently_used_tools';
@@ -48,9 +49,7 @@ export default function DermScorePage() {
       });
     }
 
-    // Scroll to tool info smoothly
     if (isClient) {
-        // Use a slight delay to ensure the new content is rendered before scrolling
         setTimeout(() => {
             const toolInfoElement = document.getElementById('tool-info-section');
             toolInfoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -81,21 +80,24 @@ export default function DermScorePage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="bg-card border-b p-4 shadow-md sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+        <div className="container mx-auto flex items-center justify-between flex-wrap gap-x-4 gap-y-2"> {/* Added flex-wrap and gap-y */}
+            <div className="flex items-center gap-2 shrink-0"> {/* Logo and Title */}
                 <LayoutGrid className="h-8 w-8 text-primary" />
                 <div>
                     <h1 className="text-3xl font-headline text-primary">DermScore</h1>
                     <p className="text-xs text-muted-foreground">Clinical Scoring Tools</p>
                 </div>
             </div>
-            <div className="flex-grow max-w-md md:max-w-lg lg:max-w-xl">
+            <div className="flex items-center gap-2 flex-1 justify-end min-w-[280px] sm:min-w-0"> {/* Tool Selectors Container, added flex-1 and min-w for small screens */}
+                <CategoryToolDropdown tools={toolData} onSelectTool={handleToolSelect} />
+                <div className="flex-grow max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
                  <HeaderToolSelector
                     tools={toolData}
                     onSelectTool={handleToolSelect}
                     selectedToolId={selectedToolId}
                     recentlyUsedToolIds={recentlyUsedTools}
                   />
+                </div>
             </div>
         </div>
       </header>
@@ -109,7 +111,7 @@ export default function DermScorePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-base leading-relaxed">
-                  Search and select a dermatological scoring tool from the top bar to get started.
+                  Browse categories or search for a dermatological scoring tool from the top bar to get started.
                   All calculations are performed locally in your browser, ensuring data privacy.
                 </p>
                 <Separator />
@@ -117,7 +119,7 @@ export default function DermScorePage() {
                   <h3 className="text-lg font-semibold mb-3 text-foreground/90">Popular Tools</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {popularTools.map(tool => {
-                      const ToolIcon = tool.icon || Zap; // Fallback icon
+                      const ToolIcon = tool.icon || Zap; 
                       return (
                         <Button
                           key={tool.id}
@@ -140,7 +142,7 @@ export default function DermScorePage() {
           )}
 
           {selectedTool && (
-             <div id="tool-info-section" className="space-y-1 mb-6 pt-2"> {/* Added pt-2 for scroll offset */}
+             <div id="tool-info-section" className="space-y-1 mb-6 pt-2"> 
               <div className="flex items-center gap-3">
                 {SelectedToolIcon && <SelectedToolIcon className="h-10 w-10 text-primary" />}
                 <h2 className="text-4xl font-headline text-foreground">{selectedTool.name}</h2>

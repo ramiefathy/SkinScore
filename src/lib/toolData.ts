@@ -4,11 +4,11 @@ import type { Tool } from './types';
 import {
   Calculator, Stethoscope, ClipboardList, Users, FileText, Pill,
   Users2, Thermometer, Scaling, Wind, AlignLeft, SquarePen, UserCheck, Activity,
-  CheckCircle, ListChecks, MessageSquare, FolderHeart, ShieldAlert, Brain,
+  CheckCircle, ListChecks, MessageSquare, FolderHeart, ShieldAlert, Brain, FolderKanban, // Added FolderKanban
   BarChart, Sun, Eye, Scissors, HelpCircle, Hand, Type, FileHeart, ShieldQuestion, Zap,
   ScalingIcon, Gauge, Fingerprint, SlidersHorizontal, Shield, Atom, Dot, Waves, UserCog,
   HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, User, Footprints, Puzzle, CircleDot, Check, CloudDrizzle, Presentation,
-  Calendar, ZoomIn, Clock // Added Clock
+  Calendar, ZoomIn, Clock, LayoutList // Added LayoutList
 } from 'lucide-react';
 import { z } from 'zod';
 import type { InputConfig, InputOption } from './types';
@@ -49,6 +49,7 @@ const pasiHeadAreaOptions: InputOption[] = Array.from({ length: 7 }, (_, i) => (
 
 const severityOptions0to4: InputOption[] = [ {value:0, label:"0-None"}, {value:1, label:"1-Slight/Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Marked/Severe"}, {value:4, label:"4-Very Severe"} ];
 const areaOptions0to6: InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90-100%)"} ];
+
 
 const masiRegionMultiplierMapData: Record<string, number> = {
   "forehead": 0.3,
@@ -1817,17 +1818,17 @@ export const toolData: Tool[] = [
     keywords: ["bwat", "wound assessment", "ulcers", "pressure injury", "healing"],
     description: "A comprehensive tool for assessing and monitoring wound status. It consists of 13 items, each rated on a 1-5 scale (1=best, 5=worst).",
     sourceType: 'Clinical Guideline',
-    icon: ClipboardList, // Or a specific wound icon if available
+    icon: ClipboardList,
     inputs: [
       ...(["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"].map(itemName => {
-        const itemId = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`; // Sanitize ID
+        const itemId = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`; 
         const itemOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1}` }));
         return {
           id: itemId,
           label: itemName.replace(/_/g, ' '),
           type: 'select' as 'select',
           options: itemOptions,
-          defaultValue: 3, // A mid-range default
+          defaultValue: 3, 
           description: "1=Best, 5=Worst. Refer to BWAT guide for specific item descriptions.",
           validation: getValidationSchema('select', itemOptions, 1, 5)
         };
@@ -1840,7 +1841,7 @@ export const toolData: Tool[] = [
       
       itemNames.forEach(itemName => {
         const key = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`;
-        const score = Number(inputs[key]) || 0; // Default to 0 if undefined, though validation should ensure 1-5
+        const score = Number(inputs[key]) || 0; 
         totalScore += score;
         itemScores[itemName.replace(/_/g, ' ')] = score;
       });
@@ -1858,7 +1859,7 @@ export const toolData: Tool[] = [
     keywords: ["fitzpatrick", "wrinkle", "elastosis", "photoaging", "skin aging"],
     description: "Classifies the degree of wrinkling and elastosis, often used in conjunction with Glogau scale.",
     sourceType: 'Research',
-    icon: User, // Consider an icon depicting wrinkles or aging skin
+    icon: User, 
     inputs: [
       {
         id: "fitzpatrick_wrinkle_class",
@@ -2008,6 +2009,7 @@ export const toolData: Tool[] = [
 ];
     
     
+
 
 
 
