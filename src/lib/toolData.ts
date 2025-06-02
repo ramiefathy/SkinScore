@@ -1557,11 +1557,7 @@ export const toolData: Tool[] = [
       const achieved = criterion1_reduction && criterion2_no_increase_A && criterion3_no_increase_DF;
       const score = achieved ? 1 : 0; // 1 for achieved, 0 for not achieved
 
-      const interpretation = `HiSCR: ${achieved ? "Achieved" : "Not Achieved"}. 
-      Criteria: 
-      1. ≥50% reduction in (Abscesses + Inflammatory Nodules) count: ${criterion1_reduction ? "Yes" : "No"} (${(reductionAIN * 100).toFixed(1)}% reduction).
-      2. No increase in Abscess count from baseline: ${criterion2_no_increase_A ? "Yes" : "No"}.
-      3. No increase in Draining Fistula count from baseline: ${criterion3_no_increase_DF ? "Yes" : "No"}.`;
+      const interpretation = `HiSCR: ${achieved ? "Achieved" : "Not Achieved"}. Criteria: 1. ≥50% reduction in (Abscesses + Inflammatory Nodules) count: ${criterion1_reduction ? "Yes" : "No"} (${(reductionAIN * 100).toFixed(1)}% reduction). 2. No increase in Abscess count from baseline: ${criterion2_no_increase_A ? "Yes" : "No"}. 3. No increase in Draining Fistula count from baseline: ${criterion3_no_increase_DF ? "Yes" : "No"}.`;
       
       return { 
         score, 
@@ -2005,10 +2001,290 @@ export const toolData: Tool[] = [
       return { score, interpretation, details: { User_Entered_Score: score } };
     },
     references: ["Various indices have been proposed, e.g., Behçet's Disease Current Activity Form (BDCAF) includes mucocutaneous items. No single universally adopted 'Mucocutaneous Index' is standard, often part of broader activity scores."]
+  },
+  // --- NEWLY ADDED TOOLS START HERE ---
+  {
+    id: "mfg_score",
+    name: "Ferriman-Gallwey Score (mFG)",
+    acronym: "mFG Score",
+    description: "Evaluates hirsutism in women by grading terminal hair growth in nine body areas.",
+    condition: "Hirsutism",
+    keywords: ["mfg", "ferriman-gallwey", "hirsutism", "hair growth", "women"],
+    sourceType: 'Clinical Guideline',
+    icon: Type, // Or Wind
+    inputs: [
+      ...(["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"].map(areaName => {
+        const areaId = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
+        const scoreOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${i === 0 ? 'Absent' : 'Minimal to Coarse/Dense'}` }));
+        return {
+          id: areaId,
+          label: `${areaName} Score (0-4)`,
+          type: 'select' as 'select',
+          options: scoreOptions,
+          defaultValue: 0,
+          description: "0=Absent, 1=Minimal, 2=Mild, 3=Moderate, 4=Severe terminal hair growth. Refer to mFG guide for specific visual anchors.",
+          validation: getValidationSchema('select', scoreOptions, 0, 4)
+        };
+      }))
+    ],
+    calculationLogic: (inputs) => {
+      let totalScore = 0;
+      const areaScores: Record<string, number> = {};
+      const areas = ["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"];
+      areas.forEach(areaName => {
+        const key = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
+        const score = Number(inputs[key]) || 0;
+        totalScore += score;
+        areaScores[areaName.replace(/\s+/g, '_')] = score;
+      });
+
+      let severityInterpretation = "";
+      if (totalScore < 8) severityInterpretation = "Normal hair growth or clinically insignificant hirsutism.";
+      else if (totalScore <= 15) severityInterpretation = "Mild hirsutism.";
+      else severityInterpretation = "Moderate to Severe hirsutism.";
+      
+      const interpretation = `mFG Score: ${totalScore} (Range: 0-36). ${severityInterpretation} A score of ≥8 is often used to define hirsutism.`;
+      return { score: totalScore, interpretation, details: areaScores };
+    },
+    references: ["Ferriman D, Gallwey JD. Clinical assessment of body hair growth in women. J Clin Endocrinol Metab. 1961;21:1440-7.", "Hatch R, Rosenfield RL, Kim MH, Tredway D. Hirsutism: implications, etiology, and management. Am J Obstet Gynecol. 1981;140(7):815-30. (Modified score popularization)"]
+  },
+  {
+    id: "ctcae_skin",
+    name: "CTCAE - Skin Toxicities",
+    acronym: "CTCAE Skin",
+    description: "Standardized grading of dermatologic Adverse Events (AEs) using the Common Terminology Criteria for Adverse Events.",
+    condition: "Adverse Drug Reactions",
+    keywords: ["ctcae", "skin toxicity", "adverse event", "drug reaction", "grading", "chemotherapy"],
+    sourceType: 'Clinical Guideline',
+    icon: ShieldQuestion, // ShieldAlert or ListChecks also good options
+    inputs: [
+      { id: "ae_term", label: "Adverse Event Term", type: 'text', placeholder: "e.g., Rash maculo-papular, Pruritus", validation: getValidationSchema('text') },
+      { 
+        id: "ctcae_grade", 
+        label: "CTCAE Grade (1-5)", 
+        type: 'select', 
+        options: [
+          { value: 1, label: "Grade 1: Mild" },
+          { value: 2, label: "Grade 2: Moderate; limiting instrumental ADL" },
+          { value: 3, label: "Grade 3: Severe or medically significant but not immediately life-threatening; limiting self care ADL" },
+          { value: 4, label: "Grade 4: Life-threatening consequences; urgent intervention indicated" },
+          { value: 5, label: "Grade 5: Death related to AE" }
+        ], 
+        defaultValue: 1,
+        description: "Refer to specific CTCAE term for detailed grading criteria.",
+        validation: getValidationSchema('select', [], 1, 5)
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const aeTerm = inputs.ae_term || "N/A";
+      const grade = Number(inputs.ctcae_grade) || 0;
+      const gradeMap: Record<number, string> = { 1: "Mild", 2: "Moderate", 3: "Severe", 4: "Life-threatening", 5: "Death" };
+      const interpretation = `CTCAE Grade for "${aeTerm}": Grade ${grade} (${gradeMap[grade] || "N/A"}). Refer to the official CTCAE manual for precise definitions for the specified AE term.`;
+      return { score: grade, interpretation, details: { Adverse_Event_Term: aeTerm, Grade_Description: gradeMap[grade] || "N/A" } };
+    },
+    references: ["National Cancer Institute (NCI). Common Terminology Criteria for Adverse Events (CTCAE). (Current version should be cited, e.g., v5.0, v6.0)"]
+  },
+  {
+    id: "bilag_skin",
+    name: "BILAG - Skin Component",
+    acronym: "BILAG Skin",
+    description: "Assesses lupus activity in the mucocutaneous domain as part of the British Isles Lupus Assessment Group index.",
+    condition: "Lupus",
+    keywords: ["bilag", "lupus", "sle", "skin", "mucocutaneous", "activity", "disease activity index"],
+    sourceType: 'Clinical Guideline',
+    icon: FileHeart,
+    inputs: [
+      { 
+        id: "bilag_skin_grade", 
+        label: "BILAG Mucocutaneous Grade", 
+        type: 'select', 
+        options: [
+          { value: "A", label: "A - Severe disease activity" },
+          { value: "B", label: "B - Moderate disease activity" },
+          { value: "C", label: "C - Mild disease activity" },
+          { value: "D", label: "D - Disease inactive but previous involvement" },
+          { value: "E", label: "E - Never involved" }
+        ], 
+        defaultValue: "E",
+        validation: getValidationSchema('select')
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const grade = inputs.bilag_skin_grade || "E";
+      // Numerical score for sorting/consistency: A=4 (most severe) to E=0 (least severe/never)
+      const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 };
+      const activityMap: Record<string, string> = { "A": "Severe", "B": "Moderate", "C": "Mild", "D": "Inactive (previous)", "E": "Never involved" };
+      const interpretation = `BILAG Skin Component Grade: ${grade} (${activityMap[grade] || "N/A"}). This reflects current lupus activity in the skin and mucous membranes.`;
+      return { score: scoreMap[grade] !== undefined ? scoreMap[grade] : 0, interpretation, details: { BILAG_Grade: grade, Activity_Level: activityMap[grade] || "N/A" } };
+    },
+    references: ["Hay EM, et al. Criteria for data collection and analysis in randomized clinical trials for systemic lupus erythematosus (SLE) I. The British Isles Lupus Assessment Group (BILAG) index for the assessment of SLE activity. Br J Rheumatol. 1993.", "Isenberg DA, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford). 2005."]
+  },
+  {
+    id: "sledai_skin",
+    name: "SLEDAI - Skin Descriptors",
+    acronym: "SLEDAI Skin",
+    description: "Scores specific skin manifestations as part of the Systemic Lupus Erythematosus Disease Activity Index (SLEDAI).",
+    condition: "Lupus",
+    keywords: ["sledai", "lupus", "sle", "skin descriptors", "disease activity", "rash", "alopecia", "mucosal ulcers", "vasculitis"],
+    sourceType: 'Clinical Guideline',
+    icon: FileHeart,
+    inputs: [
+      { id: "rash", label: "Rash (New/Recurrent inflammatory type - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "alopecia", label: "Alopecia (New/Recurrent abnormal, diffuse, or patchy hair loss - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "mucosal_ulcers", label: "Mucosal Ulcers (New/Recurrent oral or nasal - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "vasculitis", label: "Cutaneous Vasculitis (Ulceration, gangrene, tender nodules, purpura, splinter hemorrhages, periungual lesions - 8 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
+    ],
+    calculationLogic: (inputs) => {
+      let score = 0;
+      const details: Record<string, string> = {};
+      if (inputs.rash) { score += 4; details.Rash = "Present (4 pts)"; } else { details.Rash = "Absent (0 pts)"; }
+      if (inputs.alopecia) { score += 4; details.Alopecia = "Present (4 pts)"; } else { details.Alopecia = "Absent (0 pts)"; }
+      if (inputs.mucosal_ulcers) { score += 4; details.Mucosal_Ulcers = "Present (4 pts)"; } else { details.Mucosal_Ulcers = "Absent (0 pts)"; }
+      if (inputs.vasculitis) { score += 8; details.Cutaneous_Vasculitis = "Present (8 pts)"; } else { details.Cutaneous_Vasculitis = "Absent (0 pts)"; }
+      
+      const interpretation = `SLEDAI Skin Descriptors Score: ${score}. This score contributes to the total SLEDAI. Higher score indicates greater skin-related disease activity.`;
+      return { score, interpretation, details };
+    },
+    references: ["Bombardier C, et al. Derivation of the SLEDAI. A disease activity index for lupus patients. Arthritis Rheum. 1992.", "Gladman DD, et al. Systemic Lupus Erythematosus Disease Activity Index 2000. J Rheumatol. 2002."]
+  },
+  {
+    id: "bvas_skin",
+    name: "BVAS - Skin Component",
+    acronym: "BVAS Skin",
+    description: "Scores skin manifestations for the Birmingham Vasculitis Activity Score (BVAS).",
+    condition: "Vasculitis",
+    keywords: ["bvas", "vasculitis", "skin involvement", "activity score", "rash", "ulcer", "gangrene"],
+    sourceType: 'Clinical Guideline',
+    icon: HeartPulse,
+    inputs: [
+      { 
+        id: "rash_bvas", 
+        label: "Rash (Purpura, urticaria, other)", 
+        type: 'select', 
+        options: [
+          { value: 0, label: "0 - Absent" },
+          { value: 1, label: "1 - Persistent (present at this visit, but also at last visit without worsening)" },
+          { value: 3, label: "3 - New/Worse (new onset or definite worsening since last visit)" }
+        ], 
+        defaultValue: 0,
+        validation: getValidationSchema('select', [], 0, 3)
+      },
+      { id: "ulcer_bvas", label: "Skin Ulceration (non-digital, excluding major gangrene) (1 point if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "gangrene_bvas", label: "Major Digital Ischemia/Gangrene (6 points if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "other_skin_bvas", label: "Other Skin Lesions (e.g., nodules, livedo - 1 point if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
+    ],
+    calculationLogic: (inputs) => {
+      let score = 0;
+      const details: Record<string, string> = {};
+      const rashScore = Number(inputs.rash_bvas) || 0;
+      score += rashScore;
+      details.Rash = `Score ${rashScore}`;
+
+      if (inputs.ulcer_bvas) { score += 1; details.Skin_Ulceration = "Present (1 pt)"; } else { details.Skin_Ulceration = "Absent (0 pts)"; }
+      if (inputs.gangrene_bvas) { score += 6; details.Major_Digital_Ischemia_Gangrene = "Present (6 pts)"; } else { details.Major_Digital_Ischemia_Gangrene = "Absent (0 pts)"; }
+      if (inputs.other_skin_bvas) { score += 1; details.Other_Skin_Lesions = "Present (1 pt)"; } else { details.Other_Skin_Lesions = "Absent (0 pts)"; }
+      
+      const interpretation = `BVAS Skin Component Score: ${score}. This score contributes to the total BVAS. Higher score indicates greater skin-related vasculitis activity. (Note: Scoring assumes new/worse for checkbox items if checked).`;
+      return { score, interpretation, details };
+    },
+    references: ["Luqmani RA, et al. Birmingham Vasculitis Activity Score (BVAS) in systemic necrotizing vasculitis. QJM. 1994.", "Mukhtyar C, et al. Modification and validation of the Birmingham Vasculitis Activity Score (version 3). Ann Rheum Dis. 2009."]
+  },
+  {
+    id: "essdai_cutaneous",
+    name: "ESSDAI - Cutaneous Domain",
+    acronym: "ESSDAI Cutaneous",
+    description: "Scores the cutaneous domain of the EULAR Sjögren's Syndrome Disease Activity Index (ESSDAI).",
+    condition: "Sjögren's Syndrome",
+    keywords: ["essdai", "sjogren's syndrome", "cutaneous domain", "skin activity", "disease activity index"],
+    sourceType: 'Clinical Guideline',
+    icon: CloudDrizzle,
+    inputs: [
+      { 
+        id: "cutaneous_activity_level", 
+        label: "Cutaneous Domain Activity Level", 
+        type: 'select', 
+        options: [
+          { value: 0, label: "0 - No activity" },
+          { value: 1, label: "1 - Low activity (e.g., non-vasculitic purpura <2 sites, limited urticarial vasculitis)" },
+          { value: 2, label: "2 - Moderate activity (e.g., vasculitic purpura >2 sites or one major site, extensive urticarial vasculitis, cutaneous ulcers)" },
+          { value: 3, label: "3 - High activity (e.g., extensive/multiple skin ulcers, digital gangrene)" }
+        ], 
+        defaultValue: 0,
+        description: "Refer to ESSDAI definitions for specific criteria for each activity level.",
+        validation: getValidationSchema('select', [], 0, 3)
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const activityLevel = Number(inputs.cutaneous_activity_level) || 0;
+      const weightedScore = activityLevel * 2; // Cutaneous domain weight in ESSDAI is 2
+      const activityMap: Record<number, string> = { 0: "No activity", 1: "Low activity", 2: "Moderate activity", 3: "High activity" };
+
+      const interpretation = `ESSDAI Cutaneous Domain: Activity Level ${activityLevel} (${activityMap[activityLevel] || "N/A"}). Weighted Score contribution to total ESSDAI: ${weightedScore}.`;
+      return { score: weightedScore, interpretation, details: { Activity_Level: activityLevel, Level_Description: activityMap[activityLevel] || "N/A" } };
+    },
+    references: ["Seror R, et al. EULAR Sjogren's Syndrome Disease Activity Index (ESSDAI): a user guide. RMD Open. 2015.", "Shiboski CH, et al. American College of Rheumatology classification criteria for Sjögren's syndrome: a data-driven, expert consensus approach in the Sjögren's International Collaborative Clinical Alliance cohort. Arthritis Care Res (Hoboken). 2012. (ESSDAI is used in conjunction)."]
+  },
+  {
+    id: "scorten",
+    name: "SCORTEN",
+    acronym: "SCORTEN",
+    description: "A severity-of-illness score to predict mortality in patients with Stevens-Johnson Syndrome (SJS) or Toxic Epidermal Necrolysis (TEN).",
+    condition: "SJS/TEN",
+    keywords: ["scorten", "sjs", "ten", "stevens-johnson syndrome", "toxic epidermal necrolysis", "prognosis", "mortality", "drug reaction"],
+    sourceType: 'Clinical Guideline',
+    icon: ShieldAlert,
+    inputs: [
+      { id: "age_ge40", label: "Age ≥ 40 years", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "malignancy_present", label: "Associated malignancy (cancer)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "heart_rate_ge120", label: "Heart rate ≥ 120 beats/minute", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "bsa_gt10", label: "Initial percentage of body surface area (BSA) detachment > 10%", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "serum_urea_gt10", label: "Serum urea level > 10 mmol/L (or > 28 mg/dL)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "serum_bicarbonate_lt20", label: "Serum bicarbonate level < 20 mmol/L (or < 20 mEq/L)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+      { id: "serum_glucose_gt14", label: "Serum glucose level > 14 mmol/L (or > 252 mg/dL)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
+    ],
+    calculationLogic: (inputs) => {
+      let score = 0;
+      const details: Record<string, string> = {};
+      const factors = [
+        { key: "age_ge40", label: "Age ≥ 40 years" },
+        { key: "malignancy_present", label: "Malignancy present" },
+        { key: "heart_rate_ge120", label: "Heart rate ≥ 120/min" },
+        { key: "bsa_gt10", label: "BSA detachment > 10%" },
+        { key: "serum_urea_gt10", label: "Serum urea > 10 mmol/L" },
+        { key: "serum_bicarbonate_lt20", label: "Serum bicarbonate < 20 mmol/L" },
+        { key: "serum_glucose_gt14", label: "Serum glucose > 14 mmol/L" }
+      ];
+      factors.forEach(factor => {
+        if (inputs[factor.key]) {
+          score++;
+          details[factor.label] = "Present (1 pt)";
+        } else {
+          details[factor.label] = "Absent (0 pts)";
+        }
+      });
+
+      const mortalityMap: Record<number, string> = {
+        0: "3.2%", 1: "12.1%", 2: "35.3%", 3: "58.3%", 4: "Not well defined by original study, likely >58.3%", 5: ">90%", 6: ">90%", 7: ">90%"
+      };
+      // The original paper had 0-1, 2, 3, 4, >=5. We'll use a simplified map consistent with common representations.
+      // For scores >= 4, mortality is very high.
+      let mortalityPrediction = "Not defined / Very High";
+      if (score === 0 || score === 1) mortalityPrediction = "3.2% - 12.1%";
+      else if (score === 2) mortalityPrediction = "35.3%";
+      else if (score === 3) mortalityPrediction = "58.3%";
+      else if (score === 4) mortalityPrediction = "Risk likely higher than 58.3%"; // Often cited as >50% or higher
+      else if (score >= 5) mortalityPrediction = ">90%";
+
+
+      const interpretation = `SCORTEN: ${score} (Range: 0-7). Predicted mortality risk (approximate): ${mortalityPrediction}. This score helps estimate prognosis in SJS/TEN.`;
+      return { score, interpretation, details };
+    },
+    references: ["Bastuji-Garin S, et al. SCORTEN: a severity-of-illness score for toxic epidermal necrolysis. J Invest Dermatol. 2000 Aug;115(2):149-53."]
   }
 ];
     
     
+
 
 
 
