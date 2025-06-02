@@ -8,7 +8,7 @@ import {
   BarChart, Sun, Eye, Scissors, HelpCircle, Hand, Type, FileHeart, ShieldQuestion, Zap,
   ScalingIcon, Gauge, Fingerprint, SlidersHorizontal, Shield, Atom, Dot, Waves, UserCog,
   HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, User, Footprints, Puzzle, CircleDot, Check, CloudDrizzle, Presentation,
-  Calendar
+  Calendar, ZoomIn // Added ZoomIn
 } from 'lucide-react';
 import { z } from 'zod';
 import type { InputConfig, InputOption } from './types';
@@ -1653,7 +1653,7 @@ export const toolData: Tool[] = [
         interpretation, 
         details: { 
           Selected_Grade_Description: gradeMap[grade] || "N/A" 
-        }
+        } 
       };
     },
     references: ["Various versions used in clinical trials for rosacea treatments. Example: Fowler J, et al. Efficacy and safety of once-daily ivermectin 1% cream in treatment of papulopustular rosacea: results of two randomized, double-blind, vehicle-controlled pivotal studies. J Drugs Dermatol. 2014."]
@@ -1750,11 +1750,7 @@ export const toolData: Tool[] = [
       const loscatDam = Number(inputs.loscat_damage_score) || 0;
 
       const score = loscatAct; // Using LoSCAT Activity as the primary score for display
-      const interpretation = `LoSCAT Assessment: 
-      PGA-Activity: ${pgaA}, PGA-Damage: ${pgaD}. 
-      mRSS (Affected Sites Sum): ${mrss}. 
-      LoSCAT Activity Score: ${loscatAct}, LoSCAT Damage Score: ${loscatDam}. 
-      Higher scores generally indicate greater activity or damage respectively.`;
+      const interpretation = `LoSCAT Assessment: PGA-Activity: ${pgaA}, PGA-Damage: ${pgaD}. mRSS (Affected Sites Sum): ${mrss}. LoSCAT Activity Score: ${loscatAct}, LoSCAT Damage Score: ${loscatDam}. Higher scores generally indicate greater activity or damage respectively.`;
       
       return { 
         score, 
@@ -1794,9 +1790,212 @@ export const toolData: Tool[] = [
       };
     },
     references: ["Olsen E, Whittaker S, Kim YH, et al. Clinical end points and response criteria in mycosis fungoides and Sézary syndrome: a consensus statement of the International Society for Cutaneous Lymphomas, the United States Cutaneous Lymphoma Consortium, and the Cutaneous Lymphoma Task Force of the European Organisation for Research and Treatment of Cancer. J Clin Oncol. 2011."]
+  },
+  {
+    id: "regiscar_dress",
+    name: "RegiSCAR DRESS Severity Score",
+    acronym: "DRESS Score",
+    condition: "DRESS Syndrome",
+    keywords: ["dress", "regiscar", "drug reaction", "eosinophilia", "systemic symptoms", "severity"],
+    description: "Assesses the severity of Drug Reaction with Eosinophilia and Systemic Symptoms (DRESS) syndrome. This tool accepts a pre-calculated score.",
+    sourceType: 'Clinical Guideline',
+    icon: ShieldAlert,
+    inputs: [
+      { id: "regiscar_score", label: "Total DRESS Score (RegiSCAR)", type: 'number', defaultValue: 0, description: "Enter the pre-calculated RegiSCAR DRESS score.", validation: getValidationSchema('number') }
+    ],
+    calculationLogic: (inputs) => {
+      const score = Number(inputs.regiscar_score) || 0;
+      const interpretation = `RegiSCAR DRESS Severity Score: ${score}. Higher score generally indicates more severe DRESS syndrome. Specific interpretation bands may vary based on the exact RegiSCAR criteria version used.`;
+      return { score, interpretation, details: { User_Entered_Score: score } };
+    },
+    references: ["Kardaun SH, et al. Variability in the clinical pattern of drug-induced hypersensitivity syndrome (DIHS)/drug reaction with eosinophilia and systemic symptoms (DRESS). Br J Dermatol. 2007.", "Kardaun SH, Sidoroff A, Valeyrie-Allanore L, et al. Variability in the clinical pattern of cutaneous side effects of drugs with systemic symptoms: does a DRESS score mirror severity of illness? Br J Dermatol. 2007. (Later work refined scoring)."]
+  },
+  {
+    id: "bwat",
+    name: "Bates-Jensen Wound Assessment Tool (BWAT)",
+    acronym: "BWAT",
+    condition: "Wound Healing",
+    keywords: ["bwat", "wound assessment", "ulcers", "pressure injury", "healing"],
+    description: "A comprehensive tool for assessing and monitoring wound status. It consists of 13 items, each rated on a 1-5 scale (1=best, 5=worst).",
+    sourceType: 'Clinical Guideline',
+    icon: ClipboardList,
+    inputs: [
+      ...(["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"].map(itemName => {
+        const itemId = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_')}`;
+        return {
+          id: itemId,
+          label: itemName.replace(/_/g, ' '),
+          type: 'select' as 'select',
+          options: Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1}` })),
+          defaultValue: 3, // A mid-range default
+          description: "1=Best, 5=Worst",
+          validation: getValidationSchema('select', [], 1, 5)
+        };
+      }))
+    ],
+    calculationLogic: (inputs) => {
+      let totalScore = 0;
+      const itemScores: Record<string, number> = {};
+      const itemKeys = ["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"].map(name => `bwat_${name.toLowerCase().replace(/\s+/g, '_')}`);
+      
+      itemKeys.forEach(key => {
+        const score = Number(inputs[key]) || 0;
+        totalScore += score;
+        itemScores[key.replace('bwat_', '').replace(/_/g, ' ')] = score;
+      });
+
+      const interpretation = `BWAT Score: ${totalScore} (Range: 13-65). Higher score indicates a worse wound status. Lower score indicates healing.`;
+      return { score: totalScore, interpretation, details: itemScores };
+    },
+    references: ["Bates-Jensen BM. The Pressure Sore Status Tool a few thousand assessments later. Adv Wound Care. 1997.", "Harris C, Bates-Jensen B, Parslow N, et al. Bates-Jensen Wound Assessment Tool: pictorial guide validation. J Wound Ostomy Continence Nurs. 2010."]
+  },
+  {
+    id: "fitzpatrick_wrinkle",
+    name: "Fitzpatrick Wrinkle and Elastosis Scale",
+    acronym: "Fitz Wrinkle Scale",
+    condition: "Photoaging",
+    keywords: ["fitzpatrick", "wrinkle", "elastosis", "photoaging", "skin aging"],
+    description: "Classifies the degree of wrinkling and elastosis, often used in conjunction with Glogau scale.",
+    sourceType: 'Research',
+    icon: User,
+    inputs: [
+      {
+        id: "fitzpatrick_wrinkle_class",
+        label: "Select Fitzpatrick Wrinkle Class",
+        type: 'select',
+        options: [
+          { value: "I", label: "Class I: Fine wrinkles" },
+          { value: "II", label: "Class II: Fine to moderate depth wrinkles, moderate number of lines" },
+          { value: "III", label: "Class III: Fine to deep wrinkles, numerous lines, +/- redundant skin folds" }
+        ],
+        defaultValue: "I",
+        validation: getValidationSchema('select')
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const score = inputs.fitzpatrick_wrinkle_class || "I";
+      const interpretation = `Fitzpatrick Wrinkle and Elastosis Scale: Class ${score}. This is a descriptive classification.`;
+      return { score, interpretation, details: { Selected_Class: score } };
+    },
+    references: ["Fitzpatrick RE, Goldman MP, Satur NM, Tope WD. Pulsed carbon dioxide laser resurfacing of photo-aged facial skin. Arch Dermatol. 1996 Mar;132(3):395-402."]
+  },
+  {
+    id: "glogau_photoaging",
+    name: "Glogau Photoaging Classification",
+    acronym: "Glogau Scale",
+    condition: "Photoaging",
+    keywords: ["glogau", "photoaging", "skin aging", "wrinkles"],
+    description: "Categorizes the severity of photoaging based on wrinkling and other clinical signs.",
+    sourceType: 'Research',
+    icon: Sun,
+    inputs: [
+      {
+        id: "glogau_type",
+        label: "Select Glogau Classification Type",
+        type: 'select',
+        options: [
+          { value: "I", label: "Type I (Mild): No wrinkles, early photoaging, minimal or no makeup." },
+          { value: "II", label: "Type II (Moderate): Wrinkles in motion, early to moderate photoaging, usually wears some makeup." },
+          { value: "III", label: "Type III (Advanced): Wrinkles at rest, advanced photoaging, always wears makeup." },
+          { value: "IV", label: "Type IV (Severe): Only wrinkles, severe photoaging, cannot wear makeup as it cakes and cracks." }
+        ],
+        defaultValue: "I",
+        validation: getValidationSchema('select')
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const score = inputs.glogau_type || "I";
+      const interpretation = `Glogau Photoaging Classification: Type ${score}. This is a descriptive classification based on the level of wrinkling and makeup use.`;
+      return { score, interpretation, details: { Selected_Type: score } };
+    },
+    references: ["Glogau RG. Aesthetic and anatomic analysis of the aging skin. Semin Cutan Med Surg. 1996 Sep;15(3):134-8."]
+  },
+  {
+    id: "nailfold_capillaroscopy",
+    name: "Nailfold Capillaroscopy Patterns (SSc)",
+    acronym: "NFC Patterns",
+    condition: "Systemic Sclerosis",
+    keywords: ["nailfold capillaroscopy", "ssc", "systemic sclerosis", "microangiopathy", "scleroderma pattern"],
+    description: "Identifies specific patterns in nailfold capillaries associated with Systemic Sclerosis (SSc) and other connective tissue diseases.",
+    sourceType: 'Research',
+    icon: ZoomIn,
+    inputs: [
+      {
+        id: "nfc_pattern",
+        label: "Identified Nailfold Capillaroscopy Pattern",
+        type: 'select',
+        options: [
+          { value: "Normal", label: "Normal Pattern" },
+          { value: "Non-specific", label: "Non-specific abnormalities (not SSc pattern)" },
+          { value: "SSc Early", label: "SSc Pattern - Early (e.g., few giant capillaries, few hemorrhages, no severe loss of capillaries, preserved architecture)" },
+          { value: "SSc Active", label: "SSc Pattern - Active (e.g., frequent giant capillaries, frequent hemorrhages, moderate loss of capillaries, mild disorganization)" },
+          { value: "SSc Late", label: "SSc Pattern - Late (e.g., irregular enlargement of capillaries, extensive avascular areas, severe disorganization, neoangiogenesis)" }
+        ],
+        defaultValue: "Normal",
+        validation: getValidationSchema('select')
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const score = inputs.nfc_pattern || "Normal";
+      const interpretation = `Nailfold Capillaroscopy Pattern: ${score}. This classification helps in diagnosing and prognosticating SSc and related conditions.`;
+      return { score, interpretation, details: { Identified_Pattern: score } };
+    },
+    references: ["Cutolo M, Sulli A, Pizzorni C, Accardo S. Nailfold videocapillaroscopy in systemic sclerosis: correlations with serum autoantibodies and disease activity. Rheumatology (Oxford). 2000.", "Ingegnoli F, et al. Nailfold capillaroscopy in systemic sclerosis: data from the EULAR Scleroderma Trials and Research group (EUSTAR) database. Ann Rheum Dis. 2013 Aug;72(8):1347-53."]
+  },
+  {
+    id: "nih_gvhd_skin",
+    name: "NIH Chronic GVHD Skin Score",
+    acronym: "NIH cGVHD Skin",
+    condition: "GVHD (Graft-Versus-Host Disease)",
+    keywords: ["gvhd", "chronic gvhd", "skin score", "nih consensus", "transplant"],
+    description: "Standardized assessment of skin involvement in chronic Graft-Versus-Host Disease (cGVHD) based on NIH consensus criteria.",
+    sourceType: 'Clinical Guideline',
+    icon: Shield,
+    inputs: [
+      {
+        id: "nih_skin_score",
+        label: "Overall NIH Skin Score (cGVHD)",
+        type: 'select',
+        options: [
+          { value: 0, label: "0 - No signs of cGVHD in skin." },
+          { value: 1, label: "1 - Mild: ≤18% BSA erythematous rash OR morpheaform/lichen planus-like features involving ≤18% BSA without joint restriction." },
+          { value: 2, label: "2 - Moderate: >18% BSA erythematous rash OR morpheaform/lichen planus-like features involving >18% BSA OR any BSA % with joint restriction in 1-2 joint areas." },
+          { value: 3, label: "3 - Severe: Generalized erythroderma OR morpheaform/lichen planus-like features with joint restriction in ≥3 joint areas or severe functional impairment." }
+        ],
+        defaultValue: 0,
+        validation: getValidationSchema('select',[],0,3)
+      }
+    ],
+    calculationLogic: (inputs) => {
+      const score = Number(inputs.nih_skin_score);
+      const scoreMap: Record<number, string> = { 0: "None", 1: "Mild", 2: "Moderate", 3: "Severe" };
+      const interpretation = `NIH cGVHD Skin Score: ${score} (${scoreMap[score] || 'N/A'}). This score reflects the severity of cutaneous chronic GVHD.`;
+      return { score, interpretation, details: { Severity_Grade: scoreMap[score] || 'N/A' } };
+    },
+    references: ["Filipovich AH, et al. National Institutes of Health consensus development project on criteria for clinical trials in chronic graft-versus-host disease: I. Diagnosis and staging working group report. Biol Blood Marrow Transplant. 2005.", "Jagasia MH, et al. National Institutes of Health Consensus Development Project on Criteria for Clinical Trials in Chronic Graft-versus-Host Disease: I. The 2014 Diagnosis and Staging Working Group report. Biol Blood Marrow Transplant. 2015."]
+  },
+  {
+    id: "behcet_mucocutaneous",
+    name: "Behçet's Disease Mucocutaneous Index (Simplified)",
+    acronym: "BD Muco Index",
+    condition: "Behçet's Disease",
+    keywords: ["behcet", "mucocutaneous", "activity index", "oral ulcers", "genital ulcers", "skin lesions"],
+    description: "Assesses mucocutaneous activity in Behçet's Disease. This is a simplified representation; various indices exist. This tool accepts a pre-calculated activity score.",
+    sourceType: 'Research',
+    icon: MessageSquare,
+    inputs: [
+      { id: "bd_activity_score", label: "Mucocutaneous Activity Score", type: 'number', defaultValue: 0, description: "Enter pre-calculated score based on specific index criteria (e.g., presence/number of oral ulcers, genital ulcers, skin lesions).", validation: getValidationSchema('number') }
+    ],
+    calculationLogic: (inputs) => {
+      const score = Number(inputs.bd_activity_score) || 0;
+      const interpretation = `Behçet's Disease Mucocutaneous Activity Score: ${score}. Higher score indicates greater mucocutaneous activity. Interpretation depends on the specific index used.`;
+      return { score, interpretation, details: { User_Entered_Score: score } };
+    },
+    references: ["Various indices have been proposed, e.g., Behçet's Disease Current Activity Form (BDCAF) includes mucocutaneous items. No single universally adopted 'Mucocutaneous Index' is standard, often part of broader activity scores."]
   }
 ];
     
     
+
 
 
