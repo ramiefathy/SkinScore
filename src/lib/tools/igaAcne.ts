@@ -23,8 +23,7 @@ export const igaAcneTool: Tool = {
       const currentGrade = Number(inputs.current_iga_grade);
       const baselineGrade = Number(inputs.baseline_iga_grade);
       let treatmentSuccess = "N/A";
-      const gradeMap: Record<number, string> = {};
-      gradeMap[-1] = "N/A";
+      const gradeMap: Record<number, string> = {"-1":"N/A"};
       igaAcneGradeOptions.forEach(opt => gradeMap[opt.value as number] = String(opt.label).substring(String(opt.label).indexOf("- ") + 2));
 
 
