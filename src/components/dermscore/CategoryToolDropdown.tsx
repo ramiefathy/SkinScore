@@ -3,6 +3,7 @@
 
 import React, { useMemo } from 'react';
 import type { Tool } from '@/lib/types';
+import { toolData as allTools } from '@/lib/tools'; // Ensure this path is correct after refactor
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,16 +17,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LayoutList, FolderKanban } from 'lucide-react'; // Added FolderKanban as a category icon
+import { ChevronDown, LayoutList, FolderKanban } from 'lucide-react';
 
 interface CategoryToolDropdownProps {
-  tools: Tool[];
+  tools: Tool[]; // This prop might become redundant if we always use allTools
   onSelectTool: (toolId: string) => void;
 }
 
 export function CategoryToolDropdown({ tools, onSelectTool }: CategoryToolDropdownProps) {
   const groupedTools = useMemo(() => {
-    return tools.reduce((acc, tool) => {
+    return allTools.reduce((acc, tool) => { // Using allTools directly
       const condition = tool.condition || 'Other';
       if (!acc[condition]) {
         acc[condition] = [];
@@ -33,9 +34,8 @@ export function CategoryToolDropdown({ tools, onSelectTool }: CategoryToolDropdo
       acc[condition].push(tool);
       return acc;
     }, {} as Record<string, Tool[]>);
-  }, [tools]);
+  }, []); // Removed 'tools' from dependency array as we use 'allTools'
 
-  // Sort categories alphabetically
   const sortedCategories = useMemo(() => {
     return Object.entries(groupedTools).sort((a, b) => a[0].localeCompare(b[0]));
   }, [groupedTools]);
@@ -60,7 +60,7 @@ export function CategoryToolDropdown({ tools, onSelectTool }: CategoryToolDropdo
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
               {conditionTools
-                .sort((a, b) => a.name.localeCompare(b.name)) // Sort tools within category
+                .sort((a, b) => a.name.localeCompare(b.name))
                 .map((tool) => {
                   const ToolIcon = tool.icon;
                   return (

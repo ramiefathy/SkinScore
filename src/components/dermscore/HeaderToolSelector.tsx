@@ -3,31 +3,32 @@
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { Tool } from '@/lib/types';
+import { toolData as allTools } from '@/lib/tools'; // Ensure this path is correct after refactor
 import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput, 
+  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { Command as CommandPrimitive } from 'cmdk'; 
+import { Command as CommandPrimitive } from 'cmdk';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Kbd } from '@/components/ui/kbd';
 import { Check, Search as SearchIcon, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderToolSelectorProps {
-  tools: Tool[];
+  tools: Tool[]; // This prop might become redundant
   onSelectTool: (toolId: string) => void;
   selectedToolId: string | null;
   recentlyUsedToolIds: string[];
 }
 
 export function HeaderToolSelector({
-  tools,
+  tools, // Kept for now, but logic uses allTools
   onSelectTool,
   selectedToolId,
   recentlyUsedToolIds,
@@ -37,12 +38,12 @@ export function HeaderToolSelector({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectedToolName = useMemo(() => {
-    return tools.find(tool => tool.id === selectedToolId)?.name || "Select a tool...";
-  }, [tools, selectedToolId]);
+    return allTools.find(tool => tool.id === selectedToolId)?.name || "Select a tool...";
+  }, [selectedToolId]); // Removed allTools dependency as it's stable
 
   const groupedTools = useMemo(() => {
-    if (searchValue) return {}; 
-    return tools.reduce((acc, tool) => {
+    if (searchValue) return {};
+    return allTools.reduce((acc, tool) => {
       const condition = tool.condition || 'Other';
       if (!acc[condition]) {
         acc[condition] = [];
@@ -50,24 +51,24 @@ export function HeaderToolSelector({
       acc[condition].push(tool);
       return acc;
     }, {} as Record<string, Tool[]>);
-  }, [tools, searchValue]);
+  }, [searchValue]); // Removed allTools dependency
 
   const filteredTools = useMemo(() => {
-    if (!searchValue) return []; 
+    if (!searchValue) return [];
     const lowerSearchValue = searchValue.toLowerCase();
-    return tools.filter(tool =>
+    return allTools.filter(tool =>
       tool.name.toLowerCase().includes(lowerSearchValue) ||
       (tool.acronym && tool.acronym.toLowerCase().includes(lowerSearchValue)) ||
       tool.condition.toLowerCase().includes(lowerSearchValue) ||
       (tool.keywords && tool.keywords.some(keyword => keyword.toLowerCase().includes(lowerSearchValue)))
     );
-  }, [tools, searchValue]);
+  }, [searchValue]); // Removed allTools dependency
 
   const recentToolsFull = useMemo(() => {
     return recentlyUsedToolIds
-      .map(id => tools.find(tool => tool.id === id))
+      .map(id => allTools.find(tool => tool.id === id))
       .filter(Boolean) as Tool[];
-  }, [recentlyUsedToolIds, tools]);
+  }, [recentlyUsedToolIds]); // Removed allTools dependency
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -84,13 +85,13 @@ export function HeaderToolSelector({
     };
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, []); // Removed setOpen from dependency array as it's a stable setState function
+  }, []);
 
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 100);
     } else {
-      setSearchValue(''); 
+      setSearchValue('');
     }
   }, [open]);
 
@@ -134,7 +135,7 @@ export function HeaderToolSelector({
           </div>
           <CommandList className="max-h-[400px]">
             <CommandEmpty>{searchValue ? "No tool found." : "Type to search..."}</CommandEmpty>
-            
+
             {!searchValue && recentToolsFull.length > 0 && (
               <CommandGroup heading={
                 <div className="flex items-center text-xs font-medium text-muted-foreground px-2 py-1.5">
@@ -185,16 +186,16 @@ export function HeaderToolSelector({
               </CommandItem>
             ))}
 
-            {!searchValue && Object.entries(groupedTools).map(([condition, conditionTools]) => (
-              <CommandGroup 
-                key={condition} 
+            {!searchValue && Object.entries(groupedTools).sort((a, b) => a[0].localeCompare(b[0])).map(([condition, conditionTools]) => (
+              <CommandGroup
+                key={condition}
                 heading={
                     <div className="text-xs font-semibold text-foreground/80 px-2 py-1.5 border-b border-border/50 my-1 first:mt-0">
                         {condition}
                     </div>
                 }
               >
-                {conditionTools.map((tool) => (
+                {conditionTools.sort((a,b) => a.name.localeCompare(b.name)).map((tool) => (
                   <CommandItem
                     key={tool.id}
                     value={`${tool.name} ${tool.acronym || ''} ${tool.condition}`}
@@ -236,4 +237,3 @@ const CommandPrimitiveInput = React.forwardRef<
   />
 ));
 CommandPrimitiveInput.displayName = "CommandPrimitiveInput";
-

@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { toolData } from '@/lib/toolData';
+import { toolData } from '@/lib/tools'; // Updated import path
 import type { Tool, CalculationResult } from '@/lib/types';
 import { ToolInfo } from '@/components/dermscore/ToolInfo';
 import { ToolForm } from '@/components/dermscore/ToolForm';
@@ -119,7 +120,7 @@ export default function SkinScorePage() {
                   <h3 className="text-lg font-semibold mb-3 text-foreground/90">Popular Tools</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {popularTools.map(tool => {
-                      const ToolIcon = tool.icon || Zap; 
+                      const ToolIcon = tool.icon || Zap;
                       return (
                         <Button
                           key={tool.id}
@@ -142,7 +143,7 @@ export default function SkinScorePage() {
           )}
 
           {selectedTool && (
-             <div id="tool-info-section" className="space-y-1 mb-6 pt-2"> 
+             <div id="tool-info-section" className="space-y-1 mb-6 pt-2">
               <div className="flex items-center gap-3">
                 {SelectedToolIcon && <SelectedToolIcon className="h-10 w-10 text-primary" />}
                 <h2 className="text-4xl font-headline text-foreground">{selectedTool.name}</h2>
@@ -170,7 +171,7 @@ export default function SkinScorePage() {
               <ToolForm tool={selectedTool} onCalculate={handleCalculate} />
             </Card>
           )}
-          
+
           <div id="results-section" className="pt-4">
             {calculationResult && selectedTool && (
                 <ResultsDisplay result={calculationResult} tool={selectedTool} />
