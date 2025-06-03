@@ -61,7 +61,7 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                   className={error ? 'border-destructive' : ''}
                 />
               )}
-              {type === 'text' && ( 
+              {type === 'text' && (
                 <Textarea
                   {...field}
                   value={field.value ?? ''}
@@ -86,7 +86,10 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                   </SelectTrigger>
                   <SelectContent>
                     {options.map((option) => (
-                      <SelectItem key={String(option.value)} value={String(option.value)}>
+                      <SelectItem
+                        key={`${inputConfig.id}-${String(option.value)}-${option.label}`}
+                        value={String(option.value)}
+                      >
                         {option.label}
                       </SelectItem>
                     ))}
@@ -96,10 +99,10 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
               {type === 'checkbox' && (
                 <div className="flex items-center space-x-2 pt-2">
                   <Checkbox
-                    {...field} 
+                    {...field}
                     checked={!!field.value}
                     onCheckedChange={field.onChange}
-                    id={field.name} 
+                    id={field.name}
                   />
                    <Label htmlFor={field.name} className="text-sm font-normal cursor-pointer">
                    </Label>
@@ -107,13 +110,16 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
               )}
               {type === 'radio' && options && (
                 <RadioGroup
-                  {...field} 
-                  onValueChange={field.onChange} 
+                  {...field}
+                  onValueChange={field.onChange}
                   value={field.value !== null && field.value !== undefined ? String(field.value) : ''}
                   className="flex flex-col space-y-1 pt-1"
                 >
                   {options.map((option) => (
-                    <FormItem key={String(option.value)} className="flex items-center space-x-3 space-y-0">
+                    <FormItem
+                      key={`${inputConfig.id}-${String(option.value)}-${option.label}`}
+                      className="flex items-center space-x-3 space-y-0"
+                    >
                       <FormControl>
                         <RadioGroupItem value={String(option.value)} id={`${field.name}-${option.value}`} />
                       </FormControl>
@@ -132,7 +138,7 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
             </div>
           </FormControl>
           {/* Give FormMessage a minimum height to contribute to consistent row height, even if empty */}
-          <FormMessage className="text-xs min-h-[1rem]" /> 
+          <FormMessage className="text-xs min-h-[1rem]" />
         </FormItem>
       )}
     />
