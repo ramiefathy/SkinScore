@@ -131,38 +131,6 @@ ctcaeAdverseEventOptions.push({value: "Other", label: "Other (Specify in notes/r
 
 
 export const toolData: Tool[] = [
-  // Existing tools from original file (slightly updated for consistency if needed)
-  {
-    id: 'pasi-simplified',
-    name: 'Simplified Psoriasis Area and Severity Index',
-    acronym: 'PASI',
-    description: 'A tool to assess the severity and extent of psoriasis by evaluating erythema, induration, desquamation, and area of involvement across four body regions. This is a simplified version for demonstration.',
-    condition: 'Psoriasis',
-    keywords: ['pasi', 'psoriasis', 'severity', 'skin', 'index', 'erythema', 'induration', 'desquamation'],
-    sourceType: 'Research',
-    icon: Stethoscope,
-    inputs: [
-      { id: 'head_erythema', label: 'Head: Erythema (Redness)', type: 'select', options: pasiHeadErythemaOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadErythemaOptions, 0, 4) },
-      { id: 'head_induration', label: 'Head: Induration (Thickness)', type: 'select', options: pasiHeadIndurationOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadIndurationOptions, 0, 4) },
-      { id: 'head_desquamation', label: 'Head: Desquamation (Scaling)', type: 'select', options: pasiHeadDesquamationOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadDesquamationOptions, 0, 4) },
-      { id: 'head_area', label: 'Head: Area Affected (%)', type: 'select', options: pasiHeadAreaOptions, defaultValue: 0, validation: getValidationSchema('select', pasiHeadAreaOptions, 0, 6) },
-    ],
-    calculationLogic: (inputs) => {
-      const h_e = Number(inputs.head_erythema);
-      const h_i = Number(inputs.head_induration);
-      const h_d = Number(inputs.head_desquamation);
-      const h_a = Number(inputs.head_area);
-      const sumHead = (h_e + h_i + h_d) * h_a * 0.1;
-      const score = parseFloat(sumHead.toFixed(2));
-      let interpretation = '';
-      if (score === 0) interpretation = 'No Psoriasis symptoms or Cleared.';
-      else if (score < 3) interpretation = 'Mild Psoriasis.';
-      else if (score < 7) interpretation = 'Moderate Psoriasis.';
-      else interpretation = 'Severe Psoriasis.';
-      return { score, interpretation, details: { 'Head Score Component': parseFloat(sumHead.toFixed(2)) } };
-    },
-    references: ["Fredriksson T, Pettersson U. Severe psoriasis--oral therapy with a new retinoid. Dermatologica. 1978;157(4):238-44."]
-  },
   {
     id: 'dlqi',
     name: 'Dermatology Life Quality Index',
@@ -2139,7 +2107,7 @@ export const toolData: Tool[] = [
         ], 
         defaultValue: 1,
         description: "Select grade. Specific criteria summary for the chosen AE will be shown in results.",
-        validation: getValidationSchema('select', [{value:1, label:"Grade 1"}], 1, 5) // Ensure options are passed for validation
+        validation: getValidationSchema('select', [{value:1, label:"Grade 1"}], 1, 5) 
       }
     ],
     calculationLogic: (inputs) => {
@@ -2151,7 +2119,6 @@ export const toolData: Tool[] = [
       if (ctcaeCriteriaSnippets[selectedAe] && ctcaeCriteriaSnippets[selectedAe][grade]) {
         aeSpecificCriteria = ctcaeCriteriaSnippets[selectedAe][grade];
       } else if (ctcaeCriteriaSnippets[selectedAe] && !ctcaeCriteriaSnippets[selectedAe][grade] && (grade === 4 || grade === 5)) {
-        // Handle G4/G5 if specific criteria not in snippet but general G4/G5 applies
          if (grade === 4 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Life-threatening consequences; urgent intervention indicated.";
          else if (grade === 5 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Death related to AE.";
          else aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for ${selectedAe}. Refer to CTCAE manual.`;
@@ -2203,7 +2170,7 @@ export const toolData: Tool[] = [
     ],
     calculationLogic: (inputs) => {
       const grade = inputs.bilag_skin_grade as string || "E";
-      const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 };
+      const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 }; // Example numeric mapping if needed
       const activityMap: Record<string, string> = { "A": "Severe", "B": "Moderate", "C": "Mild", "D": "Inactive (previous)", "E": "Never involved" };
       const interpretation = `BILAG Skin Component Grade: ${grade} (${activityMap[grade] || "N/A"}). This reflects current lupus activity in the skin and mucous membranes.`;
       return { score: scoreMap[grade] !== undefined ? scoreMap[grade] : 0, interpretation, details: { BILAG_Grade: grade, Activity_Level: activityMap[grade] || "N/A" } };
@@ -2371,6 +2338,7 @@ export const toolData: Tool[] = [
 ];
     
     
+
 
 
 
