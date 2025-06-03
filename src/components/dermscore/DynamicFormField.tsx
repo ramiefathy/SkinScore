@@ -21,7 +21,7 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
   control,
   inputConfig,
 }: DynamicFormFieldProps<TFieldValues>) {
-  const { id, label, type, options, defaultValue, min, max, step, placeholder, description } = inputConfig;
+  const { id, label, type, options, defaultValue, min, max, step, placeholder, description: fieldDescription } = inputConfig; // Renamed to avoid conflict
 
   return (
     <FormField
@@ -29,9 +29,19 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
       name={id as Path<TFieldValues>}
       defaultValue={defaultValue}
       render={({ field, fieldState: { error } }) => (
-        <FormItem className="mb-4">
-          <FormLabel>{label}</FormLabel>
-          {description && <FormDescription>{description}</FormDescription>}
+        <FormItem className="mb-4"> {/* FormItem from shadcn/ui by default has space-y-2 */}
+          <div> {/* Wrapper for Label and Description/Placeholder */}
+            <FormLabel>{label}</FormLabel>
+            {fieldDescription ? (
+              <FormDescription className="mt-1 text-sm text-muted-foreground">
+                {fieldDescription}
+              </FormDescription>
+            ) : (
+              // Placeholder to occupy similar space as a single-line FormDescription
+              // text-sm line-height is typically 1.25rem (20px). mt-1 is 0.25rem (4px). Total ~1.5rem.
+              <div className="mt-1 h-[1.25rem]" aria-hidden="true" />
+            )}
+          </div>
           <FormControl>
             {/* This div ensures FormControl's Slot always has a single child */}
             <div>
@@ -42,7 +52,6 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                   value={field.value ?? ''}
                   onChange={(e) => {
                     const val = e.target.value;
-                    // Allow empty string for clearing, otherwise parse to float
                     field.onChange(val === '' ? null : parseFloat(val));
                   }}
                   min={min}
@@ -52,7 +61,7 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                   className={error ? 'border-destructive' : ''}
                 />
               )}
-              {type === 'text' && ( // Ensure Textarea is used for 'text' type
+              {type === 'text' && ( 
                 <Textarea
                   {...field}
                   value={field.value ?? ''}
@@ -63,7 +72,6 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
               {type === 'select' && options && (
                 <Select
                   onValueChange={(value) => {
-                    // Find the original option to check its type
                     const selectedOption = options.find(opt => String(opt.value) === value);
                     if (selectedOption && typeof selectedOption.value === 'number') {
                       field.onChange(Number(value));
@@ -86,32 +94,26 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                 </Select>
               )}
               {type === 'checkbox' && (
-                // The FormControl props (id, aria-attributes) will be passed to this div
                 <div className="flex items-center space-x-2 pt-2">
                   <Checkbox
-                    {...field} // Ensures RHF props are passed
+                    {...field} 
                     checked={!!field.value}
                     onCheckedChange={field.onChange}
-                    id={field.name} // Use field.name for id, common practice with RHF for unique IDs
+                    id={field.name} 
                   />
                    <Label htmlFor={field.name} className="text-sm font-normal cursor-pointer">
-                     {/* This label is often used to make the text next to checkbox clickable.
-                         It uses the field.name as htmlFor, matching the Checkbox id.
-                         The main FormLabel (above) provides the primary description for the field.
-                     */}
                    </Label>
                 </div>
               )}
               {type === 'radio' && options && (
                 <RadioGroup
-                  {...field} // Ensures RHF props are passed
-                  onValueChange={field.onChange} // field.onChange directly takes the value
+                  {...field} 
+                  onValueChange={field.onChange} 
                   value={field.value !== null && field.value !== undefined ? String(field.value) : ''}
                   className="flex flex-col space-y-1 pt-1"
                 >
                   {options.map((option) => (
                     <FormItem key={String(option.value)} className="flex items-center space-x-3 space-y-0">
-                      {/* Inner FormControl for RadioGroupItem as per shadcn convention */}
                       <FormControl>
                         <RadioGroupItem value={String(option.value)} id={`${field.name}-${option.value}`} />
                       </FormControl>
@@ -122,7 +124,6 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                   ))}
                 </RadioGroup>
               )}
-              {/* Fallback to ensure FormControl always has a child if no conditions above match */}
               {(!['number', 'text', 'select', 'checkbox', 'radio'].includes(type) ||
                 (type === 'select' && !options) ||
                 (type === 'radio' && !options)) && (
@@ -130,7 +131,8 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
               )}
             </div>
           </FormControl>
-          <FormMessage />
+          {/* Give FormMessage a minimum height to contribute to consistent row height, even if empty */}
+          <FormMessage className="text-xs min-h-[1rem]" /> 
         </FormItem>
       )}
     />
