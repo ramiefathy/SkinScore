@@ -40,13 +40,13 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
     reportString += `--------------------------------------------------\n`;
     reportString += `SCORE: ${String(result.score)}\n`;
     reportString += `INTERPRETATION: ${result.interpretation}\n`;
-    
+
     if (result.details && Object.keys(result.details).length > 0) {
       reportString += `--------------------------------------------------\n`;
       reportString += `DETAILS:\n`;
       reportString += formatDetailsForCopy(result.details);
     }
-    
+
     reportString += `--------------------------------------------------\n`;
     reportString += `Calculated with SkinScore\n`;
 
@@ -98,13 +98,28 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
                 <li key={key} className="pt-1.5 pb-1">
                   <div className="font-semibold text-foreground/90">{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</div>
                   {typeof value === 'object' && value !== null && !Array.isArray(value) ? (
-                    <div className="pl-4 mt-1 space-y-0.5">
-                      {Object.entries(value as Record<string, string | number>).map(([subKey, subValue]) => (
-                        <div key={subKey} className="flex text-sm">
-                          <span className="font-medium text-muted-foreground w-48 shrink-0 pr-2">
+                    <div className="pl-4 mt-1 space-y-0.5"> {/* Level 1 indent */}
+                      {Object.entries(value as Record<string, any>).map(([subKey, subValue]) => (
+                        <div key={subKey} className="pt-0.5">
+                          <div className="font-medium text-muted-foreground">
                             {subKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
-                          </span>
-                          <span className="text-foreground break-words">{String(subValue)}</span>
+                          </div>
+                          {typeof subValue === 'object' && subValue !== null && !Array.isArray(subValue) ? (
+                            <div className="pl-4 space-y-0.5"> {/* Level 2 indent */}
+                              {Object.entries(subValue as Record<string, string | number | undefined | null>).map(([subSubKey, subSubValue]) => (
+                                (subSubValue !== undefined && subSubValue !== null && String(subSubValue).trim() !== '') || typeof subSubValue === 'number' ? ( // Render if not empty, or is a number (e.g. 0)
+                                  <div key={subSubKey} className="flex text-xs">
+                                    <span className="font-normal text-muted-foreground/80 w-auto max-w-[180px] shrink-0 pr-1.5">
+                                      {subSubKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
+                                    </span>
+                                    <span className="text-foreground/90 break-words">{String(subSubValue)}</span>
+                                  </div>
+                                ) : null
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="pl-4 text-foreground/90 break-words">{String(subValue)}</div>
+                          )}
                         </div>
                       ))}
                     </div>
