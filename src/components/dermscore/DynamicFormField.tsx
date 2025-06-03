@@ -29,8 +29,8 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
       name={id as Path<TFieldValues>}
       defaultValue={defaultValue}
       render={({ field, fieldState: { error } }) => (
-        <FormItem className="mb-4"> {/* FormItem from shadcn/ui by default has space-y-2 */}
-          <div> {/* Wrapper for Label and Description/Placeholder */}
+        <FormItem> {/* Removed mb-4, relies on parent grid gap */}
+          <div className="min-h-[4rem]"> {/* Wrapper for Label and Description/Placeholder with min-height */}
             <FormLabel>{label}</FormLabel>
             {fieldDescription ? (
               <FormDescription className="mt-1 text-sm text-muted-foreground">

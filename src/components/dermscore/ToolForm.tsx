@@ -75,7 +75,7 @@ export function ToolForm({ tool, onCalculate }: ToolFormProps) {
               if (group.gridCols === 4) groupGridColsClass = 'md:grid-cols-4';
               
               return (
-                <div key={group.id || `group-${index}`} className="md:col-span-2 space-y-3 border p-4 rounded-lg shadow bg-card/50 mb-2">
+                <div key={group.id || `group-${index}`} className="md:col-span-2 space-y-3 border p-4 rounded-lg shadow bg-card/50"> {/* Removed mb-2 */}
                   {group.title && <h3 className="text-md font-semibold mb-3 text-foreground">{group.title}</h3>}
                   {group.description && <p className="text-sm text-muted-foreground mb-3 -mt-2">{group.description}</p>}
                   <div className={`grid gap-x-6 gap-y-1 ${groupGridColsClass}`}> {/* Inner grid for group's inputs */}
