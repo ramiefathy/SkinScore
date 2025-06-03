@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 import type { ZodSchema } from 'zod';
 
@@ -17,13 +18,23 @@ export type InputConfig = {
   step?: number;
   placeholder?: string;
   validation?: ZodSchema<any>;
-  description?: string; 
+  description?: string;
 };
+
+export type InputGroupConfig = {
+  id: string;
+  title: string;
+  inputs: InputConfig[];
+  gridCols?: 1 | 2 | 3 | 4; // Number of columns for the inputs within this group
+  description?: string;
+};
+
+export type FormSectionConfig = InputConfig | InputGroupConfig;
 
 export type CalculationResult = {
   score: number | string;
   interpretation: string;
-  details?: Record<string, string | number>; 
+  details?: Record<string, any>; // Allow nested details
 };
 
 export type Tool = {
@@ -35,7 +46,7 @@ export type Tool = {
   keywords: string[];
   sourceType: 'Research' | 'Clinical Guideline' | 'Expert Consensus';
   icon?: LucideIcon | React.FC<React.SVGProps<SVGSVGElement>>;
-  inputs: InputConfig[];
+  formSections: FormSectionConfig[]; // Changed from inputs: InputConfig[]
   calculationLogic: (inputs: Record<string, any>) => CalculationResult;
   references?: string[];
 };

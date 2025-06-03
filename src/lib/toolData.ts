@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import type { Tool } from './types';
+import type { Tool, FormSectionConfig } from './types'; // Updated to import FormSectionConfig
 import {
   Calculator, Stethoscope, ClipboardList, Users, FileText, Pill,
   Users2, Thermometer, Scaling, Wind, AlignLeft, SquarePen, UserCheck, Activity,
@@ -18,21 +18,30 @@ import type { InputConfig, InputOption } from './types';
 const getValidationSchema = (inputType: string, options?: Array<InputOption>, min?: number, max?: number): z.ZodSchema<any> => {
   switch (inputType) {
     case 'number':
-      let numSchema = z.coerce.number(); // coerce to handle string inputs from forms
-      if (min !== undefined) numSchema = numSchema.min(min);
-      if (max !== undefined) numSchema = numSchema.max(max);
-      return numSchema.nullable().optional();
+      let schemaForNumber: z.ZodNumber = z.coerce.number({
+        invalid_type_error: "Must be a number"
+      });
+
+      if (min !== undefined) {
+        // Apply .min() to the ZodNumber schema
+        schemaForNumber = schemaForNumber.min(min, { message: `Must be ${min} or more.` });
+      }
+      if (max !== undefined) {
+        // Apply .max() to the ZodNumber schema
+        schemaForNumber = schemaForNumber.max(max, { message: `Must be ${max} or less.` });
+      }
+      
+      // Now apply .nullable() and .optional() to the (potentially constrained) ZodNumber schema
+      return schemaForNumber.nullable().optional();
     case 'select':
       if (options && options.length > 0) {
         const firstValueType = typeof options[0].value;
         if (firstValueType === 'number') {
-          return z.coerce.number().nullable().optional();
+          return z.coerce.number({invalid_type_error: "Selection required"}).nullable().optional();
         } else if (firstValueType === 'string') {
-          return z.string().nullable().optional();
+          return z.string({invalid_type_error: "Selection required"}).nullable().optional();
         }
       }
-      // Fallback or if options are empty/mixed in a way not anticipated, treat as string or any.
-      // For safety, this could be z.any() or a more specific default.
       return z.string().nullable().optional(); 
     case 'checkbox':
       return z.boolean().optional();
@@ -41,7 +50,7 @@ const getValidationSchema = (inputType: string, options?: Array<InputOption>, mi
       return z.string().nullable().optional();
     case 'radio':
         if (options && options.length > 0 && typeof options[0].value === 'number') {
-            return z.coerce.number().nullable().optional();
+            return z.coerce.number({invalid_type_error: "Selection required"}).nullable().optional();
         }
         return z.string().nullable().optional();
     default:
@@ -79,7 +88,6 @@ const ctcaeCriteriaSnippets: Record<string, Record<number, string>> = {
     1: "Mild; topical intervention indicated.",
     2: "Moderate; oral intervention or medical intervention indicated; limiting instrumental ADL.",
     3: "Severe; interfering with self care ADL or sleep; hospitalization indicated.",
-    // G4 & G5 typically not applicable for pruritus itself as the primary AE leading to that grade
   },
   "Hand-foot skin reaction": {
     1: "Minimal skin changes or dermatitis (e.g., erythema, edema, hyperkeratosis) without pain.",
@@ -140,7 +148,7 @@ export const toolData: Tool[] = [
     keywords: ['dlqi', 'quality of life', 'skin disease', 'impact', 'patient reported'],
     sourceType: 'Expert Consensus',
     icon: ClipboardList,
-    inputs: [
+    formSections: [ 
       ...Array.from({ length: 10 }, (_, i) => {
         const questionTexts = [
             "Over the last week, how itchy, sore, painful or stinging has your skin been?",
@@ -170,7 +178,7 @@ export const toolData: Tool[] = [
           options: q_options,
           defaultValue: 0,
           validation: getValidationSchema('select', q_options, 0, 3),
-        };
+        } as InputConfig; 
       })
     ],
     calculationLogic: (inputs) => {
@@ -200,7 +208,7 @@ export const toolData: Tool[] = [
     keywords: ['scqoli-10', 'quality of life', 'chronic skin disease', 'patient reported'],
     sourceType: 'Expert Consensus',
     icon: Users,
-    inputs: [
+    formSections: [
       { id: 'symptoms', label: 'Symptoms (itching, pain, discomfort)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
       { id: 'emotions', label: 'Emotions (sadness, anxiety, anger)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
       { id: 'daily_activities', label: 'Daily activities (work, household chores)', type: 'select', options: [{value:0, label:'Never'}, {value:1, label:'Rarely'}, {value:2, label:'Sometimes'}, {value:3, label:'Often'}, {value:4, label:'Always'}], defaultValue: 0, validation: getValidationSchema('select', [{value:0, label:'Never'}], 0, 4) },
@@ -232,21 +240,25 @@ export const toolData: Tool[] = [
     keywords: ["pasi", "psoriasis", "plaque psoriasis", "severity", "index"],
     sourceType: 'Clinical Guideline',
     icon: Gauge,
-    inputs: [
-      ...(['h', 'u', 't', 'l'] as const).flatMap(regionAbbr => {
+    formSections: (['h', 'u', 't', 'l'] as const).map(regionAbbr => {
         const regionMap: Record<string, string> = { h: 'Head/Neck', u: 'Upper Limbs', t: 'Trunk', l: 'Lower Limbs' };
         const bsaPercent: Record<string, number> = { h: 10, u: 20, t: 30, l: 40 };
         const regionFullName = regionMap[regionAbbr];
-        const regionDesc = `(${bsaPercent[regionAbbr]}% BSA, multiplier x${(bsaPercent[regionAbbr]/100).toFixed(1)})`;
-
-        return [
-          { id: `E_${regionAbbr}`, label: `${regionFullName} - Erythema (E) ${regionDesc}`, type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select',severityOptions0to4,0,4) },
-          { id: `I_${regionAbbr}`, label: `${regionFullName} - Induration (I) ${regionDesc}`, type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select',severityOptions0to4,0,4) },
-          { id: `S_${regionAbbr}`, label: `${regionFullName} - Scaling (S) ${regionDesc}`, type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select',severityOptions0to4,0,4) },
-          { id: `A_${regionAbbr}`, label: `${regionFullName} - Area (A) ${regionDesc}`, type: 'select', options: areaOptions0to6, defaultValue:0, description: "% region affected.", validation: getValidationSchema('select',areaOptions0to6,0,6) },
-        ];
-      })
-    ],
+        const regionMultiplier = (bsaPercent[regionAbbr]/100).toFixed(1);
+        
+        return {
+          id: `pasi_group_${regionAbbr}`,
+          title: `${regionFullName} (Multiplier x${regionMultiplier})`,
+          gridCols: 4, 
+          description: `Assess Erythema, Induration, Scaling, and Area for the ${regionFullName} region. This region accounts for ${bsaPercent[regionAbbr]}% of Body Surface Area.`,
+          inputs: [
+            { id: `E_${regionAbbr}`, label: `Erythema (E)`, type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select',severityOptions0to4,0,4) },
+            { id: `I_${regionAbbr}`, label: `Induration (I)`, type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select',severityOptions0to4,0,4) },
+            { id: `S_${regionAbbr}`, label: `Scaling (S)`, type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select',severityOptions0to4,0,4) },
+            { id: `A_${regionAbbr}`, label: `Area (A)`, type: 'select', options: areaOptions0to6, defaultValue:0, description: "% of region affected.", validation: getValidationSchema('select',areaOptions0to6,0,6) },
+          ]
+        };
+      }),
     calculationLogic: (inputs) => {
         const multipliers: Record<string, number> = { h: 0.1, u: 0.2, t: 0.3, l: 0.4 };
         let totalPASIScore = 0;
@@ -282,12 +294,12 @@ export const toolData: Tool[] = [
     keywords: ["napsi", "psoriasis", "nail disorders", "nail", "severity"],
     sourceType: 'Clinical Guideline',
     icon: Fingerprint,
-    inputs: [
+    formSections: [
       { id: "nail_count", label: "Number of Nails Assessed (1-20)", type: 'select', options: Array.from({length: 20}, (_, i) => ({value: i + 1, label: `${i+1} Nail(s)`})), defaultValue: 10, validation: getValidationSchema('select', Array.from({length: 20}, (_, i) => ({value: i + 1, label: `${i+1} Nail(s)`})), 1, 20) },
       ...Array.from({length: 20}, (_, i) => i + 1).flatMap(nailNum => ([
           { id: `nail_${nailNum}_matrix`, label: `Nail ${nailNum}: Matrix Score (0-4)`, type: 'number', min:0, max:4, defaultValue:0, description: "Quadrants w/ any: Pitting, Leukonychia, Red spots in lunula, Crumbling.", validation: getValidationSchema('number',undefined,0,4)},
           { id: `nail_${nailNum}_bed`, label: `Nail ${nailNum}: Bed Score (0-4)`, type: 'number', min:0, max:4, defaultValue:0, description: "Quadrants w/ any: Onycholysis, Splinter hemorrhages, Subungual hyperkeratosis, Oil drop discoloration.", validation: getValidationSchema('number',undefined,0,4)}
-      ]))
+      ])) as InputConfig[]
     ],
     calculationLogic: (inputs) => {
         let totalNapsiScore = 0;
@@ -315,7 +327,7 @@ export const toolData: Tool[] = [
     keywords: ["pga", "psoriasis", "physician global assessment", "severity"],
     sourceType: 'Research',
     icon: UserCheck,
-    inputs: [
+    formSections: [
       {
         id: "pga_level", label: "Select PGA Level (Example 7-Level)", type: 'select',
         options: [
@@ -347,7 +359,7 @@ export const toolData: Tool[] = [
     keywords: ["pssi", "psoriasis", "scalp psoriasis", "scalp", "severity"],
     sourceType: 'Clinical Guideline',
     icon: User,
-    inputs: [
+    formSections: [
       { id: "pssi_erythema", label: "Scalp Erythema (E)", type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select', severityOptions0to4,0,4) },
       { id: "pssi_thickness", label: "Scalp Thickness (T)", type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select', severityOptions0to4,0,4) },
       { id: "pssi_scaling", label: "Scalp Scaling (S)", type: 'select', options: severityOptions0to4, defaultValue:0, validation: getValidationSchema('select', severityOptions0to4,0,4) },
@@ -364,7 +376,6 @@ export const toolData: Tool[] = [
     },
     references: ["Ortonne JP, et al. J Eur Acad Dermatol Venereol. 2004;18(Suppl 2):28."]
   },
-  // ATOPIC DERMATITIS
   {
     id: "scorad",
     name: "SCORing Atopic Dermatitis (SCORAD)",
@@ -374,30 +385,47 @@ export const toolData: Tool[] = [
     keywords: ["scorad", "atopic dermatitis", "ad", "eczema", "severity", "extent"],
     sourceType: 'Expert Consensus',
     icon: ScalingIcon,
-    inputs: [
-      { id: "A_extent", label: "A: Extent (BSA %)", type: 'number', min: 0, max: 100, defaultValue: 0, description: "Use Rule of Nines.", validation: getValidationSchema('number',undefined,0,100) },
-      { id: "B_erythema", label: "B: Intensity - Erythema", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
-      { id: "B_oedema", label: "B: Intensity - Oedema/Papulation", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
-      { id: "B_oozing", label: "B: Intensity - Oozing/Crusting", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
-      { id: "B_excoriations", label: "B: Intensity - Excoriations", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
-      { id: "B_lichenification", label: "B: Intensity - Lichenification", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
-      { id: "B_dryness", label: "B: Intensity - Dryness (non-inflamed areas)", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
-      { id: "C_pruritus", label: "C: Subjective - Pruritus (VAS 0-10, avg last 3 days/nights)", type: 'number', min: 0, max: 10, defaultValue: 0, validation: getValidationSchema('number',undefined,0,10) },
-      { id: "C_sleeplessness", label: "C: Subjective - Sleeplessness (VAS 0-10, avg last 3 days/nights)", type: 'number', min: 0, max: 10, defaultValue: 0, validation: getValidationSchema('number',undefined,0,10) },
+    formSections: [
+      { 
+        id: "scorad_group_a", title: "Part A: Extent (BSA %)", gridCols: 1,
+        inputs: [
+            { id: "A_extent", label: "Body Surface Area Involved (%)", type: 'number', min: 0, max: 100, defaultValue: 0, description: "Use Rule of Nines to estimate total % BSA affected by eczema.", validation: getValidationSchema('number',undefined,0,100) }
+        ]
+      },
+      {
+        id: "scorad_group_b", title: "Part B: Intensity (Average of 6 Signs)", gridCols:3,
+        description: "Assess the average intensity of each sign over affected areas (0=None, 1=Mild, 2=Moderate, 3=Severe).",
+        inputs: [
+            { id: "B_erythema", label: "Erythema", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+            { id: "B_oedema", label: "Oedema/Papulation", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+            { id: "B_oozing", label: "Oozing/Crusting", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+            { id: "B_excoriations", label: "Excoriations", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+            { id: "B_lichenification", label: "Lichenification", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+            { id: "B_dryness", label: "Dryness (non-inflamed)", type: 'select', options: [{value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"}], defaultValue: 0, validation: getValidationSchema('select',[{value:0, label:"0-None"}],0,3) },
+        ]
+      },
+      {
+        id: "scorad_group_c", title: "Part C: Subjective Symptoms (VAS 0-10)", gridCols:2,
+        description: "Patient to rate average over last 3 days/nights (0=None, 10=Maximal).",
+        inputs: [
+            { id: "C_pruritus", label: "Pruritus (Itch)", type: 'number', min: 0, max: 10, defaultValue: 0, validation: getValidationSchema('number',undefined,0,10) },
+            { id: "C_sleeplessness", label: "Sleeplessness", type: 'number', min: 0, max: 10, defaultValue: 0, validation: getValidationSchema('number',undefined,0,10) },
+        ]
+      }
     ],
     calculationLogic: (inputs) => {
         const A = Number(inputs.A_extent) || 0;
         const B_sum = (Number(inputs.B_erythema)||0) + (Number(inputs.B_oedema)||0) + (Number(inputs.B_oozing)||0) + (Number(inputs.B_excoriations)||0) + (Number(inputs.B_lichenification)||0) + (Number(inputs.B_dryness)||0);
         const C_sum = (Number(inputs.C_pruritus)||0) + (Number(inputs.C_sleeplessness)||0);
         const scorad = (A/5) + (7*B_sum/2) + C_sum;
-        const oScorad = (A/5) + (7*B_sum/2);
+        const oScorad = (A/5) + (7*B_sum/2); // Objective SCORAD
 
         const score = parseFloat(scorad.toFixed(2));
         let interpretation = `SCORAD: ${score} (Range: 0-103). oSCORAD: ${oScorad.toFixed(2)} (Range: 0-83). `;
-        if (score <= 24) interpretation += "Severity (SCORAD): Mild. "; else if (score <= 49) interpretation += "Severity (SCORAD): Moderate. "; else if (score <= 74) interpretation += "Severity (SCORAD): Severe. "; else interpretation += "Severity (SCORAD): Very Severe. ";
-        if (oScorad < 15) interpretation += "Severity (oSCORAD): Mild."; else if (oScorad <= 40) interpretation += "Severity (oSCORAD): Moderate."; else interpretation += "Severity (oSCORAD): Severe.";
+        if (score < 25) interpretation += "Severity (SCORAD): Mild. "; else if (score < 50) interpretation += "Severity (SCORAD): Moderate. "; else interpretation += "Severity (SCORAD): Severe. "; 
+        if (oScorad < 15) interpretation += "Severity (oSCORAD): Mild."; else if (oScorad < 40) interpretation += "Severity (oSCORAD): Moderate."; else interpretation += "Severity (oSCORAD): Severe.";
 
-        return { score, interpretation, details: { A_Extent_BSA: A, B_Intensity_Sum: B_sum, C_Subjective_Sum: C_sum, oSCORAD: parseFloat(oScorad.toFixed(2)) } };
+        return { score, interpretation, details: { Part_A_Extent_BSA: A, Part_B_Intensity_Sum_of_6_signs: B_sum, Part_C_Subjective_Symptoms_Sum: C_sum, Calculated_oSCORAD: parseFloat(oScorad.toFixed(2)) } };
     },
     references: ["European Task Force on Atopic Dermatitis. Dermatology. 1993."]
   },
@@ -410,22 +438,27 @@ export const toolData: Tool[] = [
     keywords: ["easi", "atopic dermatitis", "ad", "eczema", "severity", "area"],
     sourceType: 'Clinical Guideline',
     icon: SlidersHorizontal,
-    inputs: [
+    formSections: [
       { id: "age_group", label: "Age Group", type: 'select', options: [ {value: "adult", label: ">7 years"}, {value: "child", label: "0-7 years"} ], defaultValue: "adult", validation: getValidationSchema('select', [ {value: "adult", label: ">7 years"}])},
-      ...(['head_neck', 'trunk', 'upper_limbs', 'lower_limbs'] as const).flatMap(regionId => {
+      ...(['head_neck', 'trunk', 'upper_limbs', 'lower_limbs'] as const).map(regionId => {
         const regionNames: Record<string, string> = { head_neck: 'Head/Neck', trunk: 'Trunk', upper_limbs: 'Upper Limbs', lower_limbs: 'Lower Limbs' };
         const multipliers: Record<string, {adult: number, child: number}> = { head_neck: {adult: 0.1, child: 0.2}, trunk: {adult: 0.3, child: 0.3}, upper_limbs: {adult: 0.2, child: 0.2}, lower_limbs: {adult: 0.4, child: 0.3} };
         const regionFullName = regionNames[regionId];
-        const regionDesc = `(Adult x${multipliers[regionId].adult}, Child x${multipliers[regionId].child})`;
         const areaOptionsEASI:InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90+%"} ];
         const severityOptionsEASI:InputOption[] = [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ];
-        return [
-          { id: `${regionId}_area`, label: `${regionFullName} - Area (A) ${regionDesc}`, type: 'select', options: areaOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',areaOptionsEASI,0,6) },
-          { id: `${regionId}_erythema`, label: `${regionFullName} - Erythema ${regionDesc}`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
-          { id: `${regionId}_induration`, label: `${regionFullName} - Induration/Papulation ${regionDesc}`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
-          { id: `${regionId}_excoriation`, label: `${regionFullName} - Excoriation ${regionDesc}`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
-          { id: `${regionId}_lichenification`, label: `${regionFullName} - Lichenification ${regionDesc}`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
-        ];
+        
+        return {
+            id: `easi_group_${regionId}`,
+            title: `${regionFullName} (Multiplier Adult x${multipliers[regionId].adult}, Child x${multipliers[regionId].child})`,
+            gridCols: 2, 
+            inputs: [
+                { id: `${regionId}_area`, label: `Area Affected`, type: 'select', options: areaOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',areaOptionsEASI,0,6) },
+                { id: `${regionId}_erythema`, label: `Erythema`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
+                { id: `${regionId}_induration`, label: `Induration/Papulation`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
+                { id: `${regionId}_excoriation`, label: `Excoriation`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
+                { id: `${regionId}_lichenification`, label: `Lichenification`, type: 'select', options: severityOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',severityOptionsEASI,0,3) },
+            ]
+        };
       })
     ],
     calculationLogic: (inputs) => {
@@ -473,7 +506,7 @@ export const toolData: Tool[] = [
     keywords: ["abcde", "melanoma", "skin cancer", "screening", "mole"],
     sourceType: 'Research',
     icon: SearchCheck,
-    inputs: [
+    formSections: [
       { id: "A_asymmetry", label: "A - Asymmetry (one half of the mole doesn't match the other)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
       { id: "B_border", label: "B - Border irregularity (edges are ragged, notched, or blurred)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
       { id: "C_color", label: "C - Color variegation (color is not uniform, with shades of tan, brown, black, or sometimes white, red, or blue)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
@@ -488,7 +521,7 @@ export const toolData: Tool[] = [
       if (inputs.D_diameter) features.push("Diameter >6mm");
       if (inputs.E_evolving) features.push("Evolving");
 
-      const score = features.length; // Number of positive features
+      const score = features.length; 
       let interpretation = "";
       if (score > 0) {
         interpretation = `Warning: ${features.join(', ')} present. ${score} feature(s) noted. Lesion requires further evaluation by a healthcare professional.`;
@@ -508,7 +541,7 @@ export const toolData: Tool[] = [
     keywords: ["hurley", "hs", "hidradenitis suppurativa", "staging", "severity"],
     sourceType: 'Research',
     icon: AlignLeft,
-    inputs: [
+    formSections: [
       {
         id: "hurley_stage",
         label: "Select Hurley Stage",
@@ -544,7 +577,7 @@ export const toolData: Tool[] = [
     keywords: ["fitzpatrick", "skin type", "sun sensitivity", "uv", "tanning"],
     sourceType: 'Research',
     icon: Sun,
-    inputs: [
+    formSections: [
       {
         id: "fitzpatrick_type",
         label: "Select Fitzpatrick Skin Type",
@@ -586,54 +619,50 @@ export const toolData: Tool[] = [
     description: "Records and monitors Atopic Dermatitis (AD) activity by grading 6 signs (0-3) across 6 body sites. Lack of anchors for grades 1-3.",
     sourceType: 'Clinical Guideline',
     icon: Scaling,
-    inputs: [
-        ...["Arms", "Hands", "Legs", "Feet", "Head_Neck", "Trunk"].flatMap(areaName => {
+    formSections:
+        (["Arms", "Hands", "Legs", "Feet", "Head_Neck", "Trunk"].map(areaName => {
             const areaId = areaName.toLowerCase().replace('/','_');
             const signOptionsSASSAD: InputOption[] = [{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}];
-            return ["Erythema", "Exudation", "Excoriation", "Dryness", "Cracking", "Lichenification"].map(signName => {
-                const signId = signName.toLowerCase();
-                return {
-                    id: `${signId}_${areaId}`,
-                    label: `${areaName.replace('_','/')} - ${signName}`,
-                    type: 'select',
-                    options: signOptionsSASSAD,
-                    defaultValue: 0,
-                    validation: getValidationSchema('select', signOptionsSASSAD, 0, 3)
-                } as InputConfig;
-            });
-        })
-    ],
+            return {
+                id: `sassad_group_${areaId}`,
+                title: `Region: ${areaName.replace('_','/')}`,
+                gridCols: 3,
+                inputs: ["Erythema", "Exudation", "Excoriation", "Dryness", "Cracking", "Lichenification"].map(signName => {
+                    const signId = signName.toLowerCase();
+                    return {
+                        id: `${signId}_${areaId}`,
+                        label: `${signName}`,
+                        type: 'select',
+                        options: signOptionsSASSAD,
+                        defaultValue: 0,
+                        validation: getValidationSchema('select', signOptionsSASSAD, 0, 3)
+                    } as InputConfig;
+                })
+            };
+        }))
+    ,
     calculationLogic: (inputs) => {
         let totalScore = 0;
         const siteScores: Record<string, number> = {};
         const areas = ["Arms", "Hands", "Legs", "Feet", "Head_Neck", "Trunk"];
         const signs = ["Erythema", "Exudation", "Excoriation", "Dryness", "Cracking", "Lichenification"];
+        const detailedSiteScores: Record<string, Record<string, number>> = {};
 
         areas.forEach(areaName => {
             const areaId = areaName.toLowerCase().replace('/','_');
             let currentSiteScore = 0;
-            const currentAreaSignValues: Record<string, number> = {};
+            detailedSiteScores[areaName.replace('_','/')] = {};
             signs.forEach(signName => {
                 const signId = signName.toLowerCase();
                 const val = Number(inputs[`${signId}_${areaId}`]) || 0;
                 currentSiteScore += val;
-                currentAreaSignValues[signName] = val;
+                detailedSiteScores[areaName.replace('_','/')][signName] = val;
             });
             siteScores[areaName.replace('_','/')] = currentSiteScore; 
             totalScore += currentSiteScore;
         });
         const interpretation = `Total SASSAD Score: ${totalScore} (Range: 0-108). Higher score indicates more severe AD. No standard severity bands universally defined.`;
         
-        const detailedSiteScores: Record<string, Record<string, number>> = {};
-        areas.forEach(areaName => {
-            const areaId = areaName.toLowerCase().replace('/','_');
-            detailedSiteScores[areaName.replace('_','/')] = {};
-            signs.forEach(signName => {
-                const signId = signName.toLowerCase();
-                detailedSiteScores[areaName.replace('_','/')][signName] = Number(inputs[`${signId}_${areaId}`]) || 0;
-            });
-        });
-
         return { score: totalScore, interpretation, details: detailedSiteScores };
     },
     references: ["Berth-Jones J, et al. Br J Dermatol. 1996."]
@@ -647,7 +676,7 @@ export const toolData: Tool[] = [
     description: "Static clinician assessment of AD severity.",
     sourceType: 'Research',
     icon: UserCheck,
-    inputs: [
+    formSections: [
       {
         id: "viga_grade",
         label: "Select vIGA-AD™ Grade",
@@ -687,8 +716,8 @@ export const toolData: Tool[] = [
     description: "Assesses severity of hand eczema.",
     sourceType: 'Clinical Guideline',
     icon: Hand,
-    inputs: [
-        ...["Fingertips", "Fingers_excluding_tips", "Palms", "Backs_of_Hands", "Wrists"].flatMap(areaName => {
+    formSections: 
+        (["Fingertips", "Fingers_excluding_tips", "Palms", "Backs_of_Hands", "Wrists"].map(areaName => {
             const areaId = areaName.toLowerCase().replace(/\s+/g, '_').replace(/[()]/g, '');
             const signsHECSI = [
                 {id: "erythema", name: "Erythema"},
@@ -700,26 +729,31 @@ export const toolData: Tool[] = [
             ];
             const signOptionsHECSI: InputOption[] = [{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}];
             const areaAffectedOptionsHECSI: InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-25%)"}, {value:2, label:"2 (26-50%)"}, {value:3, label:"3 (51-75%)"}, {value:4, label:"4 (76-100%)"} ];
-            return [
-                ...signsHECSI.map(sign => ({
-                    id: `${areaId}_${sign.id}`,
-                    label: `${areaName.replace(/_/g, ' ')} - ${sign.name} (0-3)`,
-                    type: 'select',
-                    options: signOptionsHECSI,
-                    defaultValue: 0,
-                    validation: getValidationSchema('select', signOptionsHECSI, 0, 3)
-                } as InputConfig)),
-                {
-                    id: `${areaId}_area_affected`,
-                    label: `${areaName.replace(/_/g, ' ')} - Area Affected (0-4)`,
-                    type: 'select',
-                    options: areaAffectedOptionsHECSI,
-                    defaultValue: 0,
-                    validation: getValidationSchema('select', areaAffectedOptionsHECSI, 0, 4)
-                } as InputConfig
-            ];
-        })
-    ],
+            return {
+                id: `hecsi_group_${areaId}`,
+                title: `Region: ${areaName.replace(/_/g, ' ')}`,
+                gridCols: 3,
+                inputs: [
+                    ...signsHECSI.map(sign => ({
+                        id: `${areaId}_${sign.id}`,
+                        label: `${sign.name} (0-3)`,
+                        type: 'select',
+                        options: signOptionsHECSI,
+                        defaultValue: 0,
+                        validation: getValidationSchema('select', signOptionsHECSI, 0, 3)
+                    } as InputConfig)),
+                    {
+                        id: `${areaId}_area_affected`,
+                        label: `Area Affected (0-4)`,
+                        type: 'select',
+                        options: areaAffectedOptionsHECSI,
+                        defaultValue: 0,
+                        validation: getValidationSchema('select', areaAffectedOptionsHECSI, 0, 4)
+                    } as InputConfig
+                ]
+            };
+        }))
+    ,
     calculationLogic: (inputs) => {
         let totalHecsiScore = 0;
         const areaDetails: Record<string, any> = {};
@@ -775,7 +809,7 @@ export const toolData: Tool[] = [
     description: "Assesses severity of dyshidrotic eczema (pompholyx).",
     sourceType: 'Clinical Guideline',
     icon: Waves,
-    inputs: [
+    formSections: [
       { id:"vesicles_cm2", label:"Vesicles/cm² (V)", type:'select', options:[{value:0,label:"0 (None)"},{value:1,label:"1 (1-10/cm²)"},{value:2,label:"2 (11-30/cm²)"},{value:3,label:"3 (>30/cm²)"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0 (None)"}], 0,3) },
       { id:"erythema", label:"Erythema (E)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0-None"}], 0,3) },
       { id:"desquamation", label:"Desquamation (D)", type:'select', options:[{value:0,label:"0-None"},{value:1,label:"1-Mild"},{value:2,label:"2-Moderate"},{value:3,label:"3-Severe"}], defaultValue:0, validation: getValidationSchema('select', [{value:0,label:"0-None"}], 0,3) },
@@ -810,7 +844,6 @@ export const toolData: Tool[] = [
     },
     references: ["Vocks E, et al. Dermatology. 2000;201(3):200-4."]
   },
-  // ACNE
   {
     id: "iga_acne",
     name: "IGA for Acne Vulgaris",
@@ -820,7 +853,7 @@ export const toolData: Tool[] = [
     description: "Static clinician assessment of overall facial acne severity.",
     sourceType: 'Research',
     icon: UserCheck,
-    inputs: [
+    formSections: [
       { id: "current_iga_grade", label: "Current IGA Grade", type: 'select', options: [ {value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: 0, validation: getValidationSchema('select', [ {value:0,label:"0 - Clear"} ],0,4)},
       { id: "baseline_iga_grade", label: "Baseline IGA Grade (for treatment success)", type: 'select', options: [ {value:-1,label:"N/A"},{value:0,label:"0 - Clear"}, {value:1,label:"1 - Almost Clear"}, {value:2,label:"2 - Mild"}, {value:3,label:"3 - Moderate"}, {value:4,label:"4 - Severe"} ], defaultValue: -1, validation: getValidationSchema('select', [ {value:-1,label:"N/A"} ],-1,4)}
     ],
@@ -828,7 +861,7 @@ export const toolData: Tool[] = [
         const currentGrade = Number(inputs.current_iga_grade);
         const baselineGrade = Number(inputs.baseline_iga_grade);
         let treatmentSuccess = "N/A";
-        if (baselineGrade !== -1 && baselineGrade >=0 ) { // Ensure baseline is valid for comparison
+        if (baselineGrade !== -1 && baselineGrade >=0 ) { 
             treatmentSuccess = (currentGrade <= 1 && (baselineGrade - currentGrade >= 2)) ? "Achieved" : "Not Achieved";
         }
         const gradeMap: Record<number, string> = {0:"Clear",1:"Almost Clear",2:"Mild",3:"Moderate",4:"Severe", [-1]:"N/A"};
@@ -853,10 +886,10 @@ export const toolData: Tool[] = [
     description: "Global score for acne severity based on lesion type (comedones, papules, pustules, nodules) and location factors.",
     sourceType: 'Clinical Guideline',
     icon: Calculator,
-    inputs: [
-        ...[{id:"forehead",name:"Forehead",factor:2},{id:"r_cheek",name:"Right Cheek",factor:2},{id:"l_cheek",name:"Left Cheek",factor:2},{id:"nose",name:"Nose",factor:1},{id:"chin",name:"Chin",factor:1},{id:"chest_upper_back",name:"Chest & Upper Back",factor:3}].map(loc=>({
+    formSections: 
+        ([{id:"forehead",name:"Forehead",factor:2},{id:"r_cheek",name:"Right Cheek",factor:2},{id:"l_cheek",name:"Left Cheek",factor:2},{id:"nose",name:"Nose",factor:1},{id:"chin",name:"Chin",factor:1},{id:"chest_upper_back",name:"Chest & Upper Back",factor:3}].map(loc=>({
             id:`gags_${loc.id}`,
-            label:`${loc.name} (Factor x${loc.factor})`,
+            label:`${loc.name} (Factor x${loc.factor}) - Predominant Lesion Grade (0-4)`,
             type:'select',
             options:[
                 {value:0,label:"0 - No lesions"},
@@ -866,10 +899,9 @@ export const toolData: Tool[] = [
                 {value:4,label:"4 - >20 Papules OR 10-20 Pustules OR <5 Nodules"}
             ],
             defaultValue:0,
-            description:"Predominant lesion grade (0-4).",
             validation: getValidationSchema('select', [{value:0,label:"0 - No lesions"}], 0, 4)
-        }))
-    ],
+        } as InputConfig)))
+    ,
     calculationLogic: (inputs) => {
         let totalScore = 0;
         const locationScores: Record<string, {grade: number, score: number}> = {};
@@ -909,7 +941,7 @@ export const toolData: Tool[] = [
     description: "Measures the impact of facial acne on quality of life across several domains. Total score interpretation depends on the specific version and scoring.",
     sourceType: 'Research',
     icon: MessageSquare,
-    inputs: [
+    formSections: [
       { id:"total_score", label: "Total Acne-QoL Score", type:'number', defaultValue:0, description:"Enter the calculated total score from the questionnaire. Range and interpretation depend on the version used (e.g., original 19-item sum, or standardized 0-100).", validation: getValidationSchema('number')}
     ],
     calculationLogic: (inputs) => {
@@ -919,7 +951,6 @@ export const toolData: Tool[] = [
     },
     references: ["Martin AR, Lookingbill DP, Botek A, et al. Development of a new acne-specific quality of life questionnaire (Acne-QoL). J Am Acad Dermatol. 1998;39(3):415-421.", "Fehnel SE, McLeod LD, Brandman J, et al. Responsiveness of the Acne-Specific Quality of Life Questionnaire (Acne-QoL) to treatment for acne vulgaris in a placebo-controlled clinical trial. Qual Life Res. 2002;11(8):809-816."]
   },
-  // URTICARIA / ANGIOEDEMA
   {
     id: "uas7",
     name: "Urticaria Activity Score over 7 days (UAS7)",
@@ -929,12 +960,17 @@ export const toolData: Tool[] = [
     description: "Patient-reported assessment of chronic spontaneous urticaria (CSU) activity over 7 consecutive days. It combines scores for number of wheals and intensity of itch.",
     sourceType: 'Research',
     icon: Calendar,
-    inputs: [
-      ...Array.from({length:7},(_,i)=> i + 1).flatMap(dayNum => ([
-          { id:`d${dayNum}_wheals`, label:`Day ${dayNum} - Wheals (Number)`, type:'select', options:[{value:0,label:"0 (<20 wheals/24h)"},{value:1,label:"1 (<20 wheals/24h)"},{value:2,label:"2 (20-50 wheals/24h)"},{value:3,label:"3 (>50 wheals/24h or large confluent areas)"}], defaultValue:0, description:"Score for number of wheals in the last 24 hours.", validation: getValidationSchema('select', [{value:0,label:"0"}],0,3) },
-          { id:`d${dayNum}_itch`, label:`Day ${dayNum} - Itch Severity`, type:'select', options:[{value:0,label:"0 (None)"},{value:1,label:"1 (Mild - present but not annoying/troublesome)"},{value:2,label:"2 (Moderate - troublesome but does not interfere with normal daily activity/sleep)"},{value:3,label:"3 (Intense - severe, annoying, interferes with normal daily activity/sleep)"}], defaultValue:0, description:"Score for intensity of itch in the last 24 hours.", validation: getValidationSchema('select', [{value:0,label:"0"}],0,3) },
-      ]))
-    ],
+    formSections: 
+      Array.from({length:7},(_,i)=> i + 1).map(dayNum => ({
+          id: `uas7_day_${dayNum}_group`, 
+          title: `Day ${dayNum}`,
+          gridCols: 2,
+          inputs: [
+            { id:`d${dayNum}_wheals`, label:`Wheals (Number)`, type:'select', options:[{value:0,label:"0 (<20/24h)"},{value:1,label:"1 (<20/24h)"},{value:2,label:"2 (20-50/24h)"},{value:3,label:"3 (>50/24h or large confluent areas)"}], defaultValue:0, description:"Score for number of wheals in the last 24 hours.", validation: getValidationSchema('select', [{value:0,label:"0"}],0,3) },
+            { id:`d${dayNum}_itch`, label:`Itch Severity`, type:'select', options:[{value:0,label:"0 (None)"},{value:1,label:"1 (Mild - present but not annoying/troublesome)"},{value:2,label:"2 (Moderate - troublesome but does not interfere with normal daily activity/sleep)"},{value:3,label:"3 (Intense - severe, annoying, interferes with normal daily activity/sleep)"}], defaultValue:0, description:"Score for intensity of itch in the last 24 hours.", validation: getValidationSchema('select', [{value:0,label:"0"}],0,3) },
+          ]
+      }))
+    ,
     calculationLogic: (inputs) => {
         let totalScore = 0;
         const dailyScores: Record<string, {wheals: number, itch: number, total: number}> = {};
@@ -965,7 +1001,7 @@ export const toolData: Tool[] = [
     description: "Patient-reported questionnaire to assess urticaria control over the last 4 weeks.",
     sourceType: 'Research',
     icon: CheckCircle,
-    inputs: [
+    formSections: [
       {id:"q1_symptoms", label:"Q1: How much have you suffered from the physical symptoms of urticaria (itch, wheals, swelling) in the last 4 weeks?", type:"select", options:[{value:4,label:"Very much"},{value:3,label:"Much"},{value:2,label:"Moderately"},{value:1,label:"A little"},{value:0,label:"Not at all"}], defaultValue:0, validation: getValidationSchema('select', [],0,4)},
       {id:"q2_qol", label:"Q2: How much has your quality of life been affected by urticaria in the last 4 weeks?", type:"select", options:[{value:4,label:"Very much"},{value:3,label:"Much"},{value:2,label:"Moderately"},{value:1,label:"A little"},{value:0,label:"Not at all"}], defaultValue:0, validation: getValidationSchema('select', [],0,4)},
       {id:"q3_treatment", label:"Q3: How often was treatment for your urticaria not enough to control your symptoms in the last 4 weeks?", type:"select", options:[{value:4,label:"Very often"},{value:3,label:"Often"},{value:2,label:"Sometimes"},{value:1,label:"Rarely"},{value:0,label:"Never"}], defaultValue:0, validation: getValidationSchema('select', [],0,4)},
@@ -977,7 +1013,6 @@ export const toolData: Tool[] = [
         const q3_val = Number(inputs.q3_treatment)||0;
         const q4_val = Number(inputs.q4_control)||0;
 
-        // UCT scoring is reversed for the first 3 questions then direct for the last
         const uct_q1 = 4 - q1_val;
         const uct_q2 = 4 - q2_val;
         const uct_q3 = 4 - q3_val;
@@ -1005,7 +1040,7 @@ export const toolData: Tool[] = [
     description: "Patient-reported diary to assess activity of recurrent angioedema. Can be summed over periods (e.g., AAS7, AAS28). This form is for a single representative day.",
     sourceType: 'Research',
     icon: Activity,
-    inputs: [
+    formSections: [
       {id:"aas_parts", label:"1. Number of body parts affected by angioedema today?", type:"select", options:[{value:0,label:"0"},{value:1,label:"1"},{value:2,label:"2"},{value:3,label:"3 or more"}], defaultValue:0, validation:getValidationSchema('select',[],0,3)},
       {id:"aas_duration", label:"2. How long did your angioedema last today (total duration of all episodes)?", type:"select", options:[{value:0,label:"<1 hour"},{value:1,label:"1-6 hours"},{value:2,label:"6-24 hours"},{value:3,label:">24 hours"}], defaultValue:0, validation:getValidationSchema('select',[],0,3)},
       {id:"aas_severity", label:"3. How severe was your angioedema today (worst episode)?", type:"select", options:[{value:0,label:"0 (None)"},{value:1,label:"1 (Mild)"},{value:2,label:"2 (Moderate)"},{value:3,label:"3 (Severe)"}], defaultValue:0, validation:getValidationSchema('select',[],0,3)},
@@ -1019,7 +1054,6 @@ export const toolData: Tool[] = [
     },
     references: ["Weller K, et al. Allergy. 2012."]
   },
-  // MELASMA / VITILIGO
   {
     id: "masi_mmasi",
     name: "Melasma Area & Severity Index (MASI/mMASI)",
@@ -1029,18 +1063,23 @@ export const toolData: Tool[] = [
     description: "Assesses the severity of melasma by evaluating area of involvement, darkness, and homogeneity (for MASI).",
     sourceType: 'Clinical Guideline',
     icon: Palette,
-    inputs: [
+    formSections: [
       { id:"masi_type", label:"MASI Type", type:"select", options:[{value:"masi",label:"MASI (includes Homogeneity)"},{value:"mmasi",label:"mMASI (excludes Homogeneity)"}], defaultValue:"masi", validation:getValidationSchema('select', [{value:"masi",label:"MASI"}])},
-      ...(["Forehead", "Right Malar", "Left Malar", "Chin"] as const).flatMap(regionName => {
+      ...(["Forehead", "Right Malar", "Left Malar", "Chin"] as const).map(regionName => {
           const regionId = regionName.toLowerCase().replace(/\s+/g, '_') as MasiRegionKey;
           const regionMultiplier = masiRegionMultiplierMapData[regionId];
           const areaOptionsMASI: InputOption[] = Array.from({length:7}, (_,i)=>({value:i, label:`${i} (${["0%", "<10%", "10-29%", "30-49%", "50-69%", "70-89%", "90-100%"][i]})`}));
           const darknessHomogeneityOptions: InputOption[] = Array.from({length:5}, (_,i)=>({value:i, label:`${i} (${["None", "Slight", "Mild", "Moderate", "Marked"][i]})`}));
-          return [
-            { id:`${regionId}_area`, label:`${regionName} - Area (A) (Multiplier x${regionMultiplier})`, type:'select', options: areaOptionsMASI, defaultValue:0, validation:getValidationSchema('select',areaOptionsMASI,0,6)},
-            { id:`${regionId}_darkness`, label:`${regionName} - Darkness (D)`, type:'select', options: darknessHomogeneityOptions, defaultValue:0, validation:getValidationSchema('select',darknessHomogeneityOptions,0,4)},
-            { id:`${regionId}_homogeneity`, label:`${regionName} - Homogeneity (H) (MASI only)`, type:'select', options: darknessHomogeneityOptions, defaultValue:0, description: "Skip for mMASI", validation:getValidationSchema('select',darknessHomogeneityOptions,0,4)}
-          ]
+          return {
+            id: `masi_group_${regionId}`,
+            title: `${regionName} (Area Multiplier x${regionMultiplier})`,
+            gridCols: 3,
+            inputs: [
+                { id:`${regionId}_area`, label:`Area (A)`, type:'select', options: areaOptionsMASI, defaultValue:0, validation:getValidationSchema('select',areaOptionsMASI,0,6)},
+                { id:`${regionId}_darkness`, label:`Darkness (D)`, type:'select', options: darknessHomogeneityOptions, defaultValue:0, validation:getValidationSchema('select',darknessHomogeneityOptions,0,4)},
+                { id:`${regionId}_homogeneity`, label:`Homogeneity (H) (MASI only)`, type:'select', options: darknessHomogeneityOptions, defaultValue:0, description: "Skip for mMASI", validation:getValidationSchema('select',darknessHomogeneityOptions,0,4)}
+            ]
+          };
       })
     ],
     calculationLogic: (inputs) => {
@@ -1089,7 +1128,7 @@ export const toolData: Tool[] = [
     description: "Assesses the impact of melasma on a patient's quality of life. Original version has 10 questions, each scored 1-7.",
     sourceType: 'Research',
     icon: Users2,
-    inputs: [
+    formSections: [
       {id:"total_score", label:"Total MELASQOL Score", type:'number', min:10, max:70, defaultValue:10, description:"Enter the sum of scores from the 10 questions (each question 1-7).", validation:getValidationSchema('number', [], 10, 70)}
     ],
     calculationLogic: (inputs) => {
@@ -1108,19 +1147,24 @@ export const toolData: Tool[] = [
     description: "Quantifies the extent of vitiligo by assessing the percentage of depigmentation in different body regions, weighted by hand units.",
     sourceType: 'Clinical Guideline',
     icon: Footprints, 
-    inputs: [
-        ...(["Hands", "Upper Extremities (excluding Hands)", "Trunk", "Lower Extremities (excluding Feet)", "Feet", "Head/Neck"] as const).map(regionName => {
+    formSections: 
+        (["Hands", "Upper Extremities (excluding Hands)", "Trunk", "Lower Extremities (excluding Feet)", "Feet", "Head/Neck"] as const).map(regionName => {
             const regionId = regionName.toLowerCase().replace(/[\s()/]+/g, '_');
             const depigmentationOptions: InputOption[] = [
                 {value:1, label:"100% Depigmentation"}, {value:0.9, label:"90% Depigmentation"}, {value:0.75, label:"75% Depigmentation"},
                 {value:0.5, label:"50% Depigmentation"}, {value:0.25, label:"25% Depigmentation"}, {value:0.1, label:"10% Depigmentation"}, {value:0, label:"0% Depigmentation (No depigmentation)"}
             ];
-            return [
-                {id:`${regionId}_hand_units`, label:`${regionName} - Hand Units (HU)`, type:'number', min:0, defaultValue:0, description:"Area in patient's hand units (1 HU ~ 1% BSA).", validation:getValidationSchema('number', [], 0)},
-                {id:`${regionId}_depigmentation_percent`, label:`${regionName} - Depigmentation %`, type:'select', options:depigmentationOptions, defaultValue:0, validation:getValidationSchema('select',depigmentationOptions)} 
-            ];
-        }).flat()
-    ],
+            return {
+                id: `vasi_group_${regionId}`,
+                title: `Region: ${regionName}`,
+                gridCols: 2,
+                inputs: [
+                    {id:`${regionId}_hand_units`, label:`Hand Units (HU)`, type:'number', min:0, defaultValue:0, description:"Area in patient's hand units (1 HU ~ 1% BSA).", validation:getValidationSchema('number', [], 0)},
+                    {id:`${regionId}_depigmentation_percent`, label:`Depigmentation %`, type:'select', options:depigmentationOptions, defaultValue:0, validation:getValidationSchema('select',depigmentationOptions)} 
+                ]
+            };
+        })
+    ,
     calculationLogic: (inputs) => {
         let totalVASI = 0;
         let facialVASI = 0;
@@ -1159,7 +1203,7 @@ export const toolData: Tool[] = [
     description: "Assesses current vitiligo activity based on patient's perception of new lesions, existing lesion spread, or repigmentation over specific timeframes.",
     sourceType: 'Research',
     icon: Activity,
-    inputs: [
+    formSections: [
       { id:"activity_status", label:"Current Vitiligo Activity Status", type:"select",
         options:[
             {value:4, label:"+4 (Active for ≤6 weeks: new lesions and/or spread of existing lesions)"},
@@ -1189,7 +1233,7 @@ export const toolData: Tool[] = [
         else interpretation += "Indicates regressive disease with spontaneous repigmentation.";
         return { score, interpretation, details: { vida_description: scoreLabel } };
     },
-    references: ["Njoo MD, Spuls PI, Bos JD, Westerhof W, Bossuyt PM. Nonsurgical repigmentation therapies in vitiligo. Meta-analysis of the literature. Arch Dermatol. 1998;134(12):1532-1540. (VIDA often attributed to this group or later works). Original description: Njoo MD, Das PK, Bos JD, Westerhof W. Association of the Koebner phenomenon with disease activity and therapeutic responsiveness in vitiligo. Arch Dermatol. 2000;136(3):414-5." ]
+    references: ["Njoo MD, Spuls PI, Bos JD, Westerhof W, Bossuyt PM. Nonsurgical repigmentation therapies in vitiligo. Meta-analysis of the literature. Arch Dermatol. 1998;134(12):1532-1540.", "Original description: Njoo MD, Das PK, Bos JD, Westerhof W. Association of the Koebner phenomenon with disease activity and therapeutic responsiveness in vitiligo. Arch Dermatol. 2000;136(3):414-5." ]
   },
   {
     id: "vitiqol",
@@ -1200,7 +1244,7 @@ export const toolData: Tool[] = [
     description: "Measures the impact of vitiligo on a patient's quality of life. Scores depend on the specific version used (e.g., 15-item, each 0-6, total 0-90).",
     sourceType: 'Research',
     icon: Users,
-    inputs: [
+    formSections: [
       {id:"total_score", label:"Total VitiQoL Score", type:'number', defaultValue:0, description:"Enter the sum of scores from the questionnaire items. Range depends on the version (e.g., 0-90 for 15 items scored 0-6).", validation:getValidationSchema('number')}
     ],
     calculationLogic: (inputs) => {
@@ -1219,42 +1263,48 @@ export const toolData: Tool[] = [
     description: "A clinical rule to help identify suspicious pigmented lesions that may require urgent referral. Uses major and minor criteria.",
     sourceType: 'Clinical Guideline',
     icon: ListChecks,
-    inputs: [
+    formSections: [
       { id: "version", label: "Checklist Version", type: 'select', options: [{value:"original", label:"Original (All criteria = 1 point)"}, {value:"weighted", label:"Weighted (Major criteria = 2 points, Minor = 1 point)"}], defaultValue:"weighted", validation: getValidationSchema('select')},
-      { id: "major_change_size", label: "Major: Change in Size", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
-      { id: "major_irregular_shape", label: "Major: Irregular Shape", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
-      { id: "major_irregular_color", label: "Major: Irregular Color", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
-      { id: "minor_diameter_ge7mm", label: "Minor: Diameter >= 7mm", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
-      { id: "minor_inflammation", label: "Minor: Inflammation", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
-      { id: "minor_oozing_crusting", label: "Minor: Oozing or Crusting", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
-      { id: "minor_change_sensation", label: "Minor: Change in Sensation (e.g., itch, pain)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+      { 
+        id: "major_criteria_group", title: "Major Criteria", gridCols: 1,
+        inputs: [
+            { id: "major_change_size", label: "Change in Size", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+            { id: "major_irregular_shape", label: "Irregular Shape", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+            { id: "major_irregular_color", label: "Irregular Color", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+        ]
+      },
+      {
+        id: "minor_criteria_group", title: "Minor Criteria", gridCols: 1,
+        inputs: [
+            { id: "minor_diameter_ge7mm", label: "Diameter >= 7mm", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+            { id: "minor_inflammation", label: "Inflammation", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+            { id: "minor_oozing_crusting", label: "Oozing or Crusting", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+            { id: "minor_change_sensation", label: "Change in Sensation (e.g., itch, pain)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox')},
+        ]
+      }
     ],
     calculationLogic: (inputs) => {
       let score = 0;
       const presentFeatures: string[] = [];
       const version = inputs.version as "original" | "weighted";
 
-      const majorCriteria = [
-        {key: "major_change_size", label: "Change in Size"},
-        {key: "major_irregular_shape", label: "Irregular Shape"},
-        {key: "major_irregular_color", label: "Irregular Color"},
-      ];
-      const minorCriteria = [
-        {key: "minor_diameter_ge7mm", label: "Diameter >= 7mm"},
-        {key: "minor_inflammation", label: "Inflammation"},
-        {key: "minor_oozing_crusting", label: "Oozing/Crusting"},
-        {key: "minor_change_sensation", label: "Change in Sensation"},
-      ];
+      const majorCriteriaKeys = ["major_change_size", "major_irregular_shape", "major_irregular_color"];
+      const minorCriteriaKeys = ["minor_diameter_ge7mm", "minor_inflammation", "minor_oozing_crusting", "minor_change_sensation"];
+      
+      const allInputsFromForm = (toolData.find(t=>t.id === "seven_point_checklist")?.formSections.flatMap(s => 'inputs' in s ? s.inputs : [s]) || []) as InputConfig[];
 
-      majorCriteria.forEach(crit => {
-        if (inputs[crit.key]) {
-          presentFeatures.push(crit.label + " (Major)");
+
+      majorCriteriaKeys.forEach(key => {
+        if (inputs[key]) {
+          const label = allInputsFromForm.find(input => input.id === key)?.label || key;
+          presentFeatures.push(label + " (Major)");
           score += (version === "weighted" ? 2 : 1);
         }
       });
-      minorCriteria.forEach(crit => {
-        if (inputs[crit.key]) {
-          presentFeatures.push(crit.label + " (Minor)");
+      minorCriteriaKeys.forEach(key => {
+        if (inputs[key]) {
+          const label = allInputsFromForm.find(input => input.id === key)?.label || key;
+          presentFeatures.push(label + " (Minor)");
           score += 1;
         }
       });
@@ -1278,24 +1328,34 @@ export const toolData: Tool[] = [
     description: "A dynamic score for assessing the severity of Hidradenitis Suppurativa (HS) by evaluating involved regions, lesion counts, and distances.",
     sourceType: 'Clinical Guideline',
     icon: SquarePen,
-    inputs: [
-      { id: "axilla_l", label: "Region: Axilla (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "axilla_r", label: "Region: Axilla (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "groin_l", label: "Region: Groin (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "groin_r", label: "Region: Groin (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "genital_l", label: "Region: Genital (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "genital_r", label: "Region: Genital (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "gluteal_l", label: "Region: Gluteal (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "gluteal_r", label: "Region: Gluteal (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "inframammary_l", label: "Region: Inframammary (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "inframammary_r", label: "Region: Inframammary (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "other_region", label: "Region: Other", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "nodules_count", label: "Inflammatory Nodules (count)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number', [], 0) },
-      { id: "fistulas_tunnels_count", label: "Fistulas/Tunnels (count)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number', [], 0) },
-      { id: "scars_count", label: "Scars (count, non-specific points)", type: 'number', min: 0, defaultValue: 0, description:"Typically 1 point per distinct scar area, not number of individual scars.", validation: getValidationSchema('number', [], 0) },
-      { id: "other_lesions_count", label: "Other Lesions (e.g. comedones, papules - count if significant)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number', [], 0) },
-      { id: "longest_distance", label: "Longest Distance Between Two Lesions (in one region)", type: 'select', options: [{value:2, label:"<5cm"}, {value:4, label:"5 to <10cm"}, {value:8, label:"≥10cm"}], defaultValue:2, validation: getValidationSchema('select', [], 2, 8) },
-      { id: "lesions_separated", label: "Are all lesions clearly separated by normal skin in each region?", type: 'select', options: [{value:0, label:"Yes (Clearly separated - 0 points)"}, {value:6, label:"No (Not separated/Confluent - 6 points)"}], defaultValue:0, validation: getValidationSchema('select', [], 0, 6) },
+    formSections: [
+      { 
+        id: "mss_regions_group", title: "Anatomical Regions Involved (3 points per region)", gridCols: 2,
+        inputs: [
+            { id: "axilla_l", label: "Axilla (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "axilla_r", label: "Axilla (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "groin_l", label: "Groin (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "groin_r", label: "Groin (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "genital_l", label: "Genital (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }, 
+            { id: "genital_r", label: "Genital (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "gluteal_l", label: "Gluteal (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }, 
+            { id: "gluteal_r", label: "Gluteal (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "inframammary_l", label: "Inframammary (Left)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "inframammary_r", label: "Inframammary (Right)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+            { id: "other_region", label: "Other Region(s)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }, 
+        ]
+      },
+      {
+        id: "mss_lesions_group", title: "Lesion Counts and Characteristics", gridCols: 1,
+        inputs: [
+            { id: "nodules_count", label: "Inflammatory Nodules (count x 2 points)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number', [], 0) },
+            { id: "fistulas_tunnels_count", label: "Fistulas/Tunnels (count x 4 points)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number', [], 0) },
+            { id: "scars_count", label: "Scars (count of distinct scarred areas x 1 point)", type: 'number', min: 0, defaultValue: 0, description:"Typically 1 point per distinct scar area, not number of individual scars.", validation: getValidationSchema('number', [], 0) },
+            { id: "other_lesions_count", label: "Other Lesions (e.g. comedones, papules - count if significant x 1 point)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number', [], 0) },
+            { id: "longest_distance", label: "Longest Distance Between Two Lesions (in one region)", type: 'select', options: [{value:2, label:"<5cm (2 points)"}, {value:4, label:"5 to <10cm (4 points)"}, {value:8, label:"≥10cm (8 points)"}], defaultValue:2, validation: getValidationSchema('select', [], 2, 8) },
+            { id: "lesions_separated", label: "Are all lesions clearly separated by normal skin in each region?", type: 'select', options: [{value:0, label:"Yes (Clearly separated - 0 points)"}, {value:6, label:"No (Not separated/Confluent - 6 points)"}], defaultValue:0, validation: getValidationSchema('select', [], 0, 6) },
+        ]
+      }
     ],
     calculationLogic: (inputs) => {
       let regionsScore = 0;
@@ -1333,7 +1393,7 @@ export const toolData: Tool[] = [
     description: "A static, 6-point scale for clinicians to globally assess the severity of Hidradenitis Suppurativa. Specific definitions for each grade vary slightly across trials.",
     sourceType: 'Research', 
     icon: UserCheck,
-    inputs: [
+    formSections: [
       { id: "abscesses_count", label: "Number of Abscesses (A)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
       { id: "inflammatory_nodules_count", label: "Number of Inflammatory Nodules (IN)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
       { id: "draining_fistulas_count", label: "Number of Draining Fistulas (DF)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
@@ -1358,10 +1418,10 @@ export const toolData: Tool[] = [
           pgaScore = 2; description = "Mild: ≤2 abscess(es); no inflammatory nodule(s) or draining fistula(s).";
       } else if (DF <= 2 && A === 0 && IN === 0) {
           pgaScore = 2; description = "Mild: ≤2 draining fistula(s); no inflammatory nodule(s) or abscess(es).";
-      } else if ((A > 0 || DF > 0 || IN > 0)) { // Combinations
-          if ((A <= 5 && DF <= 5 && (A+DF) <= 5 && IN < 10) && !((A > 2 && IN === 0 && DF === 0) || (DF > 2 && IN === 0 && A === 0))) { // Excludes cases already covered by severe
+      } else if ((A > 0 || DF > 0 || IN > 0)) { 
+          if ((A <= 5 && DF <= 5 && (A+DF) <= 5 && IN < 10) && !((A > 2 && IN === 0 && DF === 0) || (DF > 2 && IN === 0 && A === 0))) {
              if ((A+DF) >=1 || IN >=5) {pgaScore = 3; description = "Moderate: Some abscesses/fistulas (total ≤5) and/or several inflammatory nodules (<10).";}
-             else if (pgaScore===-1) {pgaScore = 2; description="Mild: Few mixed inflammatory lesions."} // fallback if still mild
+             else if (pgaScore===-1) {pgaScore = 2; description="Mild: Few mixed inflammatory lesions."} 
           }
           if (((A > 5 || DF > 5 || (A+DF) > 5) || ( (A+DF) >=1 && IN >= 10 )) && !((A+DF) > 10) ) {
               pgaScore = 4; description = "Severe: Multiple abscesses/fistulas (total >5) or many inflammatory nodules (≥10) with some A/DF.";
@@ -1370,10 +1430,9 @@ export const toolData: Tool[] = [
               pgaScore = 5; description = "Very Severe: Extensive/confluent lesions or very numerous lesions.";
           }
       }
-      if(pgaScore === -1 && (A > 0 || IN > 0 || DF > 0)) { // Broader fallback if still not categorized
+      if(pgaScore === -1 && (A > 0 || IN > 0 || DF > 0)) { 
           pgaScore = 3; description = "Moderate (General fallback - use clinical judgment).";
       }
-
 
       const interpretation = `HS-PGA Score: ${pgaScore === -1 ? 'N/A' : pgaScore} - ${description}. This score is a global assessment. Precise definitions can vary.`;
       return { score: pgaScore, interpretation, details: { Abscesses: A, Inflammatory_Nodules: IN, Draining_Fistulas: DF, Non_Inflammatory_Nodules: NIN, Calculated_Description: description } };
@@ -1389,7 +1448,7 @@ export const toolData: Tool[] = [
     description: "A 10-question questionnaire to measure the impact of skin disease on the quality of life of children aged 4-16 years.",
     sourceType: 'Expert Consensus',
     icon: Baby,
-    inputs: [
+    formSections: [
       ...Array.from({ length: 10 }, (_, i) => {
         const questionPrompts = [ 
             "Q1: Over the last week, how itchy, sore, painful or stinging has your skin been?",
@@ -1407,7 +1466,7 @@ export const toolData: Tool[] = [
             { value: 3, label: 'Very much' }, { value: 2, label: 'A lot' },
             { value: 1, label: 'A little' }, { value: 0, label: 'Not at all' },
         ];
-         if (i === 6) { // Question 7 (school)
+         if (i === 6) { 
              cdlqi_options.push({ value: 0, label: 'Not relevant / Does not apply (Scores 0)' });
          }
 
@@ -1418,7 +1477,7 @@ export const toolData: Tool[] = [
           options: cdlqi_options,
           defaultValue: 0,
           validation: getValidationSchema('select', cdlqi_options, 0, 3),
-        };
+        } as InputConfig;
       })
     ],
     calculationLogic: (inputs) => {
@@ -1449,7 +1508,7 @@ export const toolData: Tool[] = [
     description: "A 29-item questionnaire assessing the effects of skin diseases on patients' quality of life, divided into three domains: Symptoms, Emotions, and Functioning. Scores are typically transformed to a 0-100 scale for each domain and overall.",
     sourceType: 'Research',
     icon: Presentation,
-    inputs: [
+    formSections: [
       { id: "symptoms_score", label: "Symptoms Domain Score (0-100)", type: 'number', min:0, max:100, defaultValue:0, description:"Enter the calculated/transformed score for the Symptoms domain.", validation: getValidationSchema('number',[],0,100)},
       { id: "emotions_score", label: "Emotions Domain Score (0-100)", type: 'number', min:0, max:100, defaultValue:0, description:"Enter the calculated/transformed score for the Emotions domain.", validation: getValidationSchema('number',[],0,100)},
       { id: "functioning_score", label: "Functioning Domain Score (0-100)", type: 'number', min:0, max:100, defaultValue:0, description:"Enter the calculated/transformed score for the Functioning domain.", validation: getValidationSchema('number',[],0,100)},
@@ -1463,7 +1522,7 @@ export const toolData: Tool[] = [
       const interpretation = `Skindex-29 Scores: Symptoms=${symptoms.toFixed(1)}, Emotions=${emotions.toFixed(1)}, Functioning=${functioning.toFixed(1)}. Overall Average=${averageScore}. Higher scores indicate worse quality of life. Each domain and the average score range from 0 to 100.`;
       return { score: averageScore, interpretation, details: { Symptoms_Domain: symptoms, Emotions_Domain: emotions, Functioning_Domain: functioning, Overall_Average_Score: averageScore } };
     },
-    references: ["Chren MM, Lasek RJ, Sahay AP, Sands LP. Measurement properties of Skindex-29: a quality-of-life measure for patients with skin disease. J Cutan Med Surg. 1997. (Original Skindex development often referenced).", "Chren MM. The Skindex instruments to measure the effects of skin disease on quality of life. Dermatol Clin. 2012 Apr;30(2):231-6, xiii."]
+    references: ["Chren MM, Lasek RJ, Sahay AP, Sands LP. Measurement properties of Skindex-29: a quality-of-life measure for patients with skin disease. J Cutan Med Surg. 1997.", "Chren MM. The Skindex instruments to measure the effects of skin disease on quality of life. Dermatol Clin. 2012 Apr;30(2):231-6, xiii."]
   },
   {
     id: "vas_pruritus",
@@ -1474,7 +1533,7 @@ export const toolData: Tool[] = [
     description: "A simple scale for patients to rate the intensity of their itch, typically on a 10 cm line (0=no itch, 10=worst imaginable itch).",
     sourceType: 'Research',
     icon: SlidersHorizontal, 
-    inputs: [
+    formSections: [
       { id: "vas_score_cm", label: "VAS Score (cm or 0-10)", type: 'number', min:0, max:10, step:0.1, defaultValue:0, description:"Enter score from 0 (no itch) to 10 (worst imaginable itch).", validation: getValidationSchema('number',[],0,10)}
     ],
     calculationLogic: (inputs) => {
@@ -1500,7 +1559,7 @@ export const toolData: Tool[] = [
     description: "A simple scale for patients to rate the intensity of their itch on an 11-point scale (0=no itch, 10=worst imaginable itch).",
     sourceType: 'Research',
     icon: CircleDot, 
-    inputs: [
+    formSections: [
       { id: "nrs_score", label: "NRS Score (0-10)", type: 'number', min:0, max:10, step:1, defaultValue:0, description:"Enter score from 0 (no itch) to 10 (worst imaginable itch).", validation: getValidationSchema('number',[],0,10)}
     ],
     calculationLogic: (inputs) => {
@@ -1526,7 +1585,7 @@ export const toolData: Tool[] = [
     description: "A multidimensional patient-reported outcome measure for chronic pruritus, assessing Duration, Degree, Direction, Disability, and Distribution.",
     sourceType: 'Research',
     icon: Puzzle, 
-    inputs: [
+    formSections: [
       { id: "d1_duration", label: "Domain 1: Duration (Total hours itching per day)", type: 'select', options: [{value:1, label:"1 (<1 hr)"}, {value:2, label:"2 (1-3 hrs)"}, {value:3, label:"3 (4-6 hrs)"}, {value:4, label:"4 (7-12 hrs)"}, {value:5, label:"5 (>12 hrs)"}], defaultValue:1, validation: getValidationSchema('select',[],1,5)},
       { id: "d2_degree", label: "Domain 2: Degree (Severity of worst itch episode)", type: 'select', options: [{value:1, label:"1 (Mild)"}, {value:2, label:"2 (Mild-Moderate)"}, {value:3, label:"3 (Moderate)"}, {value:4, label:"4 (Moderate-Severe)"}, {value:5, label:"5 (Severe)"}], defaultValue:1, validation: getValidationSchema('select',[],1,5)},
       { id: "d3_direction", label: "Domain 3: Direction (Itch getting better or worse over past month)", type: 'select', options: [{value:1, label:"1 (Much better)"}, {value:2, label:"2 (Somewhat better)"}, {value:3, label:"3 (No change)"}, {value:4, label:"4 (Somewhat worse)"}, {value:5, label:"5 (Much worse)"}], defaultValue:3, validation: getValidationSchema('select',[],1,5)},
@@ -1555,13 +1614,23 @@ export const toolData: Tool[] = [
     description: "Defines treatment response in HS clinical trials based on changes in abscesses, inflammatory nodules, and draining fistulas.",
     sourceType: 'Clinical Guideline', 
     icon: ListChecks,
-    inputs: [
-      { id: "baseline_abscesses", label: "Baseline: Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-      { id: "baseline_inflammatory_nodules", label: "Baseline: Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-      { id: "baseline_draining_fistulas", label: "Baseline: Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-      { id: "followup_abscesses", label: "Follow-up: Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-      { id: "followup_inflammatory_nodules", label: "Follow-up: Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-      { id: "followup_draining_fistulas", label: "Follow-up: Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+    formSections: [
+        {
+            id: "hiscr_baseline_group", title: "Baseline Assessment", gridCols: 1,
+            inputs: [
+                { id: "baseline_abscesses", label: "Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+                { id: "baseline_inflammatory_nodules", label: "Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+                { id: "baseline_draining_fistulas", label: "Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+            ]
+        },
+        {
+            id: "hiscr_followup_group", title: "Follow-up Assessment", gridCols: 1,
+            inputs: [
+                { id: "followup_abscesses", label: "Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+                { id: "followup_inflammatory_nodules", label: "Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+                { id: "followup_draining_fistulas", label: "Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+            ]
+        }
     ],
     calculationLogic: (inputs) => {
       const Ab = Number(inputs.baseline_abscesses) || 0;
@@ -1614,7 +1683,7 @@ export const toolData: Tool[] = [
     description: "A validated, dynamic scoring system for HS severity based on lesion counts.",
     sourceType: 'Clinical Guideline',
     icon: SquarePen,
-    inputs: [
+    formSections: [
       { id: "nodules_count", label: "Number of Inflammatory Nodules (x1 point each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
       { id: "abscesses_count", label: "Number of Abscesses (x2 points each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
       { id: "draining_tunnels_count", label: "Number of Draining Tunnels/Fistulas (x4 points each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
@@ -1639,7 +1708,7 @@ export const toolData: Tool[] = [
           Abscesses_Contribution: Na * 2,
           Draining_Tunnels_Contribution: Ndt * 4,
           Severity_Category: severity
-        }
+        } 
       };
     },
     references: ["Zouboulis CC, et al. Development and validation of the International Hidradenitis Suppurativa Severity Score System (IHS4), a novel dynamic scoring system to assess HS severity. Br J Dermatol. 2017 Dec;177(6):1401-1409."]
@@ -1653,7 +1722,7 @@ export const toolData: Tool[] = [
     description: "A clinician-rated assessment of overall rosacea severity, typically on a 5-point scale (0=Clear to 4=Severe). Definitions vary slightly.",
     sourceType: 'Research',
     icon: UserCheck,
-    inputs: [
+    formSections: [
       {
         id: "iga_grade_rosacea",
         label: "Select IGA Grade for Rosacea",
@@ -1694,7 +1763,7 @@ export const toolData: Tool[] = [
     description: "A clinician-rated assessment of the severity of facial erythema associated with rosacea, typically on a 5-point scale.",
     sourceType: 'Research',
     icon: Palette,
-    inputs: [
+    formSections: [
       {
         id: "cea_grade_rosacea",
         label: "Select CEA Grade for Rosacea Erythema",
@@ -1735,7 +1804,7 @@ export const toolData: Tool[] = [
     description: "Assesses overall ichthyosis severity. Specific components and scoring can vary (e.g., Yale VIS-ISS, Gånemo ISS). This tool accepts a pre-calculated total score.",
     sourceType: 'Clinical Guideline',
     icon: ScalingIcon,
-    inputs: [
+    formSections: [
       { id: "total_iss_vis_score", label: "Total ISS/VIS Score", type: 'number', min:0, defaultValue: 0, description: "Enter the pre-calculated total score from the specific ISS/VIS version used.", validation: getValidationSchema('number',[],0) }
     ],
     calculationLogic: (inputs) => {
@@ -1760,7 +1829,7 @@ export const toolData: Tool[] = [
     description: "Assesses disease activity and damage in morphea, incorporating Physician Global Assessments (PGA) and modified Rodnan Skin Score (mRSS) components.",
     sourceType: 'Clinical Guideline',
     icon: ClipboardList,
-    inputs: [
+    formSections: [
       { id: "pga_activity", label: "PGA of Activity (PGA-A, 0-100mm VAS)", type: 'number', min: 0, max: 100, defaultValue: 0, validation: getValidationSchema('number',[],0,100) },
       { id: "pga_damage", label: "PGA of Damage (PGA-D, 0-100mm VAS)", type: 'number', min: 0, max: 100, defaultValue: 0, validation: getValidationSchema('number',[],0,100) },
       { id: "mrss_sum_affected", label: "mRSS Sum of Affected Sites (0-51 for full body, or sum of only affected sites)", type: 'number', min: 0, defaultValue: 0, description: "Sum of mRSS scores from affected sites.", validation: getValidationSchema('number',[],0) },
@@ -1800,7 +1869,7 @@ export const toolData: Tool[] = [
     description: "Assesses skin severity in Mycosis Fungoides (MF) and Sézary Syndrome (SS) by evaluating percentage of BSA involved by patches, plaques, and tumors/ulcers, with weighting factors.",
     sourceType: 'Clinical Guideline',
     icon: ShieldHalf,
-    inputs: [
+    formSections: [
       { id: "total_mswat_score", label: "Total mSWAT Score (Pre-calculated)", type: 'number', min: 0, max: 400, defaultValue: 0, description: "Enter the total mSWAT score calculated from BSA involvement of patches (x1), plaques (x2), and tumors/ulcers (x4).", validation: getValidationSchema('number',[],0,400) }
     ],
     calculationLogic: (inputs) => {
@@ -1817,221 +1886,6 @@ export const toolData: Tool[] = [
     references: ["Olsen E, Whittaker S, Kim YH, et al. Clinical end points and response criteria in mycosis fungoides and Sézary syndrome: a consensus statement of the International Society for Cutaneous Lymphomas, the United States Cutaneous Lymphoma Consortium, and the Cutaneous Lymphoma Task Force of the European Organisation for Research and Treatment of Cancer. J Clin Oncol. 2011."]
   },
   {
-    id: "regiscar_dress",
-    name: "RegiSCAR DRESS Severity Score",
-    acronym: "DRESS Score",
-    condition: "DRESS Syndrome",
-    keywords: ["dress", "regiscar", "drug reaction", "eosinophilia", "systemic symptoms", "severity"],
-    description: "Assesses the severity of Drug Reaction with Eosinophilia and Systemic Symptoms (DRESS) syndrome. This tool accepts a pre-calculated score.",
-    sourceType: 'Clinical Guideline',
-    icon: ShieldAlert,
-    inputs: [
-      { id: "regiscar_score", label: "Total DRESS Score (RegiSCAR)", type: 'number', defaultValue: 0, description: "Enter the pre-calculated RegiSCAR DRESS score.", validation: getValidationSchema('number') }
-    ],
-    calculationLogic: (inputs) => {
-      const score = Number(inputs.regiscar_score) || 0;
-      const interpretation = `RegiSCAR DRESS Severity Score: ${score}. Higher score generally indicates more severe DRESS syndrome. Specific interpretation bands may vary based on the exact RegiSCAR criteria version used.`;
-      return { score, interpretation, details: { User_Entered_Score: score } };
-    },
-    references: ["Kardaun SH, et al. Variability in the clinical pattern of drug-induced hypersensitivity syndrome (DIHS)/drug reaction with eosinophilia and systemic symptoms (DRESS). Br J Dermatol. 2007.", "Kardaun SH, Sidoroff A, Valeyrie-Allanore L, et al. Variability in the clinical pattern of cutaneous side effects of drugs with systemic symptoms: does a DRESS score mirror severity of illness? Br J Dermatol. 2007. (Later work refined scoring)."]
-  },
-  {
-    id: "bwat",
-    name: "Bates-Jensen Wound Assessment Tool (BWAT)",
-    acronym: "BWAT",
-    condition: "Wound Healing",
-    keywords: ["bwat", "wound assessment", "ulcers", "pressure injury", "healing"],
-    description: "A comprehensive tool for assessing and monitoring wound status. It consists of 13 items, each rated on a 1-5 scale (1=best, 5=worst).",
-    sourceType: 'Clinical Guideline',
-    icon: ClipboardList,
-    inputs: [
-      ...(["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"].map(itemName => {
-        const itemId = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`; 
-        const itemOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i + 1, label: `${i + 1}` }));
-        return {
-          id: itemId,
-          label: itemName.replace(/_/g, ' '),
-          type: 'select' as 'select',
-          options: itemOptions,
-          defaultValue: 3, 
-          description: "1=Best, 5=Worst. Refer to BWAT guide for specific item descriptions.",
-          validation: getValidationSchema('select', itemOptions, 1, 5)
-        };
-      }))
-    ],
-    calculationLogic: (inputs) => {
-      let totalScore = 0;
-      const itemScores: Record<string, number> = {};
-      const itemNames = ["Size", "Depth", "Edges", "Undermining", "Necrotic_Tissue_Type", "Necrotic_Tissue_Amount", "Exudate_Type", "Exudate_Amount", "Skin_Color_Surrounding_Wound", "Peripheral_Tissue_Edema", "Peripheral_Tissue_Induration", "Granulation_Tissue", "Epithelialization"];
-      
-      itemNames.forEach(itemName => {
-        const key = `bwat_${itemName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/gi, '')}`;
-        const score = Number(inputs[key]) || 0; 
-        totalScore += score;
-        itemScores[itemName.replace(/_/g, ' ')] = score;
-      });
-
-      const interpretation = `BWAT Score: ${totalScore} (Range: 13-65). Higher score indicates a worse wound status. Lower score indicates healing.`;
-      return { score: totalScore, interpretation, details: itemScores };
-    },
-    references: ["Bates-Jensen BM. The Pressure Sore Status Tool a few thousand assessments later. Adv Wound Care. 1997.", "Harris C, Bates-Jensen B, Parslow N, et al. Bates-Jensen Wound Assessment Tool: pictorial guide validation. J Wound Ostomy Continence Nurs. 2010."]
-  },
-  {
-    id: "fitzpatrick_wrinkle",
-    name: "Fitzpatrick Wrinkle and Elastosis Scale",
-    acronym: "Fitz Wrinkle Scale",
-    condition: "Photoaging",
-    keywords: ["fitzpatrick", "wrinkle", "elastosis", "photoaging", "skin aging"],
-    description: "Classifies the degree of wrinkling and elastosis, often used in conjunction with Glogau scale.",
-    sourceType: 'Research',
-    icon: User, 
-    inputs: [
-      {
-        id: "fitzpatrick_wrinkle_class",
-        label: "Select Fitzpatrick Wrinkle Class",
-        type: 'select',
-        options: [
-          { value: "I", label: "Class I: Fine wrinkles" },
-          { value: "II", label: "Class II: Fine to moderate depth wrinkles, moderate number of lines" },
-          { value: "III", label: "Class III: Fine to deep wrinkles, numerous lines, +/- redundant skin folds" }
-        ],
-        defaultValue: "I",
-        validation: getValidationSchema('select', [{ value: "I", label: "Class I: Fine wrinkles" }])
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const score = inputs.fitzpatrick_wrinkle_class || "I";
-      const scoreToDescriptionMap: Record<string, string> = {
-          "I": "Class I: Fine wrinkles",
-          "II": "Class II: Fine to moderate depth wrinkles, moderate number of lines",
-          "III": "Class III: Fine to deep wrinkles, numerous lines, +/- redundant skin folds"
-      };
-      const interpretation = `Fitzpatrick Wrinkle and Elastosis Scale: ${scoreToDescriptionMap[score as string]}. This is a descriptive classification.`;
-      return { score, interpretation, details: { Selected_Class: scoreToDescriptionMap[score as string] } };
-    },
-    references: ["Fitzpatrick RE, Goldman MP, Satur NM, Tope WD. Pulsed carbon dioxide laser resurfacing of photo-aged facial skin. Arch Dermatol. 1996 Mar;132(3):395-402."]
-  },
-  {
-    id: "glogau_photoaging",
-    name: "Glogau Photoaging Classification",
-    acronym: "Glogau Scale",
-    condition: "Photoaging",
-    keywords: ["glogau", "photoaging", "skin aging", "wrinkles"],
-    description: "Categorizes the severity of photoaging based on wrinkling and other clinical signs.",
-    sourceType: 'Research',
-    icon: Sun,
-    inputs: [
-      {
-        id: "glogau_type",
-        label: "Select Glogau Classification Type",
-        type: 'select',
-        options: [
-          { value: "I", label: "Type I (Mild): No wrinkles, early photoaging, minimal or no makeup." },
-          { value: "II", label: "Type II (Moderate): Wrinkles in motion, early to moderate photoaging, usually wears some makeup." },
-          { value: "III", label: "Type III (Advanced): Wrinkles at rest, advanced photoaging, always wears makeup." },
-          { value: "IV", label: "Type IV (Severe): Only wrinkles, severe photoaging, cannot wear makeup as it cakes and cracks." }
-        ],
-        defaultValue: "I",
-        validation: getValidationSchema('select', [{ value: "I", label: "Type I (Mild): No wrinkles, early photoaging, minimal or no makeup." }])
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const score = inputs.glogau_type || "I";
-       const scoreToDescriptionMap: Record<string, string> = {
-          "I": "Type I (Mild): No wrinkles, early photoaging, minimal or no makeup.",
-          "II": "Type II (Moderate): Wrinkles in motion, early to moderate photoaging, usually wears some makeup.",
-          "III": "Type III (Advanced): Wrinkles at rest, advanced photoaging, always wears makeup.",
-          "IV": "Type IV (Severe): Only wrinkles, severe photoaging, cannot wear makeup as it cakes and cracks."
-      };
-      const interpretation = `Glogau Photoaging Classification: ${scoreToDescriptionMap[score as string]}. This is a descriptive classification based on the level of wrinkling and makeup use.`;
-      return { score, interpretation, details: { Selected_Type: scoreToDescriptionMap[score as string] } };
-    },
-    references: ["Glogau RG. Aesthetic and anatomic analysis of the aging skin. Semin Cutan Med Surg. 1996 Sep;15(3):134-8."]
-  },
-  {
-    id: "nailfold_capillaroscopy",
-    name: "Nailfold Capillaroscopy Patterns (SSc)",
-    acronym: "NFC Patterns",
-    condition: "Systemic Sclerosis",
-    keywords: ["nailfold capillaroscopy", "ssc", "systemic sclerosis", "microangiopathy", "scleroderma pattern"],
-    description: "Identifies specific patterns in nailfold capillaries associated with Systemic Sclerosis (SSc) and other connective tissue diseases.",
-    sourceType: 'Research',
-    icon: ZoomIn,
-    inputs: [
-      {
-        id: "nfc_pattern",
-        label: "Identified Nailfold Capillaroscopy Pattern",
-        type: 'select',
-        options: [
-          { value: "Normal", label: "Normal Pattern" },
-          { value: "Non-specific", label: "Non-specific abnormalities (not SSc pattern)" },
-          { value: "SSc Early", label: "SSc Pattern - Early (e.g., few giant capillaries, few hemorrhages, no severe loss of capillaries, preserved architecture)" },
-          { value: "SSc Active", label: "SSc Pattern - Active (e.g., frequent giant capillaries, frequent hemorrhages, moderate loss of capillaries, mild disorganization)" },
-          { value: "SSc Late", label: "SSc Pattern - Late (e.g., irregular enlargement of capillaries, extensive avascular areas, severe disorganization, neoangiogenesis)" }
-        ],
-        defaultValue: "Normal",
-        validation: getValidationSchema('select', [{ value: "Normal", label: "Normal Pattern" }])
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const score = inputs.nfc_pattern || "Normal";
-      const interpretation = `Nailfold Capillaroscopy Pattern: ${score}. This classification helps in diagnosing and prognosticating SSc and related conditions.`;
-      return { score, interpretation, details: { Identified_Pattern: score } };
-    },
-    references: ["Cutolo M, Sulli A, Pizzorni C, Accardo S. Nailfold videocapillaroscopy in systemic sclerosis: correlations with serum autoantibodies and disease activity. Rheumatology (Oxford). 2000.", "Ingegnoli F, et al. Nailfold capillaroscopy in systemic sclerosis: data from the EULAR Scleroderma Trials and Research group (EUSTAR) database. Ann Rheum Dis. 2013 Aug;72(8):1347-53."]
-  },
-  {
-    id: "nih_gvhd_skin",
-    name: "NIH Chronic GVHD Skin Score",
-    acronym: "NIH cGVHD Skin",
-    condition: "GVHD (Graft-Versus-Host Disease)",
-    keywords: ["gvhd", "chronic gvhd", "skin score", "nih consensus", "transplant"],
-    description: "Standardized assessment of skin involvement in chronic Graft-Versus-Host Disease (cGVHD) based on NIH consensus criteria.",
-    sourceType: 'Clinical Guideline',
-    icon: Shield,
-    inputs: [
-      {
-        id: "nih_skin_score",
-        label: "Overall NIH Skin Score (cGVHD)",
-        type: 'select',
-        options: [
-          { value: 0, label: "0 - No signs of cGVHD in skin." },
-          { value: 1, label: "1 - Mild: ≤18% BSA erythematous rash OR morpheaform/lichen planus-like features involving ≤18% BSA without joint restriction." },
-          { value: 2, label: "2 - Moderate: >18% BSA erythematous rash OR morpheaform/lichen planus-like features involving >18% BSA OR any BSA % with joint restriction in 1-2 joint areas." },
-          { value: 3, label: "3 - Severe: Generalized erythroderma OR morpheaform/lichen planus-like features with joint restriction in ≥3 joint areas or severe functional impairment." }
-        ],
-        defaultValue: 0,
-        validation: getValidationSchema('select',[],0,3)
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const score = Number(inputs.nih_skin_score);
-      const scoreMap: Record<number, string> = { 0: "None", 1: "Mild", 2: "Moderate", 3: "Severe" };
-      const interpretation = `NIH cGVHD Skin Score: ${score} (${scoreMap[score] || 'N/A'}). This score reflects the severity of cutaneous chronic GVHD.`;
-      return { score, interpretation, details: { Severity_Grade: scoreMap[score] || 'N/A' } };
-    },
-    references: ["Filipovich AH, et al. National Institutes of Health consensus development project on criteria for clinical trials in chronic graft-versus-host disease: I. Diagnosis and staging working group report. Biol Blood Marrow Transplant. 2005.", "Jagasia MH, et al. National Institutes of Health Consensus Development Project on Criteria for Clinical Trials in Chronic Graft-versus-Host Disease: I. The 2014 Diagnosis and Staging Working Group report. Biol Blood Marrow Transplant. 2015."]
-  },
-  {
-    id: "behcet_mucocutaneous",
-    name: "Behçet's Disease Mucocutaneous Index (Simplified)",
-    acronym: "BD Muco Index",
-    condition: "Behçet's Disease",
-    keywords: ["behcet", "mucocutaneous", "activity index", "oral ulcers", "genital ulcers", "skin lesions"],
-    description: "Assesses mucocutaneous activity in Behçet's Disease. This is a simplified representation; various indices exist. This tool accepts a pre-calculated activity score.",
-    sourceType: 'Research',
-    icon: MessageSquare,
-    inputs: [
-      { id: "bd_activity_score", label: "Mucocutaneous Activity Score", type: 'number', defaultValue: 0, description: "Enter pre-calculated score based on specific index criteria (e.g., presence/number of oral ulcers, genital ulcers, skin lesions).", validation: getValidationSchema('number') }
-    ],
-    calculationLogic: (inputs) => {
-      const score = Number(inputs.bd_activity_score) || 0;
-      const interpretation = `Behçet's Disease Mucocutaneous Activity Score: ${score}. Higher score indicates greater mucocutaneous activity. Interpretation depends on the specific index used.`;
-      return { score, interpretation, details: { User_Entered_Score: score } };
-    },
-    references: ["Various indices have been proposed, e.g., Behçet's Disease Current Activity Form (BDCAF) includes mucocutaneous items. No single universally adopted 'Mucocutaneous Index' is standard, often part of broader activity scores."]
-  },
-  {
     id: "mfg_score",
     name: "Ferriman-Gallwey Score (mFG)",
     acronym: "mFG Score",
@@ -2040,304 +1894,306 @@ export const toolData: Tool[] = [
     keywords: ["mfg", "ferriman-gallwey", "hirsutism", "hair growth", "women"],
     sourceType: 'Clinical Guideline',
     icon: Type, 
-    inputs: [
-      ...(["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"].map(areaName => {
-        const areaId = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
-        const scoreOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${i === 0 ? 'Absent' : (i === 1 ? 'Minimal' : (i === 2 ? 'Mild' : (i === 3 ? 'Moderate' : 'Severe')))}` }));
-        return {
-          id: areaId,
-          label: `${areaName} Score (0-4)`,
-          type: 'select' as 'select',
-          options: scoreOptions,
-          defaultValue: 0,
-          description: "0=Absent, 1=Minimal, 2=Mild, 3=Moderate, 4=Severe terminal hair. Refer to mFG guide for visuals.",
-          validation: getValidationSchema('select', scoreOptions, 0, 4)
-        };
-      }))
-    ],
+    formSections: 
+        (["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"].map(areaName => {
+            const areaId = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
+            const scoreOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${i === 0 ? 'Absent' : (i === 1 ? 'Minimal' : (i === 2 ? 'Mild' : (i === 3 ? 'Moderate' : 'Severe')))}` }));
+            return {
+            id: areaId,
+            label: `${areaName} Score (0-4)`,
+            type: 'select' as 'select',
+            options: scoreOptions,
+            defaultValue: 0,
+            description: "0=Absent, 1=Minimal, 2=Mild, 3=Moderate, 4=Severe terminal hair. Refer to mFG guide for visuals.",
+            validation: getValidationSchema('select', scoreOptions, 0, 4)
+            } as InputConfig;
+        }))
+    ,
     calculationLogic: (inputs) => {
-      let totalScore = 0;
-      const areaScores: Record<string, number> = {};
-      const areas = ["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"];
-      areas.forEach(areaName => {
-        const key = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
-        const score = Number(inputs[key]) || 0;
-        totalScore += score;
-        areaScores[areaName.replace(/\s+/g, '_')] = score;
-      });
+        let totalScore = 0;
+        const areaScores: Record<string, number> = {};
+        const areas = ["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"];
+        areas.forEach(areaName => {
+            const key = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
+            const score = Number(inputs[key]) || 0;
+            totalScore += score;
+            areaScores[areaName.replace(/\s+/g, '_')] = score;
+        });
 
-      let severityInterpretation = "";
-      if (totalScore < 8) severityInterpretation = "Normal hair growth or clinically insignificant hirsutism.";
-      else if (totalScore <= 15) severityInterpretation = "Mild hirsutism.";
-      else severityInterpretation = "Moderate to Severe hirsutism.";
-      
-      const interpretation = `mFG Score: ${totalScore} (Range: 0-36). ${severityInterpretation} A score of ≥8 is often used to define hirsutism.`;
-      return { score: totalScore, interpretation, details: areaScores };
+        let severityInterpretation = "";
+        if (totalScore < 8) severityInterpretation = "Normal hair growth or clinically insignificant hirsutism.";
+        else if (totalScore <= 15) severityInterpretation = "Mild hirsutism.";
+        else severityInterpretation = "Moderate to Severe hirsutism.";
+        
+        const interpretation = `mFG Score: ${totalScore} (Range: 0-36). ${severityInterpretation} A score of ≥8 is often used to define hirsutism.`;
+        return { score: totalScore, interpretation, details: areaScores };
     },
-    references: ["Ferriman D, Gallwey JD. Clinical assessment of body hair growth in women. J Clin Endocrinol Metab. 1961;21:1440-7.", "Hatch R, Rosenfield RL, Kim MH, Tredway D. Hirsutism: implications, etiology, and management. Am J Obstet Gynecol. 1981;140(7):815-30. (Modified score popularization)"]
-  },
-  {
-    id: "ctcae_skin",
-    name: "CTCAE - Skin Toxicities",
-    acronym: "CTCAE Skin",
-    description: "Standardized grading of dermatologic Adverse Events (AEs) using the Common Terminology Criteria for Adverse Events. Select an AE and then its grade.",
-    condition: "Adverse Drug Reactions",
-    keywords: ["ctcae", "skin toxicity", "adverse event", "drug reaction", "grading", "chemotherapy", "oncology"],
-    sourceType: 'Clinical Guideline',
-    icon: ShieldQuestion,
-    inputs: [
-      {
-        id: "ae_term_select",
-        label: "Select Cutaneous Adverse Event",
-        type: 'select',
-        options: ctcaeAdverseEventOptions,
-        defaultValue: ctcaeAdverseEventOptions[0]?.value || "Other",
-        validation: getValidationSchema('select', ctcaeAdverseEventOptions)
-      },
-      { 
-        id: "ctcae_grade", 
-        label: "CTCAE Grade (1-5)", 
-        type: 'select', 
-        options: [
-          { value: 1, label: "Grade 1" },
-          { value: 2, label: "Grade 2" },
-          { value: 3, label: "Grade 3" },
-          { value: 4, label: "Grade 4" },
-          { value: 5, label: "Grade 5" }
-        ], 
-        defaultValue: 1,
-        description: "Select grade. Specific criteria summary for the chosen AE will be shown in results.",
-        validation: getValidationSchema('select', [{value:1, label:"Grade 1"}], 1, 5) 
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const selectedAe = inputs.ae_term_select as string;
-      const grade = Number(inputs.ctcae_grade);
-      const gradeMap: Record<number, string> = { 1: "Mild", 2: "Moderate", 3: "Severe", 4: "Life-threatening", 5: "Death" };
-      
-      let aeSpecificCriteria = "N/A";
-      if (ctcaeCriteriaSnippets[selectedAe] && ctcaeCriteriaSnippets[selectedAe][grade]) {
-        aeSpecificCriteria = ctcaeCriteriaSnippets[selectedAe][grade];
-      } else if (ctcaeCriteriaSnippets[selectedAe] && !ctcaeCriteriaSnippets[selectedAe][grade] && (grade === 4 || grade === 5)) {
-         if (grade === 4 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Life-threatening consequences; urgent intervention indicated.";
-         else if (grade === 5 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Death related to AE.";
-         else aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for ${selectedAe}. Refer to CTCAE manual.`;
-      } else if (selectedAe === "Other") {
-        aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for "Other" AE. Document specific criteria manually.`;
-      } else {
-        aeSpecificCriteria = `Criteria for ${selectedAe} Grade ${grade} not pre-defined in this tool's snippets. Grade ${grade} generally corresponds to: ${gradeMap[grade] || 'N/A'}. Refer to full CTCAE manual.`;
-      }
-
-      const interpretation = `Adverse Event: ${selectedAe}\nCTCAE Grade: ${grade} (${gradeMap[grade] || 'N/A'})\nCriteria Summary: ${aeSpecificCriteria}\n(Refer to full CTCAE v5.0/v6.0 documentation for complete definitions and all terms.)`;
-      
-      return { 
-        score: grade, 
-        interpretation, 
-        details: { 
-          Adverse_Event_Term: selectedAe, 
-          Selected_Grade: grade,
-          Grade_Description: gradeMap[grade] || "N/A",
-          Criteria_Summary: aeSpecificCriteria 
-        } 
-      };
+    references: ["Ferriman D, Gallwey JD. Clinical assessment of body hair growth in women. J Clin Endocrinol Metab. 1961;21:1440-7.", "Hatch R, Rosenfield RL, Kim MH, Tredway D. Hirsutism: implications, etiology, and management. Am J Obstet Gynecol. 1981;140(7):815-30."]
     },
-    references: ["National Cancer Institute (NCI). Common Terminology Criteria for Adverse Events (CTCAE). (Current version should be cited, e.g., v5.0, v6.0)"]
-  },
-  {
-    id: "bilag_skin",
-    name: "BILAG - Skin Component",
-    acronym: "BILAG Skin",
-    description: "Assesses lupus activity in the mucocutaneous domain as part of the British Isles Lupus Assessment Group index.",
-    condition: "Lupus",
-    keywords: ["bilag", "lupus", "sle", "skin", "mucocutaneous", "activity", "disease activity index"],
-    sourceType: 'Clinical Guideline',
-    icon: FileHeart,
-    inputs: [
-      { 
-        id: "bilag_skin_grade", 
-        label: "BILAG Mucocutaneous Grade", 
-        type: 'select', 
-        options: [
-          { value: "A", label: "A - Severe disease activity" },
-          { value: "B", label: "B - Moderate disease activity" },
-          { value: "C", label: "C - Mild disease activity" },
-          { value: "D", label: "D - Disease inactive but previous involvement" },
-          { value: "E", label: "E - Never involved" }
-        ], 
-        defaultValue: "E",
-        validation: getValidationSchema('select', [{ value: "A", label: "A - Severe disease activity" }])
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const grade = inputs.bilag_skin_grade as string || "E";
-      const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 }; // Example numeric mapping if needed
-      const activityMap: Record<string, string> = { "A": "Severe", "B": "Moderate", "C": "Mild", "D": "Inactive (previous)", "E": "Never involved" };
-      const interpretation = `BILAG Skin Component Grade: ${grade} (${activityMap[grade] || "N/A"}). This reflects current lupus activity in the skin and mucous membranes.`;
-      return { score: scoreMap[grade] !== undefined ? scoreMap[grade] : 0, interpretation, details: { BILAG_Grade: grade, Activity_Level: activityMap[grade] || "N/A" } };
-    },
-    references: ["Hay EM, et al. Criteria for data collection and analysis in randomized clinical trials for systemic lupus erythematosus (SLE) I. The British Isles Lupus Assessment Group (BILAG) index for the assessment of SLE activity. Br J Rheumatol. 1993.", "Isenberg DA, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford). 2005."]
-  },
-  {
-    id: "sledai_skin",
-    name: "SLEDAI - Skin Descriptors",
-    acronym: "SLEDAI Skin",
-    description: "Scores specific skin manifestations as part of the Systemic Lupus Erythematosus Disease Activity Index (SLEDAI).",
-    condition: "Lupus",
-    keywords: ["sledai", "lupus", "sle", "skin descriptors", "disease activity", "rash", "alopecia", "mucosal ulcers", "vasculitis"],
-    sourceType: 'Clinical Guideline',
-    icon: FileHeart,
-    inputs: [
-      { id: "rash", label: "Rash (New/Recurrent inflammatory type - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "alopecia", label: "Alopecia (New/Recurrent abnormal, diffuse, or patchy hair loss - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "mucosal_ulcers", label: "Mucosal Ulcers (New/Recurrent oral or nasal - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "vasculitis", label: "Cutaneous Vasculitis (Ulceration, gangrene, tender nodules, purpura, splinter hemorrhages, periungual lesions - 8 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
-    ],
-    calculationLogic: (inputs) => {
-      let score = 0;
-      const details: Record<string, string> = {};
-      if (inputs.rash) { score += 4; details.Rash = "Present (4 pts)"; } else { details.Rash = "Absent (0 pts)"; }
-      if (inputs.alopecia) { score += 4; details.Alopecia = "Present (4 pts)"; } else { details.Alopecia = "Absent (0 pts)"; }
-      if (inputs.mucosal_ulcers) { score += 4; details.Mucosal_Ulcers = "Present (4 pts)"; } else { details.Mucosal_Ulcers = "Absent (0 pts)"; }
-      if (inputs.vasculitis) { score += 8; details.Cutaneous_Vasculitis = "Present (8 pts)"; } else { details.Cutaneous_Vasculitis = "Absent (0 pts)"; }
-      
-      const interpretation = `SLEDAI Skin Descriptors Score: ${score}. This score contributes to the total SLEDAI. Higher score indicates greater skin-related disease activity.`;
-      return { score, interpretation, details };
-    },
-    references: ["Bombardier C, et al. Derivation of the SLEDAI. A disease activity index for lupus patients. Arthritis Rheum. 1992.", "Gladman DD, et al. Systemic Lupus Erythematosus Disease Activity Index 2000. J Rheumatol. 2002."]
-  },
-  {
-    id: "bvas_skin",
-    name: "BVAS - Skin Component",
-    acronym: "BVAS Skin",
-    description: "Scores skin manifestations for the Birmingham Vasculitis Activity Score (BVAS).",
-    condition: "Vasculitis",
-    keywords: ["bvas", "vasculitis", "skin involvement", "activity score", "rash", "ulcer", "gangrene"],
-    sourceType: 'Clinical Guideline',
-    icon: HeartPulse,
-    inputs: [
-      { 
-        id: "rash_bvas", 
-        label: "Rash (Purpura, urticaria, other)", 
-        type: 'select', 
-        options: [
-          { value: 0, label: "0 - Absent" },
-          { value: 1, label: "1 - Persistent (present at this visit, but also at last visit without worsening)" },
-          { value: 3, label: "3 - New/Worse (new onset or definite worsening since last visit)" }
-        ], 
-        defaultValue: 0,
-        validation: getValidationSchema('select', [], 0, 3)
-      },
-      { id: "ulcer_bvas", label: "Skin Ulceration (non-digital, excluding major gangrene) (1 point if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "gangrene_bvas", label: "Major Digital Ischemia/Gangrene (6 points if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "other_skin_bvas", label: "Other Skin Lesions (e.g., nodules, livedo - 1 point if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
-    ],
-    calculationLogic: (inputs) => {
-      let score = 0;
-      const details: Record<string, string> = {};
-      const rashScore = Number(inputs.rash_bvas) || 0;
-      score += rashScore;
-      details.Rash = `Score ${rashScore}`;
-
-      if (inputs.ulcer_bvas) { score += 1; details.Skin_Ulceration = "Present (1 pt)"; } else { details.Skin_Ulceration = "Absent (0 pts)"; }
-      if (inputs.gangrene_bvas) { score += 6; details.Major_Digital_Ischemia_Gangrene = "Present (6 pts)"; } else { details.Major_Digital_Ischemia_Gangrene = "Absent (0 pts)"; }
-      if (inputs.other_skin_bvas) { score += 1; details.Other_Skin_Lesions = "Present (1 pt)"; } else { details.Other_Skin_Lesions = "Absent (0 pts)"; }
-      
-      const interpretation = `BVAS Skin Component Score: ${score}. This score contributes to the total BVAS. Higher score indicates greater skin-related vasculitis activity. (Note: Scoring assumes new/worse for checkbox items if checked).`;
-      return { score, interpretation, details };
-    },
-    references: ["Luqmani RA, et al. Birmingham Vasculitis Activity Score (BVAS) in systemic necrotizing vasculitis. QJM. 1994.", "Mukhtyar C, et al. Modification and validation of the Birmingham Vasculitis Activity Score (version 3). Ann Rheum Dis. 2009."]
-  },
-  {
-    id: "essdai_cutaneous",
-    name: "ESSDAI - Cutaneous Domain",
-    acronym: "ESSDAI Cutaneous",
-    description: "Scores the cutaneous domain of the EULAR Sjögren's Syndrome Disease Activity Index (ESSDAI).",
-    condition: "Sjögren's Syndrome",
-    keywords: ["essdai", "sjogren's syndrome", "cutaneous domain", "skin activity", "disease activity index"],
-    sourceType: 'Clinical Guideline',
-    icon: CloudDrizzle,
-    inputs: [
-      { 
-        id: "cutaneous_activity_level", 
-        label: "Cutaneous Domain Activity Level", 
-        type: 'select', 
-        options: [
-          { value: 0, label: "0 - No activity" },
-          { value: 1, label: "1 - Low activity (e.g., non-vasculitic purpura <2 sites, limited urticarial vasculitis)" },
-          { value: 2, label: "2 - Moderate activity (e.g., vasculitic purpura >2 sites or one major site, extensive urticarial vasculitis, cutaneous ulcers)" },
-          { value: 3, label: "3 - High activity (e.g., extensive/multiple skin ulcers, digital gangrene)" }
-        ], 
-        defaultValue: 0,
-        description: "Refer to ESSDAI definitions for specific criteria for each activity level.",
-        validation: getValidationSchema('select', [], 0, 3)
-      }
-    ],
-    calculationLogic: (inputs) => {
-      const activityLevel = Number(inputs.cutaneous_activity_level) || 0;
-      const weightedScore = activityLevel * 2; // Cutaneous domain weight in ESSDAI is 2
-      const activityMap: Record<number, string> = { 0: "No activity", 1: "Low activity", 2: "Moderate activity", 3: "High activity" };
-
-      const interpretation = `ESSDAI Cutaneous Domain: Activity Level ${activityLevel} (${activityMap[activityLevel] || "N/A"}). Weighted Score contribution to total ESSDAI: ${weightedScore}.`;
-      return { score: weightedScore, interpretation, details: { Activity_Level: activityLevel, Level_Description: activityMap[activityLevel] || "N/A" } };
-    },
-    references: ["Seror R, et al. EULAR Sjogren's Syndrome Disease Activity Index (ESSDAI): a user guide. RMD Open. 2015.", "Shiboski CH, et al. American College of Rheumatology classification criteria for Sjögren's syndrome: a data-driven, expert consensus approach in the Sjögren's International Collaborative Clinical Alliance cohort. Arthritis Care Res (Hoboken). 2012. (ESSDAI is used in conjunction)."]
-  },
-  {
-    id: "scorten",
-    name: "SCORTEN",
-    acronym: "SCORTEN",
-    description: "A severity-of-illness score to predict mortality in patients with Stevens-Johnson Syndrome (SJS) or Toxic Epidermal Necrolysis (TEN).",
-    condition: "SJS/TEN",
-    keywords: ["scorten", "sjs", "ten", "stevens-johnson syndrome", "toxic epidermal necrolysis", "prognosis", "mortality", "drug reaction"],
-    sourceType: 'Clinical Guideline',
-    icon: ShieldAlert,
-    inputs: [
-      { id: "age_ge40", label: "Age ≥ 40 years", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "malignancy_present", label: "Associated malignancy (cancer)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "heart_rate_ge120", label: "Heart rate ≥ 120 beats/minute", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "bsa_gt10", label: "Initial percentage of body surface area (BSA) detachment > 10%", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "serum_urea_gt10", label: "Serum urea level > 10 mmol/L (or > 28 mg/dL)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "serum_bicarbonate_lt20", label: "Serum bicarbonate level < 20 mmol/L (or < 20 mEq/L)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-      { id: "serum_glucose_gt14", label: "Serum glucose level > 14 mmol/L (or > 252 mg/dL)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
-    ],
-    calculationLogic: (inputs) => {
-      let score = 0;
-      const details: Record<string, string> = {};
-      const factors = [
-        { key: "age_ge40", label: "Age ≥ 40 years" },
-        { key: "malignancy_present", label: "Malignancy present" },
-        { key: "heart_rate_ge120", label: "Heart rate ≥ 120/min" },
-        { key: "bsa_gt10", label: "BSA detachment > 10%" },
-        { key: "serum_urea_gt10", label: "Serum urea > 10 mmol/L" },
-        { key: "serum_bicarbonate_lt20", label: "Serum bicarbonate < 20 mmol/L" },
-        { key: "serum_glucose_gt14", label: "Serum glucose > 14 mmol/L" }
-      ];
-      factors.forEach(factor => {
-        if (inputs[factor.key]) {
-          score++;
-          details[factor.label] = "Present (1 pt)";
-        } else {
-          details[factor.label] = "Absent (0 pts)";
+    {
+        id: "ctcae_skin",
+        name: "CTCAE - Skin Toxicities",
+        acronym: "CTCAE Skin",
+        description: "Standardized grading of dermatologic Adverse Events (AEs) using the Common Terminology Criteria for Adverse Events. Select an AE and then its grade.",
+        condition: "Adverse Drug Reactions",
+        keywords: ["ctcae", "skin toxicity", "adverse event", "drug reaction", "grading", "chemotherapy", "oncology"],
+        sourceType: 'Clinical Guideline',
+        icon: ShieldQuestion,
+        formSections: [
+        {
+            id: "ae_term_select",
+            label: "Select Cutaneous Adverse Event",
+            type: 'select',
+            options: ctcaeAdverseEventOptions,
+            defaultValue: ctcaeAdverseEventOptions[0]?.value || "Other",
+            validation: getValidationSchema('select', ctcaeAdverseEventOptions)
+        },
+        { 
+            id: "ctcae_grade", 
+            label: "CTCAE Grade (1-5)", 
+            type: 'select', 
+            options: [
+            { value: 1, label: "Grade 1" },
+            { value: 2, label: "Grade 2" },
+            { value: 3, label: "Grade 3" },
+            { value: 4, label: "Grade 4" },
+            { value: 5, label: "Grade 5" }
+            ], 
+            defaultValue: 1,
+            description: "Select grade. Specific criteria summary for the chosen AE will be shown in results.",
+            validation: getValidationSchema('select', [{value:1, label:"Grade 1"}], 1, 5) 
         }
-      });
+        ],
+        calculationLogic: (inputs) => {
+        const selectedAe = inputs.ae_term_select as string;
+        const grade = Number(inputs.ctcae_grade);
+        const gradeMap: Record<number, string> = { 1: "Mild", 2: "Moderate", 3: "Severe", 4: "Life-threatening", 5: "Death" };
+        
+        let aeSpecificCriteria = "N/A";
+        if (ctcaeCriteriaSnippets[selectedAe] && ctcaeCriteriaSnippets[selectedAe][grade]) {
+            aeSpecificCriteria = ctcaeCriteriaSnippets[selectedAe][grade];
+        } else if (ctcaeCriteriaSnippets[selectedAe] && !ctcaeCriteriaSnippets[selectedAe][grade] && (grade === 4 || grade === 5)) {
+            if (grade === 4 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Life-threatening consequences; urgent intervention indicated.";
+            else if (grade === 5 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Death related to AE.";
+            else aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for ${selectedAe}. Refer to CTCAE manual.`;
+        } else if (selectedAe === "Other") {
+            aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for "Other" AE. Document specific criteria manually.`;
+        } else {
+            aeSpecificCriteria = `Criteria for ${selectedAe} Grade ${grade} not pre-defined in this tool's snippets. Grade ${grade} generally corresponds to: ${gradeMap[grade] || 'N/A'}. Refer to full CTCAE manual.`;
+        }
 
-      const mortalityMap: Record<number, string> = {
-        0: "3.2%", 1: "12.1%", 2: "35.3%", 3: "58.3%", 4: "58.3%+", 5: ">90%", 6: ">90%", 7: ">90%"
-      };
-      
-      let mortalityPrediction = ">90%"; // Default for scores >= 5
-      if (score <= 3) mortalityPrediction = mortalityMap[score];
-      else if (score === 4) mortalityPrediction = mortalityMap[4];
-
-
-      const interpretation = `SCORTEN: ${score} (Range: 0-7). Predicted mortality risk (approximate): ${mortalityPrediction}. This score helps estimate prognosis in SJS/TEN.`;
-      return { score, interpretation, details };
+        const interpretation = `Adverse Event: ${selectedAe}\nCTCAE Grade: ${grade} (${gradeMap[grade] || 'N/A'})\nCriteria Summary: ${aeSpecificCriteria}\n(Refer to full CTCAE v5.0/v6.0 documentation for complete definitions and all terms.)`;
+        
+        return { 
+            score: grade, 
+            interpretation, 
+            details: { 
+            Adverse_Event_Term: selectedAe, 
+            Selected_Grade: grade,
+            Grade_Description: gradeMap[grade] || "N/A",
+            Criteria_Summary: aeSpecificCriteria 
+            } 
+        };
+        },
+        references: ["National Cancer Institute (NCI). Common Terminology Criteria for Adverse Events (CTCAE). (Current version should be cited, e.g., v5.0, v6.0)"]
     },
-    references: ["Bastuji-Garin S, et al. SCORTEN: a severity-of-illness score for toxic epidermal necrolysis. J Invest Dermatol. 2000 Aug;115(2):149-53."]
-  }
+    {
+        id: "bilag_skin",
+        name: "BILAG - Skin Component",
+        acronym: "BILAG Skin",
+        description: "Assesses lupus activity in the mucocutaneous domain as part of the British Isles Lupus Assessment Group index.",
+        condition: "Lupus",
+        keywords: ["bilag", "lupus", "sle", "skin", "mucocutaneous", "activity", "disease activity index"],
+        sourceType: 'Clinical Guideline',
+        icon: FileHeart,
+        formSections: [
+        { 
+            id: "bilag_skin_grade", 
+            label: "BILAG Mucocutaneous Grade", 
+            type: 'select', 
+            options: [
+            { value: "A", label: "A - Severe disease activity" },
+            { value: "B", label: "B - Moderate disease activity" },
+            { value: "C", label: "C - Mild disease activity" },
+            { value: "D", label: "D - Disease inactive but previous involvement" },
+            { value: "E", label: "E - Never involved" }
+            ], 
+            defaultValue: "E",
+            validation: getValidationSchema('select', [{ value: "A", label: "A - Severe disease activity" }])
+        }
+        ],
+        calculationLogic: (inputs) => {
+        const grade = inputs.bilag_skin_grade as string || "E";
+        const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 }; 
+        const activityMap: Record<string, string> = { "A": "Severe", "B": "Moderate", "C": "Mild", "D": "Inactive (previous)", "E": "Never involved" };
+        const interpretation = `BILAG Skin Component Grade: ${grade} (${activityMap[grade] || "N/A"}). This reflects current lupus activity in the skin and mucous membranes.`;
+        return { score: scoreMap[grade] !== undefined ? scoreMap[grade] : 0, interpretation, details: { BILAG_Grade: grade, Activity_Level: activityMap[grade] || "N/A" } };
+        },
+        references: ["Hay EM, et al. Criteria for data collection and analysis in randomized clinical trials for systemic lupus erythematosus (SLE) I. The British Isles Lupus Assessment Group (BILAG) index for the assessment of SLE activity. Br J Rheumatol. 1993.", "Isenberg DA, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford). 2005."]
+    },
+    {
+        id: "sledai_skin",
+        name: "SLEDAI - Skin Descriptors",
+        acronym: "SLEDAI Skin",
+        description: "Scores specific skin manifestations as part of the Systemic Lupus Erythematosus Disease Activity Index (SLEDAI).",
+        condition: "Lupus",
+        keywords: ["sledai", "lupus", "sle", "skin descriptors", "disease activity", "rash", "alopecia", "mucosal ulcers", "vasculitis"],
+        sourceType: 'Clinical Guideline',
+        icon: FileHeart,
+        formSections: [
+        { id: "rash", label: "Rash (New/Recurrent inflammatory type - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "alopecia", label: "Alopecia (New/Recurrent abnormal, diffuse, or patchy hair loss - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "mucosal_ulcers", label: "Mucosal Ulcers (New/Recurrent oral or nasal - 4 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "vasculitis", label: "Cutaneous Vasculitis (Ulceration, gangrene, tender nodules, purpura, splinter hemorrhages, periungual lesions - 8 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
+        ],
+        calculationLogic: (inputs) => {
+        let score = 0;
+        const details: Record<string, string> = {};
+        if (inputs.rash) { score += 4; details.Rash = "Present (4 pts)"; } else { details.Rash = "Absent (0 pts)"; }
+        if (inputs.alopecia) { score += 4; details.Alopecia = "Present (4 pts)"; } else { details.Alopecia = "Absent (0 pts)"; }
+        if (inputs.mucosal_ulcers) { score += 4; details.Mucosal_Ulcers = "Present (4 pts)"; } else { details.Mucosal_Ulcers = "Absent (0 pts)"; }
+        if (inputs.vasculitis) { score += 8; details.Cutaneous_Vasculitis = "Present (8 pts)"; } else { details.Cutaneous_Vasculitis = "Absent (0 pts)"; }
+        
+        const interpretation = `SLEDAI Skin Descriptors Score: ${score}. This score contributes to the total SLEDAI. Higher score indicates greater skin-related disease activity.`;
+        return { score, interpretation, details };
+        },
+        references: ["Bombardier C, et al. Derivation of the SLEDAI. A disease activity index for lupus patients. Arthritis Rheum. 1992.", "Gladman DD, et al. Systemic Lupus Erythematosus Disease Activity Index 2000. J Rheumatol. 2002."]
+    },
+    {
+        id: "bvas_skin",
+        name: "BVAS - Skin Component",
+        acronym: "BVAS Skin",
+        description: "Scores skin manifestations for the Birmingham Vasculitis Activity Score (BVAS).",
+        condition: "Vasculitis",
+        keywords: ["bvas", "vasculitis", "skin involvement", "activity score", "rash", "ulcer", "gangrene"],
+        sourceType: 'Clinical Guideline',
+        icon: HeartPulse,
+        formSections: [
+        { 
+            id: "rash_bvas", 
+            label: "Rash (Purpura, urticaria, other)", 
+            type: 'select', 
+            options: [
+            { value: 0, label: "0 - Absent" },
+            { value: 1, label: "1 - Persistent (present at this visit, but also at last visit without worsening)" },
+            { value: 3, label: "3 - New/Worse (new onset or definite worsening since last visit)" }
+            ], 
+            defaultValue: 0,
+            validation: getValidationSchema('select', [], 0, 3)
+        },
+        { id: "ulcer_bvas", label: "Skin Ulceration (non-digital, excluding major gangrene) (1 point if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "gangrene_bvas", label: "Major Digital Ischemia/Gangrene (6 points if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "other_skin_bvas", label: "Other Skin Lesions (e.g., nodules, livedo - 1 point if new/worse)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
+        ],
+        calculationLogic: (inputs) => {
+        let score = 0;
+        const details: Record<string, string> = {};
+        const rashScore = Number(inputs.rash_bvas) || 0;
+        score += rashScore;
+        details.Rash = `Score ${rashScore}`;
+
+        if (inputs.ulcer_bvas) { score += 1; details.Skin_Ulceration = "Present (1 pt)"; } else { details.Skin_Ulceration = "Absent (0 pts)"; }
+        if (inputs.gangrene_bvas) { score += 6; details.Major_Digital_Ischemia_Gangrene = "Present (6 pts)"; } else { details.Major_Digital_Ischemia_Gangrene = "Absent (0 pts)"; }
+        if (inputs.other_skin_bvas) { score += 1; details.Other_Skin_Lesions = "Present (1 pt)"; } else { details.Other_Skin_Lesions = "Absent (0 pts)"; }
+        
+        const interpretation = `BVAS Skin Component Score: ${score}. This score contributes to the total BVAS. Higher score indicates greater skin-related vasculitis activity. (Note: Scoring assumes new/worse for checkbox items if checked).`;
+        return { score, interpretation, details };
+        },
+        references: ["Luqmani RA, et al. Birmingham Vasculitis Activity Score (BVAS) in systemic necrotizing vasculitis. QJM. 1994.", "Mukhtyar C, et al. Modification and validation of the Birmingham Vasculitis Activity Score (version 3). Ann Rheum Dis. 2009."]
+    },
+    {
+        id: "essdai_cutaneous",
+        name: "ESSDAI - Cutaneous Domain",
+        acronym: "ESSDAI Cutaneous",
+        description: "Scores the cutaneous domain of the EULAR Sjögren's Syndrome Disease Activity Index (ESSDAI).",
+        condition: "Sjögren's Syndrome",
+        keywords: ["essdai", "sjogren's syndrome", "cutaneous domain", "skin activity", "disease activity index"],
+        sourceType: 'Clinical Guideline',
+        icon: CloudDrizzle,
+        formSections: [
+        { 
+            id: "cutaneous_activity_level", 
+            label: "Cutaneous Domain Activity Level", 
+            type: 'select', 
+            options: [
+            { value: 0, label: "0 - No activity" },
+            { value: 1, label: "1 - Low activity (e.g., non-vasculitic purpura <2 sites, limited urticarial vasculitis)" },
+            { value: 2, label: "2 - Moderate activity (e.g., vasculitic purpura >2 sites or one major site, extensive urticarial vasculitis, cutaneous ulcers)" },
+            { value: 3, label: "3 - High activity (e.g., extensive/multiple skin ulcers, digital gangrene)" }
+            ], 
+            defaultValue: 0,
+            description: "Refer to ESSDAI definitions for specific criteria for each activity level.",
+            validation: getValidationSchema('select', [], 0, 3)
+        }
+        ],
+        calculationLogic: (inputs) => {
+        const activityLevel = Number(inputs.cutaneous_activity_level) || 0;
+        const weightedScore = activityLevel * 2; 
+        const activityMap: Record<number, string> = { 0: "No activity", 1: "Low activity", 2: "Moderate activity", 3: "High activity" };
+
+        const interpretation = `ESSDAI Cutaneous Domain: Activity Level ${activityLevel} (${activityMap[activityLevel] || "N/A"}). Weighted Score contribution to total ESSDAI: ${weightedScore}.`;
+        return { score: weightedScore, interpretation, details: { Activity_Level: activityLevel, Level_Description: activityMap[activityLevel] || "N/A" } };
+        },
+        references: ["Seror R, et al. EULAR Sjogren's Syndrome Disease Activity Index (ESSDAI): a user guide. RMD Open. 2015.", "Shiboski CH, et al. American College of Rheumatology classification criteria for Sjögren's syndrome: a data-driven, expert consensus approach in the Sjögren's International Collaborative Clinical Alliance cohort. Arthritis Care Res (Hoboken). 2012."]
+    },
+    {
+        id: "scorten",
+        name: "SCORTEN",
+        acronym: "SCORTEN",
+        description: "A severity-of-illness score to predict mortality in patients with Stevens-Johnson Syndrome (SJS) or Toxic Epidermal Necrolysis (TEN).",
+        condition: "SJS/TEN",
+        keywords: ["scorten", "sjs", "ten", "stevens-johnson syndrome", "toxic epidermal necrolysis", "prognosis", "mortality", "drug reaction"],
+        sourceType: 'Clinical Guideline',
+        icon: ShieldAlert,
+        formSections: [
+        { id: "age_ge40", label: "Age ≥ 40 years", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "malignancy_present", label: "Associated malignancy (cancer)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "heart_rate_ge120", label: "Heart rate ≥ 120 beats/minute", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "bsa_gt10", label: "Initial percentage of body surface area (BSA) detachment > 10%", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "serum_urea_gt10", label: "Serum urea level > 10 mmol/L (or > 28 mg/dL)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "serum_bicarbonate_lt20", label: "Serum bicarbonate level < 20 mmol/L (or < 20 mEq/L)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+        { id: "serum_glucose_gt14", label: "Serum glucose level > 14 mmol/L (or > 252 mg/dL)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') }
+        ],
+        calculationLogic: (inputs) => {
+        let score = 0;
+        const details: Record<string, string> = {};
+        const factors = [
+            { key: "age_ge40", label: "Age ≥ 40 years" },
+            { key: "malignancy_present", label: "Malignancy present" },
+            { key: "heart_rate_ge120", label: "Heart rate ≥ 120/min" },
+            { key: "bsa_gt10", label: "BSA detachment > 10%" },
+            { key: "serum_urea_gt10", label: "Serum urea > 10 mmol/L" },
+            { key: "serum_bicarbonate_lt20", label: "Serum bicarbonate < 20 mmol/L" },
+            { key: "serum_glucose_gt14", label: "Serum glucose > 14 mmol/L" }
+        ];
+        factors.forEach(factor => {
+            if (inputs[factor.key]) {
+            score++;
+            details[factor.label] = "Present (1 pt)";
+            } else {
+            details[factor.label] = "Absent (0 pts)";
+            }
+        });
+
+        const mortalityMap: Record<number, string> = {
+            0: "3.2%", 1: "12.1%", 2: "35.3%", 3: "58.3%", 4: "58.3%+", 5: ">90%", 6: ">90%", 7: ">90%"
+        };
+        
+        let mortalityPrediction = ">90%"; 
+        if (score <= 3) mortalityPrediction = mortalityMap[score];
+        else if (score === 4) mortalityPrediction = mortalityMap[4];
+
+
+        const interpretation = `SCORTEN: ${score} (Range: 0-7). Predicted mortality risk (approximate): ${mortalityPrediction}. This score helps estimate prognosis in SJS/TEN.`;
+        return { score, interpretation, details };
+        },
+        references: ["Bastuji-Garin S, et al. SCORTEN: a severity-of-illness score for toxic epidermal necrolysis. J Invest Dermatol. 2000 Aug;115(2):149-53."]
+    }
 ];
     
     
+
+
 
 
 
