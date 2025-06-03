@@ -4,11 +4,11 @@ import type { Tool } from './types';
 import {
   Calculator, Stethoscope, ClipboardList, Users, FileText, Pill,
   Users2, Thermometer, Scaling, Wind, AlignLeft, SquarePen, UserCheck, Activity,
-  CheckCircle, ListChecks, MessageSquare, FolderHeart, ShieldAlert, Brain, FolderKanban, // Added FolderKanban
+  CheckCircle, ListChecks, MessageSquare, FolderHeart, ShieldAlert, Brain, FolderKanban, 
   BarChart, Sun, Eye, Scissors, HelpCircle, Hand, Type, FileHeart, ShieldQuestion, Zap,
   ScalingIcon, Gauge, Fingerprint, SlidersHorizontal, Shield, Atom, Dot, Waves, UserCog,
   HeartPulse, ShieldHalf, Palette, SearchCheck, Baby, User, Footprints, Puzzle, CircleDot, Check, CloudDrizzle, Presentation,
-  Calendar, ZoomIn, Clock, LayoutList // Added LayoutList
+  Calendar, ZoomIn, Clock, LayoutList
 } from 'lucide-react';
 import { z } from 'zod';
 import type { InputConfig, InputOption } from './types';
@@ -23,14 +23,21 @@ const getValidationSchema = (inputType: string, options?: Array<InputOption>, mi
       if (max !== undefined) numSchema = numSchema.max(max);
       return numSchema.nullable().optional();
     case 'select':
-      if (options && options.length > 0 && typeof options[0].value === 'number') {
-        return z.coerce.number().nullable().optional();
+      if (options && options.length > 0) {
+        const firstValueType = typeof options[0].value;
+        if (firstValueType === 'number') {
+          return z.coerce.number().nullable().optional();
+        } else if (firstValueType === 'string') {
+          return z.string().nullable().optional();
+        }
       }
-      return z.string().nullable().optional();
+      // Fallback or if options are empty/mixed in a way not anticipated, treat as string or any.
+      // For safety, this could be z.any() or a more specific default.
+      return z.string().nullable().optional(); 
     case 'checkbox':
       return z.boolean().optional();
     case 'text':
-    case 'textarea': // Assuming text might map to textarea
+    case 'textarea': 
       return z.string().nullable().optional();
     case 'radio':
         if (options && options.length > 0 && typeof options[0].value === 'number') {
@@ -58,6 +65,69 @@ const masiRegionMultiplierMapData: Record<string, number> = {
   "chin": 0.1
 };
 type MasiRegionKey = keyof typeof masiRegionMultiplierMapData;
+
+// Helper data structure for CTCAE criteria
+const ctcaeCriteriaSnippets: Record<string, Record<number, string>> = {
+  "Rash maculopapular": {
+    1: "Macules/papules covering <10% BSA with or without symptoms (e.g., pruritus, burning, tightness).",
+    2: "Macules/papules covering 10-30% BSA with or without symptoms; limiting instrumental ADL.",
+    3: "Macules/papules covering >30% BSA with or without symptoms; limiting self care ADL; hospitalization indicated.",
+    4: "Life-threatening consequences (e.g., SJS/TEN, exfoliative dermatitis).",
+    5: "Death.",
+  },
+  "Pruritus": {
+    1: "Mild; topical intervention indicated.",
+    2: "Moderate; oral intervention or medical intervention indicated; limiting instrumental ADL.",
+    3: "Severe; interfering with self care ADL or sleep; hospitalization indicated.",
+    // G4 & G5 typically not applicable for pruritus itself as the primary AE leading to that grade
+  },
+  "Hand-foot skin reaction": {
+    1: "Minimal skin changes or dermatitis (e.g., erythema, edema, hyperkeratosis) without pain.",
+    2: "Skin changes (e.g., peeling, blisters, bleeding, edema, hyperkeratosis) with pain; limiting instrumental ADL.",
+    3: "Severe skin changes (e.g., peeling, blisters, bleeding, edema, hyperkeratosis) with pain; limiting self care ADL.",
+  },
+  "Alopecia": {
+    1: "Hair loss of <50% of normal for that individual that is not obvious from a distance; a different hairstyle may be required to cover the hair loss but it does not require a wig or hairpiece to camouflage.",
+    2: "Hair loss of >=50% of normal for that individual that is obvious from a distance; a wig or hairpiece is required to camouflage the hair loss if the patient desires; limiting instrumental ADL.",
+  },
+  "Radiation dermatitis": {
+    1: "Faint erythema or dry desquamation.",
+    2: "Moderate to brisk erythema; patchy moist desquamation, mostly confined to skin folds and creases; moderate edema.",
+    3: "Moist desquamation other than skin folds and creases; bleeding induced by minor trauma or abrasion.",
+    4: "Skin necrosis or ulceration of full thickness dermis; spontaneous bleeding from involved site.",
+    5: "Death.",
+  },
+   "Photosensitivity": {
+    1: "Skin reaction resembling mild sunburn; minimal symptoms.",
+    2: "Painful skin reaction resembling moderate to severe sunburn; skin changes (e.g., edema); limiting instrumental ADL.",
+    3: "Severe painful skin reaction with bullae; limiting self care ADL.",
+  },
+  "Skin hyperpigmentation": {
+    1: "Hyperpigmentation covering <10% BSA.",
+    2: "Hyperpigmentation covering 10 - 30% BSA.",
+    3: "Hyperpigmentation covering >30% BSA.",
+  },
+  "Skin hypopigmentation": {
+    1: "Hypopigmentation covering <10% BSA.",
+    2: "Hypopigmentation covering 10 - 30% BSA.",
+    3: "Hypopigmentation covering >30% BSA.",
+  },
+  "Nail changes": {
+    1: "Nail changes (e.g., discoloration, ridging, pitting, Beau's lines) not interfering with function.",
+    2: "Nail changes (e.g., discoloration, ridging, pitting, Beau's lines, onycholysis, pain) interfering with instrumental ADL.",
+    3: "Nail changes (e.g., nail loss, onycholysis, pain) interfering with self care ADL.",
+  },
+  "Mucositis oral": {
+    1: "Asymptomatic or mild symptoms; intervention not indicated.",
+    2: "Moderate pain or ulceration; not interfering with oral intake; modified diet indicated.",
+    3: "Severe pain; interfering with oral intake.",
+    4: "Life-threatening consequences (e.g., airway obstruction); urgent intervention indicated.",
+    5: "Death.",
+  },
+};
+
+const ctcaeAdverseEventOptions: InputOption[] = Object.keys(ctcaeCriteriaSnippets).map(ae => ({ value: ae, label: ae }));
+ctcaeAdverseEventOptions.push({value: "Other", label: "Other (Specify in notes/report)"});
 
 
 export const toolData: Tool[] = [
@@ -581,11 +651,11 @@ export const toolData: Tool[] = [
                 currentSiteScore += val;
                 currentAreaSignValues[signName] = val;
             });
-            siteScores[areaName.replace('_','/')] = currentSiteScore; // This stores sum for the site
+            siteScores[areaName.replace('_','/')] = currentSiteScore; 
             totalScore += currentSiteScore;
         });
         const interpretation = `Total SASSAD Score: ${totalScore} (Range: 0-108). Higher score indicates more severe AD. No standard severity bands universally defined.`;
-        // For details, we can break down by site and then by sign within that site if needed, or just site totals
+        
         const detailedSiteScores: Record<string, Record<string, number>> = {};
         areas.forEach(areaName => {
             const areaId = areaName.toLowerCase().replace('/','_');
@@ -768,7 +838,7 @@ export const toolData: Tool[] = [
         else interpretation += "Severe dyshidrotic eczema.";
         interpretation += " (Severity bands: 0 Clear, 1-15 Mild, 16-30 Moderate, 31-60 Severe)";
 
-        return { score: dasiScore, interpretation, details: { V, E, D, I, Ext_raw, Ext_score } };
+        return { score: dasiScore, interpretation, details: { V, E, D, I, Ext_raw_Percentage: Ext_raw, Extension_Score_0_5: Ext_score } };
     },
     references: ["Vocks E, et al. Dermatology. 2000;201(3):200-4."]
   },
@@ -790,7 +860,7 @@ export const toolData: Tool[] = [
         const currentGrade = Number(inputs.current_iga_grade);
         const baselineGrade = Number(inputs.baseline_iga_grade);
         let treatmentSuccess = "N/A";
-        if (baselineGrade !== -1) {
+        if (baselineGrade !== -1 && baselineGrade >=0 ) { // Ensure baseline is valid for comparison
             treatmentSuccess = (currentGrade <= 1 && (baselineGrade - currentGrade >= 2)) ? "Achieved" : "Not Achieved";
         }
         const gradeMap: Record<number, string> = {0:"Clear",1:"Almost Clear",2:"Mild",3:"Moderate",4:"Severe", [-1]:"N/A"};
@@ -799,7 +869,7 @@ export const toolData: Tool[] = [
         if (baselineGrade !== -1) {
             interpretation += `Baseline IGA Grade: ${baselineGrade} (${gradeMap[baselineGrade]}). Treatment Success: ${treatmentSuccess}.`;
         } else {
-            interpretation += "Baseline not provided for treatment success assessment.";
+            interpretation += "Baseline not provided or N/A for treatment success assessment.";
         }
 
         return { score: currentGrade, interpretation, details: { current_grade_text: gradeMap[currentGrade], baseline_grade: baselineGrade === -1 ? 'N/A' : baselineGrade, baseline_grade_text: gradeMap[baselineGrade], treatment_success: treatmentSuccess } };
@@ -1018,22 +1088,22 @@ export const toolData: Tool[] = [
         regions.forEach(r => {
             const A = Number(inputs[`${r.id}_area`])||0;
             const D = Number(inputs[`${r.id}_darkness`])||0;
-            const H = (type === "masi") ? (Number(inputs[`${r.id}_homogeneity`])||0) : 0; // Homogeneity is 0 for mMASI
+            const H = (type === "masi") ? (Number(inputs[`${r.id}_homogeneity`])||0) : 0; 
             const regionalScore = (type === "masi") ? ((D+H)*A*r.multiplier) : (D*A*r.multiplier);
             totalScore += regionalScore;
             regionDetails[r.name] = {Area:A, Darkness:D, Homogeneity: type === "masi" ? H : 'N/A', Regional_Score: parseFloat(regionalScore.toFixed(2))};
         });
         const score = parseFloat(totalScore.toFixed(2));
         let interpretation = `Total ${type.toUpperCase()} Score: ${score}. `;
-        if (type === "masi") { // MASI range 0-48
+        if (type === "masi") { 
             if (score === 0) interpretation += "No melasma.";
             else if (score < 16) interpretation += "Mild melasma.";
             else if (score <= 32) interpretation += "Moderate melasma.";
             else interpretation += "Severe melasma.";
             interpretation += " (MASI Range: 0-48. Severity bands example: <16 Mild, 16-32 Moderate, >32 Severe).";
-        } else { // mMASI range 0-24
+        } else { 
             if (score === 0) interpretation += "No melasma.";
-            else if (score < 8) interpretation += "Mild melasma."; // Example bands for mMASI
+            else if (score < 8) interpretation += "Mild melasma."; 
             else if (score <= 16) interpretation += "Moderate melasma.";
             else interpretation += "Severe melasma.";
             interpretation += " (mMASI Range: 0-24. Severity bands are less standardized for mMASI but can be inferred).";
@@ -1046,7 +1116,7 @@ export const toolData: Tool[] = [
     id: "melasqol",
     name: "Melasma Quality of Life Scale (MELASQOL)",
     acronym: "MELASQOL",
-    condition: "Quality of Life", // Also "Melasma"
+    condition: "Quality of Life", 
     keywords: ["melasqol", "melasma", "quality of life", "patient reported"],
     description: "Assesses the impact of melasma on a patient's quality of life. Original version has 10 questions, each scored 1-7.",
     sourceType: 'Research',
@@ -1069,7 +1139,7 @@ export const toolData: Tool[] = [
     keywords: ["vasi", "vitiligo", "depigmentation", "area scoring"],
     description: "Quantifies the extent of vitiligo by assessing the percentage of depigmentation in different body regions, weighted by hand units.",
     sourceType: 'Clinical Guideline',
-    icon: Footprints, // Or Palette, Hand
+    icon: Footprints, 
     inputs: [
         ...(["Hands", "Upper Extremities (excluding Hands)", "Trunk", "Lower Extremities (excluding Feet)", "Feet", "Head/Neck"] as const).map(regionName => {
             const regionId = regionName.toLowerCase().replace(/[\s()/]+/g, '_');
@@ -1079,7 +1149,7 @@ export const toolData: Tool[] = [
             ];
             return [
                 {id:`${regionId}_hand_units`, label:`${regionName} - Hand Units (HU)`, type:'number', min:0, defaultValue:0, description:"Area in patient's hand units (1 HU ~ 1% BSA).", validation:getValidationSchema('number', [], 0)},
-                {id:`${regionId}_depigmentation_percent`, label:`${regionName} - Depigmentation %`, type:'select', options:depigmentationOptions, defaultValue:0, validation:getValidationSchema('select',depigmentationOptions)} // Default to 0 for depig if not explicitly 100%
+                {id:`${regionId}_depigmentation_percent`, label:`${regionName} - Depigmentation %`, type:'select', options:depigmentationOptions, defaultValue:0, validation:getValidationSchema('select',depigmentationOptions)} 
             ];
         }).flat()
     ],
@@ -1172,7 +1242,6 @@ export const toolData: Tool[] = [
     },
     references: ["Lilly E, Lu PD, Borovicka JH, et al. Development and validation of a vitiligo-specific quality-of-life instrument (VitiQoL). J Am Acad Dermatol. 2013;69(1):e11-e18."]
   },
-  // PREVIOUSLY IMPLEMENTED FROM tools.js
   {
     id: "seven_point_checklist",
     name: "7-Point Checklist for Melanoma",
@@ -1309,45 +1378,39 @@ export const toolData: Tool[] = [
       const NIN = Number(inputs.non_inflammatory_nodules_count) || 0;
 
       let pgaScore = -1;
-      let description = "Undetermined - complex presentation or use manual override.";
+      let description = "Undetermined - use clinical judgment or direct PGA selection.";
       
-      // Derived from common HS-PGA definitions (e.g., FDA Adalimumab label, PIONEER trials)
       if (A === 0 && IN === 0 && DF === 0 && NIN === 0) {
           pgaScore = 0; description = "Clear: No inflammatory or non-inflammatory HS lesions.";
       } else if (A === 0 && IN === 0 && DF === 0 && NIN > 0) {
           pgaScore = 1; description = "Minimal: No abscesses, inflammatory nodules, or draining fistulas; only non-inflammatory nodules present.";
-      } else if (A === 0 && DF === 0 && IN > 0) { // Only INs
-          pgaScore = 2; description = "Mild: ≥1 inflammatory nodule(s); no abscess(es) or draining fistula(s).";
-      } else if (A > 0 && DF === 0 && IN === 0) { // Only Abscesses
-          if (A <= 2) { pgaScore = 2; description = "Mild: ≤2 abscess(es); no inflammatory nodule(s) or draining fistula(s)."; }
-          else { pgaScore = 3; description = "Moderate: >2 abscess(es); no inflammatory nodule(s) or draining fistula(s)."; }
-      } else if (DF > 0 && A === 0 && IN === 0) { // Only Fistulas
-          if (DF <= 2) { pgaScore = 2; description = "Mild: ≤2 draining fistula(s); no inflammatory nodule(s) or abscess(es)."; }
-          else { pgaScore = 3; description = "Moderate: >2 draining fistula(s); no inflammatory nodule(s) or abscess(es)."; }
-      } else if (A > 0 || DF > 0 || IN > 0) { // Combinations - this is where it gets complex, often a gestalt
-          const totalLesions = A + DF + IN;
-          const totalInflammatory = A + DF + IN; // NIN are not typically counted in higher grades of active disease
-
-          if (totalInflammatory > 0 && (A + DF) <= 1 && IN < 5) { // Few lesions, mostly INs or a single A/DF
-              pgaScore = 2; description = "Mild: Few inflammatory lesions, at most one abscess or draining fistula.";
-          } else if ((A + DF) >= 1 && (A + DF) <= 5 && IN < 10) { // Moderate number of A/DF, or more INs
-              pgaScore = 3; description = "Moderate: Some abscesses/fistulas and/or several inflammatory nodules.";
-          } else if ((A + DF) > 5 || ( (A+DF) >=1 && IN >= 10 ) ) { // More A/DF, or many INs with some A/DF
-              pgaScore = 4; description = "Severe: Multiple abscesses/fistulas and/or numerous inflammatory nodules.";
-          } else if ( (A + DF) > 10 || ( (A+DF) >= 5 && IN >=20 ) || (IN > 30) ) { // Extensive/confluent lesions
-              pgaScore = 5; description = "Very Severe: Extensive/confluent abscesses, fistulas, or inflammatory nodules.";
+      } else if (A === 0 && DF === 0 && IN > 0 && IN <= 4) { 
+          pgaScore = 2; description = "Mild: 1-4 inflammatory nodule(s); no abscess(es) or draining fistula(s).";
+      } else if (A <= 2 && DF === 0 && IN === 0) { 
+          pgaScore = 2; description = "Mild: ≤2 abscess(es); no inflammatory nodule(s) or draining fistula(s).";
+      } else if (DF <= 2 && A === 0 && IN === 0) {
+          pgaScore = 2; description = "Mild: ≤2 draining fistula(s); no inflammatory nodule(s) or abscess(es).";
+      } else if ((A > 0 || DF > 0 || IN > 0)) { // Combinations
+          if ((A <= 5 && DF <= 5 && (A+DF) <= 5 && IN < 10) && !((A > 2 && IN === 0 && DF === 0) || (DF > 2 && IN === 0 && A === 0))) { // Excludes cases already covered by severe
+             if ((A+DF) >=1 || IN >=5) {pgaScore = 3; description = "Moderate: Some abscesses/fistulas (total ≤5) and/or several inflammatory nodules (<10).";}
+             else if (pgaScore===-1) {pgaScore = 2; description="Mild: Few mixed inflammatory lesions."} // fallback if still mild
+          }
+          if (((A > 5 || DF > 5 || (A+DF) > 5) || ( (A+DF) >=1 && IN >= 10 )) && !((A+DF) > 10) ) {
+              pgaScore = 4; description = "Severe: Multiple abscesses/fistulas (total >5) or many inflammatory nodules (≥10) with some A/DF.";
+          }
+          if ((A+DF) > 10 || (A+IN+DF > 20 && (A+DF) >=5) ) { 
+              pgaScore = 5; description = "Very Severe: Extensive/confluent lesions or very numerous lesions.";
           }
       }
-      // Fallback if not perfectly matched, this may need a select input for the clinician to choose final PGA grade
-      if (pgaScore === -1 && (A > 0 || IN > 0 || DF > 0)) {
-          pgaScore = 3; description = "Moderate (Heuristic fallback - use clinical judgment or a direct PGA selection field for precise grading).";
+      if(pgaScore === -1 && (A > 0 || IN > 0 || DF > 0)) { // Broader fallback if still not categorized
+          pgaScore = 3; description = "Moderate (General fallback - use clinical judgment).";
       }
 
 
-      const interpretation = `HS-PGA Score: ${pgaScore === -1 ? 'N/A' : pgaScore} - ${description}. This score is a global assessment based on lesion counts. Precise grading definitions can vary slightly between specific HS-PGA versions.`;
+      const interpretation = `HS-PGA Score: ${pgaScore === -1 ? 'N/A' : pgaScore} - ${description}. This score is a global assessment. Precise definitions can vary.`;
       return { score: pgaScore, interpretation, details: { Abscesses: A, Inflammatory_Nodules: IN, Draining_Fistulas: DF, Non_Inflammatory_Nodules: NIN, Calculated_Description: description } };
     },
-    references: ["HS-PGA scales are often defined in specific clinical trial protocols (e.g., for adalimumab, secukinumab in HS). Example: Kimball AB, et al. JAMA Dermatol. 2012 (early HS-PGA usage). FDA Adalimumab Prescribing Information."]
+    references: ["HS-PGA scales are often defined in specific clinical trial protocols. Example: Kimball AB, et al. JAMA Dermatol. 2012. FDA Adalimumab Prescribing Information."]
   },
   {
     id: "cdlqi",
@@ -1546,16 +1609,16 @@ export const toolData: Tool[] = [
       let reductionAIN = 0;
       if (AINb > 0) {
         reductionAIN = (AINb - AINf) / AINb;
-      } else if (AINf === 0) { // Baseline AIN was 0, and follow-up is also 0
-        reductionAIN = 1.0; // Considered 100% reduction or maintained clear
+      } else if (AINf === 0) { 
+        reductionAIN = 1.0; 
       }
 
-      const criterion1_reduction = reductionAIN >= 0.5; // At least 50% reduction in A+IN count
+      const criterion1_reduction = reductionAIN >= 0.5; 
       const criterion2_no_increase_A = Af <= Ab;
       const criterion3_no_increase_DF = DFf <= DFb;
 
       const achieved = criterion1_reduction && criterion2_no_increase_A && criterion3_no_increase_DF;
-      const score = achieved ? 1 : 0; // 1 for achieved, 0 for not achieved
+      const score = achieved ? 1 : 0; 
 
       const interpretation = `HiSCR: ${achieved ? "Achieved" : "Not Achieved"}. Criteria: 1. ≥50% reduction in (Abscesses + Inflammatory Nodules) count: ${criterion1_reduction ? "Yes" : "No"} (${(reductionAIN * 100).toFixed(1)}% reduction). 2. No increase in Abscess count from baseline: ${criterion2_no_increase_A ? "Yes" : "No"}. 3. No increase in Draining Fistula count from baseline: ${criterion3_no_increase_DF ? "Yes" : "No"}.`;
       
@@ -1737,15 +1800,13 @@ export const toolData: Tool[] = [
       { id: "loscat_damage_score", label: "LoSCAT Damage Score (Calculated Externally)", type: 'number', min: 0, defaultValue: 0, description: "Enter the calculated LoSCAT damage score based on its specific items.", validation: getValidationSchema('number',[],0) },
     ],
     calculationLogic: (inputs) => {
-      // LoSCAT typically results in multiple scores rather than one single summative score.
-      // The 'score' field here might represent the activity score for primary display.
       const pgaA = Number(inputs.pga_activity) || 0;
       const pgaD = Number(inputs.pga_damage) || 0;
       const mrss = Number(inputs.mrss_sum_affected) || 0;
       const loscatAct = Number(inputs.loscat_activity_score) || 0;
       const loscatDam = Number(inputs.loscat_damage_score) || 0;
 
-      const score = loscatAct; // Using LoSCAT Activity as the primary score for display
+      const score = loscatAct; 
       const interpretation = `LoSCAT Assessment: PGA-Activity: ${pgaA}, PGA-Damage: ${pgaD}. mRSS (Affected Sites Sum): ${mrss}. LoSCAT Activity Score: ${loscatAct}, LoSCAT Damage Score: ${loscatDam}. Higher scores generally indicate greater activity or damage respectively.`;
       
       return { 
@@ -1867,7 +1928,7 @@ export const toolData: Tool[] = [
           { value: "III", label: "Class III: Fine to deep wrinkles, numerous lines, +/- redundant skin folds" }
         ],
         defaultValue: "I",
-        validation: getValidationSchema('select')
+        validation: getValidationSchema('select', [{ value: "I", label: "Class I: Fine wrinkles" }])
       }
     ],
     calculationLogic: (inputs) => {
@@ -1903,7 +1964,7 @@ export const toolData: Tool[] = [
           { value: "IV", label: "Type IV (Severe): Only wrinkles, severe photoaging, cannot wear makeup as it cakes and cracks." }
         ],
         defaultValue: "I",
-        validation: getValidationSchema('select')
+        validation: getValidationSchema('select', [{ value: "I", label: "Type I (Mild): No wrinkles, early photoaging, minimal or no makeup." }])
       }
     ],
     calculationLogic: (inputs) => {
@@ -1941,7 +2002,7 @@ export const toolData: Tool[] = [
           { value: "SSc Late", label: "SSc Pattern - Late (e.g., irregular enlargement of capillaries, extensive avascular areas, severe disorganization, neoangiogenesis)" }
         ],
         defaultValue: "Normal",
-        validation: getValidationSchema('select')
+        validation: getValidationSchema('select', [{ value: "Normal", label: "Normal Pattern" }])
       }
     ],
     calculationLogic: (inputs) => {
@@ -2002,7 +2063,6 @@ export const toolData: Tool[] = [
     },
     references: ["Various indices have been proposed, e.g., Behçet's Disease Current Activity Form (BDCAF) includes mucocutaneous items. No single universally adopted 'Mucocutaneous Index' is standard, often part of broader activity scores."]
   },
-  // --- NEWLY ADDED TOOLS START HERE ---
   {
     id: "mfg_score",
     name: "Ferriman-Gallwey Score (mFG)",
@@ -2011,18 +2071,18 @@ export const toolData: Tool[] = [
     condition: "Hirsutism",
     keywords: ["mfg", "ferriman-gallwey", "hirsutism", "hair growth", "women"],
     sourceType: 'Clinical Guideline',
-    icon: Type, // Or Wind
+    icon: Type, 
     inputs: [
       ...(["Upper Lip", "Chin", "Chest", "Upper Back", "Lower Back", "Upper Abdomen", "Lower Abdomen", "Arm", "Thigh"].map(areaName => {
         const areaId = `fg_${areaName.toLowerCase().replace(/\s+/g, '_')}`;
-        const scoreOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${i === 0 ? 'Absent' : 'Minimal to Coarse/Dense'}` }));
+        const scoreOptions: InputOption[] = Array.from({ length: 5 }, (_, i) => ({ value: i, label: `${i} - ${i === 0 ? 'Absent' : (i === 1 ? 'Minimal' : (i === 2 ? 'Mild' : (i === 3 ? 'Moderate' : 'Severe')))}` }));
         return {
           id: areaId,
           label: `${areaName} Score (0-4)`,
           type: 'select' as 'select',
           options: scoreOptions,
           defaultValue: 0,
-          description: "0=Absent, 1=Minimal, 2=Mild, 3=Moderate, 4=Severe terminal hair growth. Refer to mFG guide for specific visual anchors.",
+          description: "0=Absent, 1=Minimal, 2=Mild, 3=Moderate, 4=Severe terminal hair. Refer to mFG guide for visuals.",
           validation: getValidationSchema('select', scoreOptions, 0, 4)
         };
       }))
@@ -2052,35 +2112,67 @@ export const toolData: Tool[] = [
     id: "ctcae_skin",
     name: "CTCAE - Skin Toxicities",
     acronym: "CTCAE Skin",
-    description: "Standardized grading of dermatologic Adverse Events (AEs) using the Common Terminology Criteria for Adverse Events.",
+    description: "Standardized grading of dermatologic Adverse Events (AEs) using the Common Terminology Criteria for Adverse Events. Select an AE and then its grade.",
     condition: "Adverse Drug Reactions",
-    keywords: ["ctcae", "skin toxicity", "adverse event", "drug reaction", "grading", "chemotherapy"],
+    keywords: ["ctcae", "skin toxicity", "adverse event", "drug reaction", "grading", "chemotherapy", "oncology"],
     sourceType: 'Clinical Guideline',
-    icon: ShieldQuestion, // ShieldAlert or ListChecks also good options
+    icon: ShieldQuestion,
     inputs: [
-      { id: "ae_term", label: "Adverse Event Term", type: 'text', placeholder: "e.g., Rash maculo-papular, Pruritus", validation: getValidationSchema('text') },
+      {
+        id: "ae_term_select",
+        label: "Select Cutaneous Adverse Event",
+        type: 'select',
+        options: ctcaeAdverseEventOptions,
+        defaultValue: ctcaeAdverseEventOptions[0]?.value || "Other",
+        validation: getValidationSchema('select', ctcaeAdverseEventOptions)
+      },
       { 
         id: "ctcae_grade", 
         label: "CTCAE Grade (1-5)", 
         type: 'select', 
         options: [
-          { value: 1, label: "Grade 1: Mild" },
-          { value: 2, label: "Grade 2: Moderate; limiting instrumental ADL" },
-          { value: 3, label: "Grade 3: Severe or medically significant but not immediately life-threatening; limiting self care ADL" },
-          { value: 4, label: "Grade 4: Life-threatening consequences; urgent intervention indicated" },
-          { value: 5, label: "Grade 5: Death related to AE" }
+          { value: 1, label: "Grade 1" },
+          { value: 2, label: "Grade 2" },
+          { value: 3, label: "Grade 3" },
+          { value: 4, label: "Grade 4" },
+          { value: 5, label: "Grade 5" }
         ], 
         defaultValue: 1,
-        description: "Refer to specific CTCAE term for detailed grading criteria.",
-        validation: getValidationSchema('select', [], 1, 5)
+        description: "Select grade. Specific criteria summary for the chosen AE will be shown in results.",
+        validation: getValidationSchema('select', [{value:1, label:"Grade 1"}], 1, 5) // Ensure options are passed for validation
       }
     ],
     calculationLogic: (inputs) => {
-      const aeTerm = inputs.ae_term || "N/A";
-      const grade = Number(inputs.ctcae_grade) || 0;
+      const selectedAe = inputs.ae_term_select as string;
+      const grade = Number(inputs.ctcae_grade);
       const gradeMap: Record<number, string> = { 1: "Mild", 2: "Moderate", 3: "Severe", 4: "Life-threatening", 5: "Death" };
-      const interpretation = `CTCAE Grade for "${aeTerm}": Grade ${grade} (${gradeMap[grade] || "N/A"}). Refer to the official CTCAE manual for precise definitions for the specified AE term.`;
-      return { score: grade, interpretation, details: { Adverse_Event_Term: aeTerm, Grade_Description: gradeMap[grade] || "N/A" } };
+      
+      let aeSpecificCriteria = "N/A";
+      if (ctcaeCriteriaSnippets[selectedAe] && ctcaeCriteriaSnippets[selectedAe][grade]) {
+        aeSpecificCriteria = ctcaeCriteriaSnippets[selectedAe][grade];
+      } else if (ctcaeCriteriaSnippets[selectedAe] && !ctcaeCriteriaSnippets[selectedAe][grade] && (grade === 4 || grade === 5)) {
+        // Handle G4/G5 if specific criteria not in snippet but general G4/G5 applies
+         if (grade === 4 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Life-threatening consequences; urgent intervention indicated.";
+         else if (grade === 5 && selectedAe !== "Pruritus" && selectedAe !== "Hand-foot skin reaction" && selectedAe !== "Alopecia") aeSpecificCriteria = "Death related to AE.";
+         else aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for ${selectedAe}. Refer to CTCAE manual.`;
+      } else if (selectedAe === "Other") {
+        aeSpecificCriteria = `Grade ${grade} (${gradeMap[grade] || 'N/A'}) for "Other" AE. Document specific criteria manually.`;
+      } else {
+        aeSpecificCriteria = `Criteria for ${selectedAe} Grade ${grade} not pre-defined in this tool's snippets. Grade ${grade} generally corresponds to: ${gradeMap[grade] || 'N/A'}. Refer to full CTCAE manual.`;
+      }
+
+      const interpretation = `Adverse Event: ${selectedAe}\nCTCAE Grade: ${grade} (${gradeMap[grade] || 'N/A'})\nCriteria Summary: ${aeSpecificCriteria}\n(Refer to full CTCAE v5.0/v6.0 documentation for complete definitions and all terms.)`;
+      
+      return { 
+        score: grade, 
+        interpretation, 
+        details: { 
+          Adverse_Event_Term: selectedAe, 
+          Selected_Grade: grade,
+          Grade_Description: gradeMap[grade] || "N/A",
+          Criteria_Summary: aeSpecificCriteria 
+        } 
+      };
     },
     references: ["National Cancer Institute (NCI). Common Terminology Criteria for Adverse Events (CTCAE). (Current version should be cited, e.g., v5.0, v6.0)"]
   },
@@ -2106,12 +2198,11 @@ export const toolData: Tool[] = [
           { value: "E", label: "E - Never involved" }
         ], 
         defaultValue: "E",
-        validation: getValidationSchema('select')
+        validation: getValidationSchema('select', [{ value: "A", label: "A - Severe disease activity" }])
       }
     ],
     calculationLogic: (inputs) => {
-      const grade = inputs.bilag_skin_grade || "E";
-      // Numerical score for sorting/consistency: A=4 (most severe) to E=0 (least severe/never)
+      const grade = inputs.bilag_skin_grade as string || "E";
       const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 };
       const activityMap: Record<string, string> = { "A": "Severe", "B": "Moderate", "C": "Mild", "D": "Inactive (previous)", "E": "Never involved" };
       const interpretation = `BILAG Skin Component Grade: ${grade} (${activityMap[grade] || "N/A"}). This reflects current lupus activity in the skin and mucous membranes.`;
@@ -2264,16 +2355,12 @@ export const toolData: Tool[] = [
       });
 
       const mortalityMap: Record<number, string> = {
-        0: "3.2%", 1: "12.1%", 2: "35.3%", 3: "58.3%", 4: "Not well defined by original study, likely >58.3%", 5: ">90%", 6: ">90%", 7: ">90%"
+        0: "3.2%", 1: "12.1%", 2: "35.3%", 3: "58.3%", 4: "58.3%+", 5: ">90%", 6: ">90%", 7: ">90%"
       };
-      // The original paper had 0-1, 2, 3, 4, >=5. We'll use a simplified map consistent with common representations.
-      // For scores >= 4, mortality is very high.
-      let mortalityPrediction = "Not defined / Very High";
-      if (score === 0 || score === 1) mortalityPrediction = "3.2% - 12.1%";
-      else if (score === 2) mortalityPrediction = "35.3%";
-      else if (score === 3) mortalityPrediction = "58.3%";
-      else if (score === 4) mortalityPrediction = "Risk likely higher than 58.3%"; // Often cited as >50% or higher
-      else if (score >= 5) mortalityPrediction = ">90%";
+      
+      let mortalityPrediction = ">90%"; // Default for scores >= 5
+      if (score <= 3) mortalityPrediction = mortalityMap[score];
+      else if (score === 4) mortalityPrediction = mortalityMap[4];
 
 
       const interpretation = `SCORTEN: ${score} (Range: 0-7). Predicted mortality risk (approximate): ${mortalityPrediction}. This score helps estimate prognosis in SJS/TEN.`;
@@ -2284,6 +2371,7 @@ export const toolData: Tool[] = [
 ];
     
     
+
 
 
 
