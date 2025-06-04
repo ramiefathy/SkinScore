@@ -147,7 +147,7 @@ export default function SkinScorePage() {
                           onClick={() => handleToolSelect(tool.id)}
                         >
                           <ToolIcon className="h-5 w-5 mr-3 shrink-0 text-primary/80" />
-                          <div className="min-w-0 flex-1">
+                          <div className="min-w-0 flex-1 pr-2">
                             <div className="font-medium text-foreground">{tool.name}</div>
                             <div className="text-xs text-muted-foreground">{tool.condition}</div>
                           </div>
@@ -202,10 +202,10 @@ export default function SkinScorePage() {
                                                     <ul className="list-disc list-inside text-muted-foreground text-xs space-y-1">
                                                       {tool.references.slice(0, 2).map((ref, index) => (
                                                         <li key={index}>
-                                                          {ref.startsWith('http') ? 
+                                                          {ref.startsWith('http') ?
                                                             <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary/90 hover:underline inline-flex items-center gap-1 break-all">
                                                               {ref.length > 100 ? ref.substring(0,97) + '...' : ref} <LinkIcon size={12}/>
-                                                            </a> 
+                                                            </a>
                                                             : <span className="break-all">{ref.length > 100 ? ref.substring(0,97) + '...' : ref}</span>
                                                           }
                                                         </li>
@@ -273,3 +273,4 @@ export default function SkinScorePage() {
     </div>
   );
 }
+
