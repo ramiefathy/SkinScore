@@ -13,7 +13,8 @@ import { CategoryToolDropdown } from '@/components/dermscore/CategoryToolDropdow
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Info, CheckSquare, LayoutGrid, Zap } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { FileText, Info, CheckSquare, LayoutGrid, Zap, Link as LinkIcon, ScrollText, FileQuestion, Stethoscope } from 'lucide-react';
 
 const MAX_RECENT_TOOLS = 3;
 const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools';
@@ -59,7 +60,7 @@ export default function SkinScorePage() {
   }, [isClient]);
 
   const handleCalculate = (inputs: Record<string, any>) => {
-    if (selectedTool && selectedTool.calculationLogic) {
+    if (selectedTool && selectedTool.calculationLogic && selectedTool.displayType !== 'staticList') {
       const result = selectedTool.calculationLogic(inputs);
       setCalculationResult(result);
       if (isClient) {
@@ -75,6 +76,22 @@ export default function SkinScorePage() {
     const popularIds = ['pasi', 'dlqi', 'abcde_melanoma'];
     return toolData.filter(tool => popularIds.includes(tool.id));
   }, []);
+
+  const groupedToolsForList = useMemo(() => {
+    return toolData.reduce((acc, tool) => {
+      const condition = tool.condition || 'Other';
+      if (!acc[condition]) {
+        acc[condition] = [];
+      }
+      acc[condition].push(tool);
+      return acc;
+    }, {} as Record<string, Tool[]>);
+  }, []);
+
+  const sortedCategoriesForList = useMemo(() => {
+    return Object.entries(groupedToolsForList).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [groupedToolsForList]);
+
 
   const SelectedToolIcon = selectedTool?.icon;
 
@@ -106,6 +123,7 @@ export default function SkinScorePage() {
       <div className="container mx-auto p-6 md:p-8 flex-grow">
         <main className="w-full space-y-8">
           {!selectedTool && (
+            <>
             <Card className="shadow-xl border">
               <CardHeader>
                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to SkinScore</CardTitle>
@@ -129,7 +147,7 @@ export default function SkinScorePage() {
                           onClick={() => handleToolSelect(tool.id)}
                         >
                           <ToolIcon className="h-5 w-5 mr-3 shrink-0 text-primary/80" />
-                          <div>
+                          <div className="min-w-0 flex-1">
                             <div className="font-medium text-foreground">{tool.name}</div>
                             <div className="text-xs text-muted-foreground">{tool.condition}</div>
                           </div>
@@ -140,6 +158,74 @@ export default function SkinScorePage() {
                 </div>
               </CardContent>
             </Card>
+
+            <Card className="shadow-xl border">
+                <CardHeader>
+                    <CardTitle className="text-2xl font-headline flex items-center gap-2">
+                        <ScrollText className="text-primary h-7 w-7"/>All Available Scoring Tools
+                    </CardTitle>
+                    <CardDescription>
+                        Expand a category and a tool to learn more or select it for use.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {sortedCategoriesForList.map(([condition, conditionTools]) => (
+                        <div key={condition}>
+                            <h3 className="text-xl font-semibold mb-3 text-foreground/90 border-b pb-2">{condition}</h3>
+                            <Accordion type="multiple" className="w-full space-y-2">
+                                {conditionTools.sort((a,b) => a.name.localeCompare(b.name)).map(tool => {
+                                    const ToolIcon = tool.icon || FileQuestion;
+                                    return (
+                                        <AccordionItem value={tool.id} key={tool.id} className="border bg-card/30 hover:bg-card/60 rounded-md px-3 shadow-sm">
+                                            <AccordionTrigger className="py-3 text-left hover:no-underline">
+                                                <div className="flex items-center gap-3">
+                                                    <ToolIcon className="h-5 w-5 text-primary/90 shrink-0"/>
+                                                    <span>{tool.name} {tool.acronym && `(${tool.acronym})`}</span>
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="pt-2 pb-3 space-y-3 text-sm">
+                                                <div>
+                                                    <h4 className="font-semibold text-foreground/80 mb-1">Purpose:</h4>
+                                                    <p className="text-muted-foreground text-xs leading-relaxed">{tool.description}</p>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-foreground/80 mb-1">Rationale:</h4>
+                                                    <p className="text-muted-foreground text-xs italic">The specific rationale for the development and use of the {tool.name} will be detailed here, including the clinical need it addresses and its underlying principles. [Information to be updated]</p>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-foreground/80 mb-1">Clinical Performance & Reliability:</h4>
+                                                    <p className="text-muted-foreground text-xs italic">Information regarding the {tool.name}'s clinical performance, such as sensitivity, specificity, inter-rater reliability, intra-rater reliability, and validation studies, will be provided here when available. [Information to be updated]</p>
+                                                </div>
+                                                {tool.references && tool.references.length > 0 && (
+                                                  <div>
+                                                    <h4 className="font-semibold text-foreground/80 mb-1">Key References:</h4>
+                                                    <ul className="list-disc list-inside text-muted-foreground text-xs space-y-1">
+                                                      {tool.references.slice(0, 2).map((ref, index) => (
+                                                        <li key={index}>
+                                                          {ref.startsWith('http') ? 
+                                                            <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary/90 hover:underline inline-flex items-center gap-1 break-all">
+                                                              {ref.length > 100 ? ref.substring(0,97) + '...' : ref} <LinkIcon size={12}/>
+                                                            </a> 
+                                                            : <span className="break-all">{ref.length > 100 ? ref.substring(0,97) + '...' : ref}</span>
+                                                          }
+                                                        </li>
+                                                      ))}
+                                                    </ul>
+                                                  </div>
+                                                )}
+                                                <Button variant="ghost" size="sm" onClick={() => handleToolSelect(tool.id)} className="mt-2 text-primary hover:text-primary/90 hover:bg-primary/10">
+                                                    <Stethoscope className="mr-2 h-4 w-4"/>Use this Tool
+                                                </Button>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )
+                                })}
+                            </Accordion>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+            </>
           )}
 
           {selectedTool && (
@@ -163,7 +249,7 @@ export default function SkinScorePage() {
             </Card>
           )}
 
-          {selectedTool && (
+          {selectedTool && selectedTool.displayType !== 'staticList' && (
             <Card className="shadow-xl border">
               <CardHeader>
                  <CardTitle className="text-2xl font-headline flex items-center gap-2"><CheckSquare className="text-primary h-7 w-7"/>Scoring Inputs</CardTitle>
@@ -173,7 +259,7 @@ export default function SkinScorePage() {
           )}
 
           <div id="results-section" className="pt-4">
-            {calculationResult && selectedTool && (
+            {calculationResult && selectedTool && selectedTool.displayType !== 'staticList' && (
                 <ResultsDisplay result={calculationResult} tool={selectedTool} />
             )}
           </div>
