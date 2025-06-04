@@ -6,12 +6,20 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, ListOrdered, ClipboardCopy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-interface ResultsDisplayProps {
-  result: CalculationResult;
-  tool: Tool; // Added tool prop
-}
+const formatValueForDisplay = (value: any): string => {
+  if (value === null || value === undefined) {
+    return "N/A";
+  }
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    // For objects, we might want a specific summary or indicate it's complex
+    // For now, let's just show [Object] to avoid overly long strings in simple display
+    // The recursive display logic will handle showing its contents.
+    return "[Object]";
+  }
+  return String(value);
+};
 
-const formatDetailsForCopy = (details: Record<string, any>, indentLevel = 0): string => {
+const formatDetailsForCopyText = (details: Record<string, any>, indentLevel = 0): string => {
   let detailsString = '';
   const indent = '  '.repeat(indentLevel);
   for (const [key, value] of Object.entries(details)) {
@@ -20,12 +28,34 @@ const formatDetailsForCopy = (details: Record<string, any>, indentLevel = 0): st
         detailsString += `${indent}${formattedKey}: N/A\n`;
     } else if (typeof value === 'object' && !Array.isArray(value)) {
       detailsString += `${indent}${formattedKey}:\n`;
-      detailsString += formatDetailsForCopy(value as Record<string, any>, indentLevel + 1);
+      detailsString += formatDetailsForCopyText(value as Record<string, any>, indentLevel + 1);
     } else {
       detailsString += `${indent}${formattedKey}: ${String(value)}\n`;
     }
   }
   return detailsString;
+};
+
+const formatDetailsForHtmlTable = (details: Record<string, any>, isNested: boolean = false): string => {
+  if (!details || Object.keys(details).length === 0) return '';
+
+  let htmlString = isNested ? '<table style="width: 100%; border-collapse: collapse; margin-left: 15px;"><tbody>' : '';
+
+  for (const [key, value] of Object.entries(details)) {
+    const formattedKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    htmlString += `<tr style="border: 1px solid #ddd;">`;
+    htmlString += `<td style="padding: 8px; border: 1px solid #ddd; vertical-align: top; font-weight: bold;">${formattedKey}</td>`;
+    if (value === null || value === undefined) {
+      htmlString += `<td style="padding: 8px; border: 1px solid #ddd;">N/A</td>`;
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      htmlString += `<td style="padding: 8px; border: 1px solid #ddd;">${formatDetailsForHtmlTable(value as Record<string, any>, true)}</td>`;
+    } else {
+      htmlString += `<td style="padding: 8px; border: 1px solid #ddd;">${String(value)}</td>`;
+    }
+    htmlString += `</tr>`;
+  }
+  htmlString += isNested ? '</tbody></table>' : '';
+  return htmlString;
 };
 
 
@@ -34,35 +64,81 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
 
   const handleCopyToClipboard = async () => {
     const dateTime = new Date().toLocaleString();
-    let reportString = `SkinScore Report\n`;
-    reportString += `Tool: ${tool.name}${tool.acronym ? ` (${tool.acronym})` : ''}\n`;
-    reportString += `Date & Time: ${dateTime}\n`;
-    reportString += `--------------------------------------------------\n`;
-    reportString += `SCORE: ${String(result.score)}\n`;
-    reportString += `INTERPRETATION: ${result.interpretation}\n`;
+
+    // Plain Text Version
+    let reportStringText = `SkinScore Report\n`;
+    reportStringText += `Tool: ${tool.name}${tool.acronym ? ` (${tool.acronym})` : ''}\n`;
+    reportStringText += `Date & Time: ${dateTime}\n`;
+    reportStringText += `--------------------------------------------------\n`;
+    reportStringText += `SCORE: ${String(result.score)}\n`;
+    reportStringText += `INTERPRETATION: ${result.interpretation}\n`;
 
     if (result.details && Object.keys(result.details).length > 0) {
-      reportString += `--------------------------------------------------\n`;
-      reportString += `DETAILS:\n`;
-      reportString += formatDetailsForCopy(result.details);
+      reportStringText += `--------------------------------------------------\n`;
+      reportStringText += `DETAILS:\n`;
+      reportStringText += formatDetailsForCopyText(result.details);
     }
+    reportStringText += `--------------------------------------------------\n`;
+    reportStringText += `Calculated with SkinScore\n`;
 
-    reportString += `--------------------------------------------------\n`;
-    reportString += `Calculated with SkinScore\n`;
+    // HTML Version
+    let reportStringHtml = `
+      <div style="font-family: Arial, sans-serif; border: 1px solid #ccc; padding: 15px; max-width: 800px;">
+        <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">SkinScore Report</h2>
+        <p><strong>Tool:</strong> ${tool.name}${tool.acronym ? ` (${tool.acronym})` : ''}</p>
+        <p><strong>Date & Time:</strong> ${dateTime}</p>
+        <hr style="margin: 15px 0;" />
+        <p><strong>SCORE:</strong> <span style="font-size: 1.5em; font-weight: bold;">${String(result.score)}</span></p>
+        <p><strong>INTERPRETATION:</strong></p>
+        <p style="background-color: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 4px;">${result.interpretation}</p>
+    `;
+
+    if (result.details && Object.keys(result.details).length > 0) {
+      reportStringHtml += `
+        <hr style="margin: 15px 0;" />
+        <h3 style="color: #555;">DETAILS:</h3>
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd; margin-top: 10px;">
+          <tbody>
+            ${formatDetailsForHtmlTable(result.details)}
+          </tbody>
+        </table>
+      `;
+    }
+    reportStringHtml += `
+        <hr style="margin: 15px 0;" />
+        <p style="font-size: 0.9em; color: #777;">Calculated with SkinScore</p>
+      </div>
+    `;
 
     try {
-      await navigator.clipboard.writeText(reportString);
+      const plainBlob = new Blob([reportStringText], { type: 'text/plain' });
+      const htmlBlob = new Blob([reportStringHtml], { type: 'text/html' });
+      const clipboardItem = new ClipboardItem({
+        'text/plain': plainBlob,
+        'text/html': htmlBlob,
+      });
+      await navigator.clipboard.write([clipboardItem]);
       toast({
         title: "Results Copied",
-        description: "The formatted results have been copied to your clipboard.",
+        description: "Formatted results (HTML and plain text) have been copied to your clipboard.",
       });
     } catch (err) {
       console.error('Failed to copy results: ', err);
-      toast({
-        title: "Copy Failed",
-        description: "Could not copy results to the clipboard. Please try again or copy manually.",
-        variant: "destructive",
-      });
+      // Fallback to text only if ClipboardItem fails (e.g. older browser or security restriction)
+      try {
+        await navigator.clipboard.writeText(reportStringText);
+        toast({
+          title: "Results Copied (Text Only)",
+          description: "Plain text results copied. Rich format copy failed.",
+        });
+      } catch (textErr) {
+        console.error('Failed to copy plain text results: ', textErr);
+        toast({
+          title: "Copy Failed",
+          description: "Could not copy results to the clipboard. Please try again or copy manually.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -105,26 +181,37 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
                             {subKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
                           </div>
                           {typeof subValue === 'object' && subValue !== null && !Array.isArray(subValue) ? (
-                            <div className="pl-4 space-y-0.5"> {/* Level 2 indent */}
-                              {Object.entries(subValue as Record<string, string | number | undefined | null>).map(([subSubKey, subSubValue]) => (
-                                (subSubValue !== undefined && subSubValue !== null && String(subSubValue).trim() !== '') || typeof subSubValue === 'number' ? ( // Render if not empty, or is a number (e.g. 0)
+                             <div className="pl-4 space-y-0.5"> {/* Level 2 indent */}
+                              {Object.entries(subValue as Record<string, string | number | undefined | null | Record<string, any>>).map(([subSubKey, subSubValue]) => (
+                                (subSubValue !== undefined && subSubValue !== null && String(subSubValue).trim() !== '') || typeof subSubValue === 'number' ? (
                                   <div key={subSubKey} className="flex text-xs">
                                     <span className="font-normal text-muted-foreground/80 w-auto max-w-[180px] shrink-0 pr-1.5">
                                       {subSubKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
                                     </span>
-                                    <span className="text-foreground/90 break-words">{String(subSubValue)}</span>
+                                     {typeof subSubValue === 'object' && subSubValue !== null && !Array.isArray(subSubValue) ?
+                                        Object.entries(subSubValue as Record<string, any>).map(([deepKey, deepValue]) => (
+                                            <div key={deepKey} className="pl-4 text-xs">
+                                                <span className="font-normal text-muted-foreground/80 w-auto max-w-[180px] shrink-0 pr-1.5">
+                                                    {deepKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:
+                                                </span>
+                                                <span className="text-foreground/90 break-words">{formatValueForDisplay(deepValue)}</span>
+                                            </div>
+                                        )).reduce((acc, curr, idx, arr) => acc.concat(curr, idx < arr.length -1 ? <br /> : []), [] as (JSX.Element | null)[])
+                                        :
+                                        <span className="text-foreground/90 break-words">{formatValueForDisplay(subSubValue)}</span>
+                                    }
                                   </div>
                                 ) : null
                               ))}
                             </div>
                           ) : (
-                            <div className="pl-4 text-foreground/90 break-words">{String(subValue)}</div>
+                            <div className="pl-4 text-foreground/90 break-words">{formatValueForDisplay(subValue)}</div>
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="pl-4 mt-0.5 text-foreground break-words">{String(value)}</div>
+                    <div className="pl-4 mt-0.5 text-foreground break-words">{formatValueForDisplay(value)}</div>
                   )}
                 </li>
               ))}
@@ -139,3 +226,5 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
     </Card>
   );
 }
+
+    
