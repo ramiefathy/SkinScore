@@ -2,10 +2,9 @@
 import React from 'react';
 import type { Tool } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { CardDescription } from '@/components/ui/card'; // Removed CardHeader, CardTitle as they are handled by parent
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Link } from 'lucide-react';
+import { Link as LinkIcon } from 'lucide-react'; // Renamed to avoid conflict with HTML link
 
 interface ToolInfoProps {
   tool: Tool;
@@ -14,7 +13,7 @@ interface ToolInfoProps {
 const getSourceTypeBadgeProps = (sourceType: Tool['sourceType']): { variant?: "default" | "secondary" | "destructive" | "outline", className?: string } => {
   switch (sourceType) {
     case 'Research':
-      return { variant: "default" }; 
+      return { variant: "default" };
     case 'Clinical Guideline':
       return { className: "bg-accent text-accent-foreground border-transparent hover:bg-accent/80" };
     case 'Expert Consensus':
@@ -25,29 +24,65 @@ const getSourceTypeBadgeProps = (sourceType: Tool['sourceType']): { variant?: "d
 };
 
 export function ToolInfo({ tool }: ToolInfoProps) {
-  const IconComponent = tool.icon;
   const badgeProps = getSourceTypeBadgeProps(tool.sourceType);
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col space-y-2 mb-3">
-        <div className="flex items-center gap-3">
-          {IconComponent && <IconComponent className="h-9 w-9 text-primary" />}
-          <h2 className="text-3xl font-headline text-foreground">{tool.name} {tool.acronym && `(${tool.acronym})`}</h2>
-        </div>
-        <Badge variant={badgeProps.variant} className={`self-start ${badgeProps.className || ''}`}>
-          {tool.sourceType}
-        </Badge>
-      </div>
+      {/* Tool Source Type Badge */}
+      <Badge variant={badgeProps.variant} className={`self-start ${badgeProps.className || ''}`}>
+        {tool.sourceType}
+      </Badge>
       
-      <CardDescription className="text-base leading-relaxed">
+      {/* Condition */}
+      <p className="text-base leading-relaxed">
         <span className="font-semibold text-foreground/90">Condition:</span> {tool.condition}
-      </CardDescription>
+      </p>
       
+      {/* Description ScrollArea */}
       <ScrollArea className="h-auto max-h-[150px] pr-3 border rounded-md p-3 bg-muted/20">
          <p className="text-sm text-muted-foreground leading-relaxed">{tool.description}</p>
       </ScrollArea>
 
+      {/* Static Assessment Levels Display for tools like vIGA-AD */}
+      {tool.displayType === 'staticList' && tool.formSections && tool.formSections.length > 0 && (
+        <>
+          <Separator className="my-3" />
+          <div className="space-y-2">
+            <h4 className="text-md font-semibold text-foreground/90">Assessment Levels:</h4>
+            <ul className="list-none space-y-2">
+              {tool.formSections.flatMap((section, sectionIndex) => {
+                // Assuming staticList tools have options directly in InputConfig items
+                if (!('inputs' in section) && section.options) { 
+                  return section.options.map((option, optionIndex) => (
+                    <li 
+                      key={`${tool.id}-s${sectionIndex}-opt${optionIndex}`} 
+                      className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm"
+                    >
+                      {option.label}
+                    </li>
+                  ));
+                }
+                // Fallback for InputGroupConfig if ever used for staticList (unlikely for simple classifications)
+                if ('inputs' in section && section.inputs) {
+                  return section.inputs.flatMap((inputConfig, inputIndex) => 
+                    inputConfig.options ? inputConfig.options.map((option, optionIndex) => (
+                      <li 
+                        key={`${tool.id}-s${sectionIndex}-i${inputIndex}-opt${optionIndex}`}
+                        className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm"
+                      >
+                        {option.label}
+                      </li>
+                    )) : []
+                  );
+                }
+                return [];
+              })}
+            </ul>
+          </div>
+        </>
+      )}
+
+      {/* Keywords */}
       {tool.keywords && tool.keywords.length > 0 && (
         <div className="mt-3">
           <span className="text-sm font-semibold text-foreground/90">Keywords: </span>
@@ -57,6 +92,7 @@ export function ToolInfo({ tool }: ToolInfoProps) {
         </div>
       )}
 
+      {/* References */}
       {tool.references && tool.references.length > 0 && (
         <>
           <Separator className="my-4"/>
@@ -67,7 +103,7 @@ export function ToolInfo({ tool }: ToolInfoProps) {
                 <li key={index}>
                   {ref.startsWith('http') ? 
                     <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5 break-all">
-                      {ref} <Link size={14}/>
+                      {ref} <LinkIcon size={14}/>
                     </a> 
                     : <span className="break-all">{ref}</span>
                   }
