@@ -48,6 +48,13 @@ import { sledaiSkinTool } from './sledaiSkin';
 import { bvasSkinTool } from './bvasSkin';
 import { essdaiCutaneousTool } from './essdaiCutaneous';
 import { scortenTool } from './scorten';
+import { bwatTool } from './bwat';
+import { clasiTool } from './clasi';
+import { cdasiTool } from './cdasi';
+import { pestTool } from './pest';
+import { absisTool } from './absis';
+import { bpdaiTool } from './bpdai';
+import { pushTool } from './push';
 
 
 export const toolData: Tool[] = [
@@ -98,5 +105,12 @@ export const toolData: Tool[] = [
   sledaiSkinTool,
   bvasSkinTool,
   essdaiCutaneousTool,
-  scortenTool
+  scortenTool,
+  bwatTool,
+  clasiTool,
+  cdasiTool,
+  pestTool,
+  absisTool,
+  bpdaiTool,
+  pushTool
 ];
