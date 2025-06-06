@@ -13,8 +13,8 @@ export const pgaPsoriasisTool: Tool = {
   name: "Physician Global Assessment (PGA) for Psoriasis",
   acronym: "PGA Psoriasis",
   description: "Single-item clinician assessment of overall psoriasis severity. Scales vary.",
-  condition: "Psoriasis",
-  keywords: ["pga", "psoriasis", "physician global assessment", "severity"],
+  condition: "Psoriasis / Psoriatic Arthritis",
+  keywords: ["pga", "psoriasis", "physician global assessment", "severity", "psoriatic arthritis"],
   sourceType: 'Research',
   icon: UserCheck,
   formSections: [

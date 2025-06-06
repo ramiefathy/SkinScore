@@ -8,8 +8,8 @@ export const pasiTool: Tool = {
   name: "Psoriasis Area and Severity Index (PASI)",
   acronym: "PASI",
   description: "Gold standard for assessing severity of extensive plaque psoriasis and monitoring treatment response.",
-  condition: "Psoriasis",
-  keywords: ["pasi", "psoriasis", "plaque psoriasis", "severity", "index"],
+  condition: "Psoriasis / Psoriatic Arthritis",
+  keywords: ["pasi", "psoriasis", "plaque psoriasis", "severity", "index", "psoriatic arthritis"],
   sourceType: 'Clinical Guideline',
   icon: Gauge,
   formSections: (['h', 'u', 't', 'l'] as const).map(regionAbbr => {

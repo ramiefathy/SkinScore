@@ -8,8 +8,8 @@ export const pssiTool: Tool = {
   name: "Psoriasis Scalp Severity Index (PSSI)",
   acronym: "PSSI",
   description: "Specifically assesses the severity of scalp psoriasis.",
-  condition: "Psoriasis",
-  keywords: ["pssi", "psoriasis", "scalp psoriasis", "scalp", "severity"],
+  condition: "Psoriasis / Psoriatic Arthritis",
+  keywords: ["pssi", "psoriasis", "scalp psoriasis", "scalp", "severity", "psoriatic arthritis"],
   sourceType: 'Clinical Guideline',
   icon: User,
   formSections: [
