@@ -8,6 +8,29 @@ and this project adheres to Semantic Versioning (though not formally versioned i
 ## [UNRELEASED]
 
 ### Added
+- **Pyoderma Gangrenosum Diagnostic Tools (2024-06-02):**
+    - Implemented the **Delphi Consensus Criteria for Ulcerative Pyoderma Gangrenosum (pg_delphi)** based on Maverakis E et al., 2018.
+    - Implemented the **PARACELSUS Score for Pyoderma Gangrenosum (pg_paracelsus)** based on Jockenhöfer F et al., 2019.
+    - Implemented the **Su Criteria for Pyoderma Gangrenosum (pg_su)** based on Su WP et al., 2004.
+- **Additional Scoring Tools (2024-06-02):**
+    - Added **PEST (Psoriasis Epidemiology Screening Tool)** for psoriatic arthritis screening.
+    - Added **ABSIS (Autoimmune Bullous Skin Disorder Intensity Score)** for pemphigus severity.
+    - Added **BPDAI (Bullous Pemphigoid Disease Area Index)** for bullous pemphigoid activity.
+    - Added **PUSH Tool (Pressure Ulcer Scale for Healing)** for pressure ulcer monitoring.
+    - Added **CLASI (Cutaneous Lupus Erythematosus Disease Area and Severity Index)** for cutaneous lupus.
+    - Added **CDASI (Cutaneous Dermatomyositis Disease Area and Severity Index)** for dermatomyositis.
+    - Added **BWAT (Bates-Jensen Wound Assessment Tool)** for chronic wound assessment.
+
+### Changed
+- **Tool Categorization (2024-06-02):**
+    - Grouped PEST, PASI, NAPSI, PGA Psoriasis, and PSSI tools under the condition "Psoriasis / Psoriatic Arthritis".
+    - Grouped SCORAD, EASI, SASSAD, vIGA-AD, HECSI, and DASI tools under the condition "Atopic Dermatitis / Eczema".
+
+### Fixed
+- **Module Resolution Errors (2024-06-02):**
+    - Systematically addressed "Module not found" errors for `pest.ts`, `absis.ts`, `bpdai.ts`, `push.ts`, `clasi.ts`, `cdasi.ts`, and `bwat.ts` by ensuring correct file creation and/or re-registration in `src/lib/tools/index.ts`.
+
+### Added
 - **Project Management Files (2024-06-02):**
     - Initial `PROJECT_PLAN.md` to outline goals, implemented features, and future roadmap.
     - This `CHANGELOG.md` file to track development progress.

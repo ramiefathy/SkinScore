@@ -55,6 +55,9 @@ import { pestTool } from './pest';
 import { absisTool } from './absis';
 import { bpdaiTool } from './bpdai';
 import { pushTool } from './push';
+import { pgDelphiTool } from './pgDelphi';
+import { pgParacelsusTool } from './pgParacelsus';
+import { pgSuTool } from './pgSu';
 
 
 export const toolData: Tool[] = [
@@ -96,6 +99,9 @@ export const toolData: Tool[] = [
   nrsPruritusTool,
   pasiTool,
   pestTool,
+  pgDelphiTool,
+  pgParacelsusTool,
+  pgSuTool,
   pgaPsoriasisTool,
   pssiTool,
   pushTool,
