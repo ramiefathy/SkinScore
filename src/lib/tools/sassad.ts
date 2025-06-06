@@ -9,7 +9,7 @@ export const sassadTool: Tool = {
   id: "sassad",
   name: "Six Area, Six Sign AD Severity Score (SASSAD)",
   acronym: "SASSAD",
-  condition: "Atopic Dermatitis",
+  condition: "Atopic Dermatitis / Eczema",
   keywords: ["sassad", "atopic dermatitis", "ad", "eczema", "severity", "six area six sign"],
   description: "Records and monitors Atopic Dermatitis (AD) activity by grading 6 signs (0-3) across 6 body sites. Lack of anchors for grades 1-3.",
   sourceType: 'Clinical Guideline',

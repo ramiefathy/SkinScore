@@ -15,26 +15,27 @@ export const vigaAdTool: Tool = {
   id: "viga_ad",
   name: "Validated IGA for AD (vIGA-AD™)",
   acronym: "vIGA-AD",
-  condition: "Atopic Dermatitis",
+  condition: "Atopic Dermatitis / Eczema",
   keywords: ["viga-ad", "iga", "atopic dermatitis", "ad", "eczema", "physician global assessment", "validated"],
   description: "Static clinician assessment of AD severity.",
   sourceType: 'Research',
   icon: UserCheck,
-  formSections: [
+  displayType: 'staticList', // This tool is typically a classification
+  formSections: [ // Simplified for staticList, only options for grading scale are needed
     {
       id: "viga_grade",
       label: "Select vIGA-AD™ Grade",
-      type: 'select',
+      type: 'select', // Still 'select' to hold options for ToolInfo
       options: vigaAdOptions,
-      defaultValue: 0,
-      validation: getValidationSchema('select', vigaAdOptions, 0, 4)
+      defaultValue: 0, // Not strictly needed for staticList display but good for consistency
+      validation: getValidationSchema('select', vigaAdOptions, 0, 4) // Not used by UI for staticList
     }
   ],
-  calculationLogic: (inputs) => {
+  calculationLogic: (inputs) => { // Not called by UI if displayType='staticList'
       const grade = Number(inputs.viga_grade);
       const gradeLabel = vigaAdOptions.find(opt => opt.value === grade)?.label || "N/A";
-      const gradeText = gradeLabel.substring(gradeLabel.indexOf(" - ") + 3); // Extract description
-      const gradeTitle = gradeLabel.substring(0, gradeLabel.indexOf(":")).trim(); // Extract title like "0 - Clear"
+      const gradeText = gradeLabel.substring(gradeLabel.indexOf(" - ") + 3);
+      const gradeTitle = gradeLabel.substring(0, gradeLabel.indexOf(":")).trim();
 
       const interpretation = `vIGA-AD™ Grade: ${gradeTitle}. ${gradeText}`;
       return { score: grade, interpretation, details: { grade_text: gradeTitle, description: gradeText } };

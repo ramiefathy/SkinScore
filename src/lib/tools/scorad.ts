@@ -10,7 +10,7 @@ export const scoradTool: Tool = {
   name: "SCORing Atopic Dermatitis (SCORAD)",
   acronym: "SCORAD",
   description: "Comprehensive assessment of extent and severity of atopic dermatitis (AD). Uses Rule of Nines for extent.",
-  condition: "Atopic Dermatitis",
+  condition: "Atopic Dermatitis / Eczema",
   keywords: ["scorad", "atopic dermatitis", "ad", "eczema", "severity", "extent"],
   sourceType: 'Expert Consensus',
   icon: ScalingIcon,

@@ -18,8 +18,8 @@ export const hecsiTool: Tool = {
   id: "hecsi",
   name: "Hand Eczema Severity Index (HECSI)",
   acronym: "HECSI",
-  condition: "Hand Eczema",
-  keywords: ["hecsi", "hand eczema", "eczema", "severity", "hand"],
+  condition: "Atopic Dermatitis / Eczema", // Updated condition
+  keywords: ["hecsi", "hand eczema", "eczema", "atopic dermatitis", "severity", "hand"], // Added keywords
   description: "Assesses severity of hand eczema.",
   sourceType: 'Clinical Guideline',
   icon: Hand,

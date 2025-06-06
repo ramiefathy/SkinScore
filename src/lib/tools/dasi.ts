@@ -10,8 +10,8 @@ export const dasiTool: Tool = {
   id: "dasi",
   name: "Dyshidrotic Eczema Area and Severity Index (DASI)",
   acronym: "DASI",
-  condition: "Dyshidrotic Eczema",
-  keywords: ["dasi", "dyshidrotic eczema", "pompholyx", "eczema", "severity"],
+  condition: "Atopic Dermatitis / Eczema", // Updated condition
+  keywords: ["dasi", "dyshidrotic eczema", "pompholyx", "eczema", "atopic dermatitis", "severity"], // Added keywords
   description: "Assesses severity of dyshidrotic eczema (pompholyx).",
   sourceType: 'Clinical Guideline',
   icon: Waves,

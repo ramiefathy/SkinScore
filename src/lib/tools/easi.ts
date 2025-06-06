@@ -11,7 +11,7 @@ export const easiTool: Tool = {
   name: "Eczema Area and Severity Index (EASI)",
   acronym: "EASI",
   description: "Measures extent (area) and severity of Atopic Dermatitis (AD).",
-  condition: "Atopic Dermatitis",
+  condition: "Atopic Dermatitis / Eczema",
   keywords: ["easi", "atopic dermatitis", "ad", "eczema", "severity", "area"],
   sourceType: 'Clinical Guideline',
   icon: SlidersHorizontal,
