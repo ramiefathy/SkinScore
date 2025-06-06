@@ -58,6 +58,9 @@ import { pushTool } from './push';
 import { pgDelphiTool } from './pgDelphi';
 import { pgParacelsusTool } from './pgParacelsus';
 import { pgSuTool } from './pgSu';
+import { iimSontheimer2002Tool } from './iimSontheimer2002';
+import { dssiTool } from './dssi';
+import { sasiTool } from './sasi';
 
 
 export const toolData: Tool[] = [
@@ -76,6 +79,7 @@ export const toolData: Tool[] = [
   ctcaeSkinTool,
   dasiTool,
   dlqiTool,
+  dssiTool,
   easiTool,
   essdaiCutaneousTool,
   fitzpatrickSkinTypeTool,
@@ -88,6 +92,7 @@ export const toolData: Tool[] = [
   igaAcneTool,
   igaRosaceaTool,
   ihs4Tool,
+  iimSontheimer2002Tool,
   issVisTool,
   loscatTool,
   masiMmasiTool,
@@ -105,6 +110,7 @@ export const toolData: Tool[] = [
   pgaPsoriasisTool,
   pssiTool,
   pushTool,
+  sasiTool,
   sassadTool,
   scoradTool,
   scortenTool,

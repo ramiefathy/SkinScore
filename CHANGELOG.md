@@ -8,6 +8,10 @@ and this project adheres to Semantic Versioning (though not formally versioned i
 ## [UNRELEASED]
 
 ### Added
+- **IIM Classification and Severity Tools (2024-06-02):**
+    - Implemented the **Revised Classification System for Idiopathic Inflammatory Myopathies (IIMs) – Sontheimer 2002 (iim_sontheimer2002)** to classify IIM subtypes including Classic DM, Amyopathic DM, Hypomyopathic DM, Overlap Myositis, and Polymyositis.
+    - Implemented the **Dermatomyositis Skin Severity Index (DSSI)** for quantifying skin severity in DM.
+    - Implemented the **Sarcoidosis Activity and Severity Index (SASI)** for assessing cutaneous sarcoidosis severity, specifically facial involvement.
 - **Pyoderma Gangrenosum Diagnostic Tools (2024-06-02):**
     - Implemented the **Delphi Consensus Criteria for Ulcerative Pyoderma Gangrenosum (pg_delphi)** based on Maverakis E et al., 2018.
     - Implemented the **PARACELSUS Score for Pyoderma Gangrenosum (pg_paracelsus)** based on Jockenhöfer F et al., 2019.
