@@ -62,6 +62,7 @@ export const toolData: Tool[] = [
   abcdeMelanomaTool,
   absisTool,
   acneQolTool,
+  bilagSkinTool,
   bpdaiTool,
   bvasSkinTool,
   bwatTool,
@@ -112,5 +113,4 @@ export const toolData: Tool[] = [
   vidaTool,
   vigaAdTool,
   vitiqolTool,
-  bilagSkinTool, // Kept bilagSkinTool, though it was not in the alphabetical order of the prior list. Placed at end for consistency if previously missed.
 ].sort((a, b) => a.name.localeCompare(b.name));
