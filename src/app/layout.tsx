@@ -1,9 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'SkinScore - Dermatological Scoring Tools',
+  title: 'SkinScorer - Your Dermatology Toolbox',
   description: 'A collection of dermatological scoring tools with local calculation.',
 };
 
