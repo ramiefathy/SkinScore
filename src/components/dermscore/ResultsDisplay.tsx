@@ -71,7 +71,7 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
     const dateTime = new Date().toLocaleString();
 
     // Plain Text Version
-    let reportStringText = `SkinScorer Report\n`;
+    let reportStringText = `SkinScore Report\n`;
     reportStringText += `Tool: ${tool.name}${tool.acronym ? ` (${tool.acronym})` : ''}\n`;
     reportStringText += `Date & Time: ${dateTime}\n`;
     reportStringText += `--------------------------------------------------\n`;
@@ -84,12 +84,12 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
       reportStringText += formatDetailsForCopyText(result.details);
     }
     reportStringText += `--------------------------------------------------\n`;
-    reportStringText += `Calculated with SkinScorer\n`;
+    reportStringText += `Calculated with SkinScore\n`;
 
     // HTML Version
     let reportStringHtml = `
       <div style="font-family: Arial, sans-serif; border: 1px solid #ccc; padding: 15px; max-width: 800px;">
-        <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">SkinScorer Report</h2>
+        <h2 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">SkinScore Report</h2>
         <p><strong>Tool:</strong> ${tool.name}${tool.acronym ? ` (${tool.acronym})` : ''}</p>
         <p><strong>Date & Time:</strong> ${dateTime}</p>
         <hr style="margin: 15px 0;" />
@@ -111,7 +111,7 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
     }
     reportStringHtml += `
         <hr style="margin: 15px 0;" />
-        <p style="font-size: 0.9em; color: #777;">Calculated with SkinScorer</p>
+        <p style="font-size: 0.9em; color: #777;">Calculated with SkinScore</p>
       </div>
     `;
 

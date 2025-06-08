@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from '@/components/ui/input';
-import { ScrollText, FileQuestion, Link as LinkIcon, Stethoscope, Search } from 'lucide-react';
+import { ScrollText, FileQuestion, Link as LinkIcon, Stethoscope, Search, LayoutGrid } from 'lucide-react';
 
 export default function AllToolsPage() {
   const router = useRouter();
@@ -56,10 +56,10 @@ export default function AllToolsPage() {
       <header className="bg-card border-b p-4 shadow-md sticky top-0 z-50">
         <div className="container mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary h-8 w-8"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <LayoutGrid className="text-primary h-8 w-8"/>
             <div>
-              <h1 className="text-3xl font-headline text-primary">SkinScorer</h1>
-              <p className="text-xs text-muted-foreground">Your Dermatology Toolbox</p>
+              <h1 className="text-3xl font-headline text-primary">SkinScore</h1>
+              <p className="text-xs text-muted-foreground">Clinical Scoring Tools</p>
             </div>
           </Link>
            <Button variant="outline" asChild>
@@ -189,7 +189,7 @@ export default function AllToolsPage() {
       </main>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">
-          SkinScorer &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
+          SkinScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
         </p>
       </footer>
     </div>

@@ -17,9 +17,9 @@ import { Separator } from '@/components/ui/separator';
 import { FileText, Info, CheckSquare, LayoutGrid, Zap, ScrollText, List } from 'lucide-react';
 
 const MAX_RECENT_TOOLS = 3;
-const RECENT_TOOLS_STORAGE_KEY = 'skinscorer_recently_used_tools'; // Updated storage key
+const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools'; // Reverted storage key
 
-function SkinScorerPageContent() { // Updated component name
+function SkinScorePageContent() { // Reverted component name
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -57,7 +57,7 @@ function SkinScorerPageContent() { // Updated component name
     if (isClient) {
         // Clear toolId from query params after selection
         const currentPath = window.location.pathname;
-        router.replace(currentPath, undefined); 
+        router.replace(currentPath, undefined);
         setTimeout(() => {
             const toolInfoElement = document.getElementById('tool-info-section');
             toolInfoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -108,8 +108,8 @@ function SkinScorerPageContent() { // Updated component name
             <div className="flex items-center gap-2 shrink-0">
                 <LayoutGrid className="h-8 w-8 text-primary" />
                 <div>
-                    <h1 className="text-3xl font-headline text-primary">SkinScorer</h1>
-                    <p className="text-xs text-muted-foreground">Your Dermatology Toolbox</p>
+                    <h1 className="text-3xl font-headline text-primary">SkinScore</h1>
+                    <p className="text-xs text-muted-foreground">Clinical Scoring Tools</p>
                 </div>
             </div>
             <div className="flex items-center gap-2 flex-1 justify-end min-w-[280px] sm:min-w-0">
@@ -137,7 +137,7 @@ function SkinScorerPageContent() { // Updated component name
           {!selectedTool && (
             <Card className="shadow-xl border">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to SkinScorer</CardTitle>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to SkinScore</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-base leading-relaxed">
@@ -210,17 +210,17 @@ function SkinScorerPageContent() { // Updated component name
       </div>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">
-          SkinScorer &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
+          SkinScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
         </p>
       </footer>
     </div>
   );
 }
 
-export default function SkinScorerPage() { // Updated component name
+export default function SkinScorePage() { // Reverted component name
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SkinScorerPageContent />
+      <SkinScorePageContent />
     </Suspense>
   );
 }
