@@ -158,9 +158,9 @@ function SkinScorePageContent() {
                           onClick={() => handleToolSelect(tool.id)}
                         >
                           <ToolIcon className="h-5 w-5 mr-3 shrink-0 text-primary/80" />
-                          <div className="min-w-0 flex-1 pr-2 overflow-hidden"> 
-                            <div className="font-medium text-foreground w-full break-words">{tool.name}</div>
-                            <div className="text-xs text-muted-foreground w-full break-words">{tool.condition}</div>
+                          <div className="min-w-0 flex-1 break-words"> 
+                            <div className="font-medium text-foreground">{tool.name}</div>
+                            <div className="text-xs text-muted-foreground">{tool.condition}</div>
                           </div>
                         </Button>
                       );
