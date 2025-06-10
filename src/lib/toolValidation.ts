@@ -21,7 +21,11 @@ export const getValidationSchema = (inputType: string, options?: Array<InputOpti
       if (options && options.length > 0) {
         const firstValueType = typeof options[0].value;
         if (firstValueType === 'number') {
-          return z.coerce.number({invalid_type_error: "Selection required"}).nullable().optional();
+          // Preprocess empty string to undefined for optional numeric selects
+          return z.preprocess(
+            (val) => (val === "" ? undefined : val),
+            z.coerce.number({invalid_type_error: "Selection required"}).nullable().optional()
+          );
         } else if (firstValueType === 'string') {
           return z.string({invalid_type_error: "Selection required"}).nullable().optional();
         }
@@ -34,7 +38,11 @@ export const getValidationSchema = (inputType: string, options?: Array<InputOpti
       return z.string().nullable().optional();
     case 'radio':
         if (options && options.length > 0 && typeof options[0].value === 'number') {
-            return z.coerce.number({invalid_type_error: "Selection required"}).nullable().optional();
+            // Preprocess empty string to undefined for optional numeric radio groups
+            return z.preprocess(
+              (val) => (val === "" ? undefined : val),
+              z.coerce.number({invalid_type_error: "Selection required"}).nullable().optional()
+            );
         }
         return z.string().nullable().optional();
     default:
