@@ -154,11 +154,11 @@ function SkinScorePageContent() {
                         <Button
                           key={tool.id}
                           variant="outline"
-                          className="justify-start h-auto py-3 px-4 text-left"
+                          className="w-full justify-start h-auto py-3 px-4 text-left" 
                           onClick={() => handleToolSelect(tool.id)}
                         >
                           <ToolIcon className="h-5 w-5 mr-3 shrink-0 text-primary/80" />
-                          <div className="min-w-0 flex-1 pr-2">
+                          <div className="min-w-0 flex-1 pr-2 overflow-hidden"> 
                             <div className="font-medium text-foreground w-full break-words">{tool.name}</div>
                             <div className="text-xs text-muted-foreground w-full break-words">{tool.condition}</div>
                           </div>
