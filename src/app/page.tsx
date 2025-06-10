@@ -17,9 +17,9 @@ import { Separator } from '@/components/ui/separator';
 import { FileText, Info, CheckSquare, LayoutGrid, Zap, ScrollText, List } from 'lucide-react';
 
 const MAX_RECENT_TOOLS = 3;
-const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools'; // Reverted storage key
+const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools';
 
-function SkinScorePageContent() { // Reverted component name
+function SkinScorePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -159,8 +159,8 @@ function SkinScorePageContent() { // Reverted component name
                         >
                           <ToolIcon className="h-5 w-5 mr-3 shrink-0 text-primary/80" />
                           <div className="min-w-0 flex-1 pr-2">
-                            <div className="font-medium text-foreground">{tool.name}</div>
-                            <div className="text-xs text-muted-foreground">{tool.condition}</div>
+                            <div className="font-medium text-foreground w-full">{tool.name}</div>
+                            <div className="text-xs text-muted-foreground w-full">{tool.condition}</div>
                           </div>
                         </Button>
                       );
@@ -217,10 +217,11 @@ function SkinScorePageContent() { // Reverted component name
   );
 }
 
-export default function SkinScorePage() { // Reverted component name
+export default function SkinScorePage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <SkinScorePageContent />
     </Suspense>
   );
 }
+
