@@ -4,10 +4,10 @@ import { FileHeart } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
 
 const bilagSkinGradeOptions: InputOption[] = [
-  { value: "A", label: "A - Severe disease activity" },
-  { value: "B", label: "B - Moderate disease activity" },
-  { value: "C", label: "C - Mild disease activity" },
-  { value: "D", label: "D - Disease inactive but previous involvement" },
+  { value: "A", label: "A - Very active – needs systemic immunosuppression" },
+  { value: "B", label: "B - Moderately active – topical/systemic corticosteroids" },
+  { value: "C", label: "C - Mild or stable" },
+  { value: "D", label: "D - Inactive disease (resolved)" },
   { value: "E", label: "E - Never involved" }
 ];
 
@@ -15,27 +15,38 @@ export const bilagSkinTool: Tool = {
   id: "bilag_skin",
   name: "BILAG - Skin Component",
   acronym: "BILAG Skin",
-  description: "Assesses lupus activity in the mucocutaneous domain as part of the British Isles Lupus Assessment Group index.",
+  description: "The BILAG index assesses disease activity in systemic lupus erythematosus (SLE) across organ systems. The skin domain captures lupus-related cutaneous manifestations (e.g., malar rash, discoid lesions, vasculitis). It's for longitudinal assessment of SLE activity and treatment response. Developed based on physician intention-to-treat (2004 revision most used). BILAG Skin score helps determine severity and guides therapy. Grade A implies active rash needing systemic therapy; B includes discoid rash or widespread subacute CLE.",
   condition: "Lupus",
   keywords: ["bilag", "lupus", "sle", "skin", "mucocutaneous", "activity", "disease activity index"],
   sourceType: 'Clinical Guideline',
   icon: FileHeart,
   formSections: [
     {
-      id: "bilag_skin_grade",
-      label: "BILAG Mucocutaneous Grade",
-      type: 'select',
+      id: "bilagSkinGrade",
+      label: "Skin activity grade (A–E)",
+      type: 'select', // Kept as select for UI consistency, can be radio if preferred by UI
       options: bilagSkinGradeOptions,
       defaultValue: "E",
+      description: "Choose based on current skin activity due to lupus. Refer to BILAG-2004 criteria for detailed definitions of each grade.",
       validation: getValidationSchema('select', bilagSkinGradeOptions)
     }
   ],
   calculationLogic: (inputs) => {
-    const grade = inputs.bilag_skin_grade as string || "E";
-    const scoreMap: Record<string, number> = { "A": 4, "B": 3, "C": 2, "D": 1, "E": 0 };
-    const activityMap: Record<string, string> = { "A": "Severe", "B": "Moderate", "C": "Mild", "D": "Inactive (previous)", "E": "Never involved" };
-    const interpretation = `BILAG Skin Component Grade: ${grade} (${activityMap[grade] || "N/A"}). This reflects current lupus activity in the skin and mucous membranes.`;
-    return { score: scoreMap[grade] !== undefined ? scoreMap[grade] : 0, interpretation, details: { BILAG_Grade: grade, Activity_Level: activityMap[grade] || "N/A" } };
+    const grade = inputs.bilagSkinGrade as string || "E";
+    const interpretationMap: Record<string, string> = {
+      A: "Severe activity – consider systemic immunosuppression",
+      B: "Moderate disease – likely needs escalation",
+      C: "Mild/stable cutaneous disease",
+      D: "Inactive disease (resolved)",
+      E: "No current or historical skin involvement"
+    };
+    const interpretationText = interpretationMap[grade] || "Invalid grade selected.";
+    const interpretation = `BILAG Skin Component Grade: ${grade}. ${interpretationText}`;
+    return { score: grade, interpretation, details: { BILAG_Grade: grade, Activity_Level: interpretationText } };
   },
-  references: ["Hay EM, et al. Criteria for data collection and analysis in randomized clinical trials for systemic lupus erythematosus (SLE) I. The British Isles Lupus Assessment Group (BILAG) index for the assessment of SLE activity. Br J Rheumatol. 1993.", "Isenberg DA, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford). 2005."]
+  references: [
+    "Isenberg DA, Rahman A, Allen E, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford). 2005;44(7):902–906.",
+    "Gordon C, Akil M, Isenberg D, et al. The British Isles Lupus Assessment Group's new flare index for lupus nephritis. Lupus. 2003;12(5):408–413.",
+    "Hay EM, Bacon PA, Gordon C, et al. The BILAG index: a reliable and valid instrument for measuring clinical disease activity in systemic lupus erythematosus. Q J Med. 1993;86(7):447-458." // Original BILAG
+    ]
 };
