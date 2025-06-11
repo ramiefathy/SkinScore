@@ -5,10 +5,10 @@ import { getValidationSchema } from '../toolValidation';
 
 const gagsLesionGradeOptions: InputOption[] = [
   {value:0,label:"0 - No lesions"},
-  {value:1,label:"1 - <10 Comedones"},
-  {value:2,label:"2 - 10-20 Comedones OR <10 Papules"},
-  {value:3,label:"3 - >20 Comedones OR 10-20 Papules OR <10 Pustules"},
-  {value:4,label:"4 - >20 Papules OR 10-20 Pustules OR <5 Nodules"}
+  {value:1,label:"1 - Comedones"}, // Simplified for selection
+  {value:2,label:"2 - Papules"},
+  {value:3,label:"3 - Pustules"},
+  {value:4,label:"4 - Nodules"}
 ];
 
 const gagsLocations = [
@@ -22,10 +22,11 @@ const gagsLocations = [
 
 const gagsFormSections: FormSectionConfig[] = gagsLocations.map(loc=>({
   id:`gags_${loc.id}`,
-  label:`${loc.name} (Factor x${loc.factor}) - Predominant Lesion Grade (0-4)`,
+  label:`${loc.name} - Predominant Lesion Grade (Factor x${loc.factor})`,
   type:'select',
   options: gagsLesionGradeOptions,
   defaultValue:0,
+  description: "Select most severe lesion type: 0=None, 1=Comedones, 2=Papules, 3=Pustules, 4=Nodules.",
   validation: getValidationSchema('select', gagsLesionGradeOptions, 0, 4)
 } as InputConfig));
 
@@ -36,29 +37,39 @@ export const gagsTool: Tool = {
   acronym: "GAGS",
   condition: "Acne Vulgaris",
   keywords: ["gags", "acne", "acne vulgaris", "global acne grading system", "severity"],
-  description: "Global score for acne severity based on lesion type (comedones, papules, pustules, nodules) and location factors.",
+  description: "Introduced by Doshi et al. (1997), GAGS provides a method to grade acne severity by assessing the most severe lesion type in six key anatomical locations, weighted by their surface area. It avoids laborious lesion counting.",
   sourceType: 'Clinical Guideline',
   icon: Calculator,
   formSections: gagsFormSections,
   calculationLogic: (inputs) => {
       let totalScore = 0;
-      const locationScores: Record<string, {grade: number, score: number}> = {};
+      const locationScores: Record<string, {grade: number, factor: number, score: number}> = {};
       gagsLocations.forEach(loc=>{
           const grade = Number(inputs[`gags_${loc.id}`])||0;
           const locationScore = grade * loc.factor;
           totalScore += locationScore;
-          locationScores[loc.name] = {grade, score: locationScore};
+          locationScores[loc.name] = {grade, factor: loc.factor, score: locationScore};
       });
 
-      let severityInterpretation = "";
-      if (totalScore === 0) severityInterpretation = "Clear.";
-      else if (totalScore <= 18) severityInterpretation = "Mild Acne.";
-      else if (totalScore <= 30) severityInterpretation = "Moderate Acne.";
-      else if (totalScore <= 38) severityInterpretation = "Severe Acne.";
-      else severityInterpretation = "Very Severe Acne.";
+      let severityInterpretationText = "";
+      if (totalScore === 0) severityInterpretationText = "Clear";
+      else if (totalScore <= 18) severityInterpretationText = "Mild";
+      else if (totalScore <= 30) severityInterpretationText = "Moderate";
+      else if (totalScore <= 38) severityInterpretationText = "Severe";
+      else severityInterpretationText = "Very Severe";
 
-      const interpretation = `Total GAGS Score: ${totalScore} (Range: 0-44+). ${severityInterpretation} (Severity bands: 0 Clear, 1-18 Mild, 19-30 Moderate, 31-38 Severe, 39+ Very Severe).`;
-      return { score: totalScore, interpretation, details: locationScores };
+      const interpretation = `Total GAGS Score: ${totalScore} (Range: 0-44). Severity: ${severityInterpretationText} acne.`;
+      return {
+        score: totalScore,
+        interpretation,
+        details: {
+          Regional_Scores: locationScores,
+          Total_GAGS_Score: totalScore,
+          Severity_Category: severityInterpretationText
+        }
+      };
   },
-  references: ["Doshi A, Zaheer A, Stiller MJ. A comparison of current acne grading systems and proposal of a novel system. Int J Dermatol. 1997 Jul;36(7):494-8.", "Adityan B, Kumari R, Thappa DM. Scoring systems in acne vulgaris. Indian J Dermatol Venereol Leprol. 2009 May-Jun;75(3):323-6."]
+  references: [
+    "Doshi, A., Zaheer, A., & Stiller, M. J. (1997). A comparison of current acne grading systems and proposal of a novel system. International Journal of Dermatology, 36(6), 416–418."
+  ]
 };

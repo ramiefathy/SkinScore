@@ -1,7 +1,16 @@
 
-import type { Tool, InputConfig, FormSectionConfig } from '../types';
+import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { UserCheck } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
+
+const hsPgaGradeOptions: InputOption[] = [
+  { value: 0, label: "0 - Clear (no lesions)" },
+  { value: 1, label: "1 - Minimal (no abscesses or draining fistulas)" },
+  { value: 2, label: "2 - Mild (few nodules, ≤1 abscess or fistula)" },
+  { value: 3, label: "3 - Moderate (multiple nodules, few abscesses/fistulas)" },
+  { value: 4, label: "4 - Severe (multiple nodules/abscesses, limited fistulas)" },
+  { value: 5, label: "5 - Very Severe (multiple nodules, abscesses, and fistulas)" }
+];
 
 export const hsPgaTool: Tool = {
   id: "hspga",
@@ -9,53 +18,34 @@ export const hsPgaTool: Tool = {
   acronym: "HS-PGA",
   condition: "Hidradenitis Suppurativa",
   keywords: ["hspga", "hs", "hidradenitis suppurativa", "pga", "physician global assessment", "severity"],
-  description: "A static, 6-point scale for clinicians to globally assess the severity of Hidradenitis Suppurativa. Specific definitions for each grade vary slightly across trials.",
+  description: "The HS-PGA is a validated 6-point scale (0-5) used to rate the overall severity of HS at a single point in time. It is based on the number and type of lesions and is frequently used in clinical trials to provide a global impression of the disease state.",
   sourceType: 'Research',
   icon: UserCheck,
+  displayType: 'staticList',
   formSections: [
-    { id: "abscesses_count", label: "Number of Abscesses (A)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
-    { id: "inflammatory_nodules_count", label: "Number of Inflammatory Nodules (IN)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
-    { id: "draining_fistulas_count", label: "Number of Draining Fistulas (DF)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)},
-    { id: "non_inflammatory_nodules_count", label: "Number of Non-Inflammatory Nodules (NIN) (e.g., for Grade 0/1 distinction)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0)}
+    {
+      id: "hs_pga_grade_display",
+      label: "HS-PGA Grades",
+      type: 'select',
+      options: hsPgaGradeOptions,
+      defaultValue: 0,
+      validation: getValidationSchema('select', hsPgaGradeOptions, 0, 5)
+    }
   ],
-  calculationLogic: (inputs) => {
-    const A = Number(inputs.abscesses_count) || 0;
-    const IN = Number(inputs.inflammatory_nodules_count) || 0;
-    const DF = Number(inputs.draining_fistulas_count) || 0;
-    const NIN = Number(inputs.non_inflammatory_nodules_count) || 0;
+  calculationLogic: (inputs) => { // Not called by UI if displayType='staticList'
+    const grade = Number(inputs.pgaGrade) || 0; // inputs.pgaGrade won't be present
+    const gradeLabel = hsPgaGradeOptions.find(opt => opt.value === grade)?.label || "Invalid Grade";
+    const interpretationText = `HS-PGA Grade ${gradeLabel}. A common trial endpoint is achieving a ≥2-grade reduction from baseline.`;
 
-    let pgaScore = -1;
-    let description = "Undetermined - use clinical judgment or direct PGA selection.";
-
-    if (A === 0 && IN === 0 && DF === 0 && NIN === 0) {
-        pgaScore = 0; description = "Clear: No inflammatory or non-inflammatory HS lesions.";
-    } else if (A === 0 && IN === 0 && DF === 0 && NIN > 0) {
-        pgaScore = 1; description = "Minimal: No abscesses, inflammatory nodules, or draining fistulas; only non-inflammatory nodules present.";
-    } else if (A === 0 && DF === 0 && IN > 0 && IN <= 4) {
-        pgaScore = 2; description = "Mild: 1-4 inflammatory nodule(s); no abscess(es) or draining fistula(s).";
-    } else if (A <= 2 && DF === 0 && IN === 0) {
-        pgaScore = 2; description = "Mild: ≤2 abscess(es); no inflammatory nodule(s) or draining fistula(s).";
-    } else if (DF <= 2 && A === 0 && IN === 0) {
-        pgaScore = 2; description = "Mild: ≤2 draining fistula(s); no inflammatory nodule(s) or abscess(es).";
-    } else if ((A > 0 || DF > 0 || IN > 0)) {
-        if ((A <= 5 && DF <= 5 && (A+DF) <= 5 && IN < 10) && !((A > 2 && IN === 0 && DF === 0) || (DF > 2 && IN === 0 && A === 0))) {
-           if ((A+DF) >=1 || IN >=5) {pgaScore = 3; description = "Moderate: Some abscesses/fistulas (total ≤5) and/or several inflammatory nodules (<10).";}
-           else if (pgaScore===-1 && (A > 0 || IN > 0 || DF > 0)) {pgaScore = 2; description="Mild: Few mixed inflammatory lesions."}
-        }
-        if (((A > 5 || DF > 5 || (A+DF) > 5) || ( (A+DF) >=1 && IN >= 10 )) && !((A+DF) > 10) ) {
-            pgaScore = 4; description = "Severe: Multiple abscesses/fistulas (total >5) or many inflammatory nodules (≥10) with some A/DF.";
-        }
-        if ((A+DF) > 10 || (A+IN+DF > 20 && (A+DF) >=5) ) {
-            pgaScore = 5; description = "Very Severe: Extensive/confluent lesions or very numerous lesions.";
-        }
-    }
-    if(pgaScore === -1 && (A > 0 || IN > 0 || DF > 0)) {
-        pgaScore = 3; description = "Moderate (General fallback - use clinical judgment).";
-    }
-
-
-    const interpretation = `HS-PGA Score: ${pgaScore === -1 ? 'N/A' : pgaScore} - ${description}. This score is a global assessment. Precise definitions can vary.`;
-    return { score: pgaScore, interpretation, details: { Abscesses: A, Inflammatory_Nodules: IN, Draining_Fistulas: DF, Non_Inflammatory_Nodules: NIN, Calculated_Description: description } };
+    return {
+      score: grade,
+      interpretation: interpretationText,
+      details: {
+        Selected_HS_PGA_Grade: gradeLabel
+      }
+    };
   },
-  references: ["HS-PGA scales are often defined in specific clinical trial protocols. Example: Kimball AB, et al. JAMA Dermatol. 2012. FDA Adalimumab Prescribing Information."]
+  references: [
+    "Kimball, A. B., et al. (2016). The Hidradenitis Suppurativa Physician's Global Assessment. Journal of the American Academy of Dermatology, 75(2), 346-350."
+  ]
 };

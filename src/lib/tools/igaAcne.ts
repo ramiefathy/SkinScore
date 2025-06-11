@@ -3,9 +3,21 @@ import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types
 import { UserCheck } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
 
-const igaAcneGradeOptions: InputOption[] = [ {value:0,label:"0 - Clear: No inflammatory lesions, no comedones."}, {value:1,label:"1 - Almost Clear: Rare non-inflammatory lesions (NILs) with no more than one small inflammatory lesion (IL)."}, {value:2,label:"2 - Mild: Some NILs, no more than a few ILs (papules/pustules only, no nodules)."}, {value:3,label:"3 - Moderate: Many NILs, may have some ILs, no more than one small nodule."}, {value:4,label:"4 - Severe: Many NILs and ILs, may have a few nodules."} ];
-// Note: Baseline options are removed from formSections for staticList display,
-// as they are part of a calculation, not the primary grading scale.
+// 6-point scale (0-5)
+const igaAcneOptions: InputOption[] = [
+  { value: 0, label: "0 - Clear: No inflammatory or non-inflammatory lesions." },
+  { value: 1, label: "1 - Almost Clear: Rare non-inflammatory lesions (NILs) with no more than one small inflammatory lesion (IL)." },
+  { value: 2, label: "2 - Mild: Some NILs, no more than a few ILs (papules/pustules only, no nodules)." },
+  { value: 3, label: "3 - Moderate: Many NILs, may have some ILs, no more than one small nodule." },
+  { value: 4, label: "4 - Severe: Numerous NILs and ILs, may have a few nodules." },
+  { value: 5, label: "5 - Very Severe: Highly inflammatory acne with widespread lesions and nodules." }
+];
+
+const baselineIgaOptions: InputOption[] = [
+  { value: -1, label: "N/A (Baseline not assessed)" },
+  ...igaAcneOptions
+];
+
 
 export const igaAcneTool: Tool = {
   id: "iga_acne",
@@ -13,46 +25,61 @@ export const igaAcneTool: Tool = {
   acronym: "IGA Acne",
   condition: "Acne Vulgaris",
   keywords: ["iga", "acne", "acne vulgaris", "physician global assessment", "severity"],
-  description: "Static clinician assessment of overall facial acne severity. Definitions can vary.",
+  description: "The Investigator's Global Assessment (IGA) is a static, clinician-rated scale that provides a snapshot of overall acne severity. Several versions exist, but a 5-point or 6-point scale (scored 0-4 or 0-5) is common in clinical trials for evaluating treatment success, often required by regulatory agencies like the FDA. This tool uses a 6-point (0-5) scale.",
   sourceType: 'Research',
   icon: UserCheck,
-  displayType: 'staticList', // Changed to staticList
   formSections: [
-    // Simplified for staticList display: only show the main grading scale.
-    // The original formSections for calculation logic would include baseline_iga_grade.
-    // For static display, we only care about the primary classification options.
     {
-      id: "current_iga_grade", // ID is still relevant for ToolInfo to find options
-      label: "IGA Grade for Acne Vulgaris", // Label for context if ever needed
-      type: 'select', // Type indicates where options are stored
-      options: igaAcneGradeOptions,
+      id: "current_iga_grade",
+      label: "Current IGA Grade (0-5)",
+      type: 'select',
+      options: igaAcneOptions,
       defaultValue: 0,
-      validation: getValidationSchema('select', igaAcneGradeOptions ,0,4)
+      validation: getValidationSchema('select', igaAcneOptions ,0,5)
+    },
+    {
+      id: "baseline_iga_grade",
+      label: "Baseline IGA Grade (0-5 or N/A)",
+      type: 'select',
+      options: baselineIgaOptions,
+      defaultValue: -1,
+      description: "Select baseline grade if assessing treatment success (≥2 grade improvement AND final grade 0 or 1).",
+      validation: getValidationSchema('select', baselineIgaOptions ,-1,5)
     }
   ],
   calculationLogic: (inputs) => {
-      // This logic remains for completeness or if the tool were ever used as 'form' type
-      // but won't be called by the UI if displayType is 'staticList'.
       const currentGrade = Number(inputs.current_iga_grade);
-      const baselineGrade = Number(inputs.baseline_iga_grade); // This input would not be available from the simplified formSections
+      const baselineGrade = Number(inputs.baseline_iga_grade);
+
+      const currentGradeLabel = igaAcneOptions.find(opt => opt.value === currentGrade)?.label || "Invalid Grade";
+      const baselineGradeLabel = baselineIgaOptions.find(opt => opt.value === baselineGrade)?.label || "N/A";
+
       let treatmentSuccess = "N/A";
-      const gradeMap: Record<number, string> = {"-1":"N/A"};
-      igaAcneGradeOptions.forEach(opt => gradeMap[opt.value as number] = String(opt.label));
-
-
-      if (baselineGrade !== undefined && baselineGrade !== -1 && baselineGrade >=0 ) {
-          treatmentSuccess = (currentGrade <= 1 && (baselineGrade - currentGrade >= 2)) ? "Achieved" : "Not Achieved";
+      if (baselineGrade !== -1 && baselineGrade >= 0) {
+          if (currentGrade <= 1 && (baselineGrade - currentGrade >= 2)) {
+              treatmentSuccess = "Achieved";
+          } else {
+              treatmentSuccess = "Not Achieved";
+          }
       }
 
-      let interpretation = `Current IGA Acne Grade: ${currentGrade} (${gradeMap[currentGrade] || 'Invalid Grade'}). `;
-      if (baselineGrade !== undefined && baselineGrade !== -1) {
-          interpretation += `Baseline IGA Grade: ${baselineGrade} (${gradeMap[baselineGrade] || 'Invalid Grade'}). Treatment Success: ${treatmentSuccess}.`;
-      } else {
-          interpretation += "Baseline not provided or N/A for treatment success assessment.";
+      let interpretation = `Current IGA Acne Grade: ${currentGradeLabel}. `;
+      if (baselineGrade !== -1) {
+          interpretation += `\nBaseline IGA Grade: ${baselineGradeLabel}. \nTreatment Success (≥2 grade reduction and current grade 0 or 1): ${treatmentSuccess}.`;
       }
 
-      return { score: currentGrade, interpretation, details: { current_grade_text: gradeMap[currentGrade] || 'Invalid Grade', baseline_grade: baselineGrade === -1 || baselineGrade === undefined ? 'N/A' : baselineGrade, baseline_grade_text: gradeMap[baselineGrade] || 'Invalid Grade', treatment_success: treatmentSuccess } };
+      return {
+        score: currentGrade,
+        interpretation,
+        details: {
+          Current_IGA_Description: currentGradeLabel,
+          Baseline_IGA_Description: baselineGradeLabel,
+          Treatment_Success_Criteria_Met: treatmentSuccess
+        }
+      };
   },
-  references: ["FDA guidance documents for acne clinical trials. Example: Guidance for Industry Acne Vulgaris: Developing Drugs for Treatment.", "Cook D, et al. A new investigator's global assessment scale for acne vulgaris: a more sensitive instrument for measuring treatment effect. J Drugs Dermatol. 2004 May-Jun;3(3):262-6."]
+  references: [
+    "Thiboutot, D. M., et al. (2008). A multicenter, randomized, double-blind, parallel-group study of the efficacy and safety of a novel tretinoin 0.04% gel microsphere formulation in the treatment of acne vulgaris. Cutis, 81(1), 71-78. (Example of IGA use in a clinical trial).",
+    "FDA Guidance for Industry: Acne Vulgaris: Developing Drugs for Treatment."
+  ]
 };
-

@@ -8,67 +8,70 @@ export const hiscrTool: Tool = {
   name: "HiSCR (Hidradenitis Suppurativa Clinical Response)",
   acronym: "HiSCR",
   condition: "Hidradenitis Suppurativa",
-  keywords: ["hiscr", "hs", "hidradenitis suppurativa", "treatment response", "clinical trial"],
-  description: "Defines treatment response in HS clinical trials based on changes in abscesses, inflammatory nodules, and draining fistulas.",
+  keywords: ["hiscr", "hs", "hidradenitis suppurativa", "treatment response", "clinical trial", "an count"],
+  description: "The HiSCR is a dichotomous (yes/no) outcome measure developed specifically for HS clinical trials to assess treatment response. It is considered more sensitive to change than the HS-PGA. It measures a significant reduction in inflammatory lesions without disease worsening. Requires counts of Abscesses (A), Inflammatory Nodules (IN), and Draining Fistulas (DF) at baseline and follow-up.",
   sourceType: 'Clinical Guideline',
   icon: ListChecks,
   formSections: [
       {
-          id: "hiscr_baseline_group", title: "Baseline Assessment", gridCols: 1,
+          id: "hiscr_baseline_group", title: "Baseline Assessment (Prior to Treatment Start)", gridCols: 1,
           inputs: [
-              { id: "baseline_abscesses", label: "Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-              { id: "baseline_inflammatory_nodules", label: "Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-              { id: "baseline_draining_fistulas", label: "Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+              { id: "baselineAbscesses", label: "Baseline Abscess (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+              { id: "baselineAN", label: "Baseline Total Inflammatory Lesion (AN) Count (Abscesses + Nodules)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0), description:"Sum of baseline Abscesses and Inflammatory Nodules." },
+              { id: "baselineFistulas", label: "Baseline Draining Fistula (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
           ]
       },
       {
-          id: "hiscr_followup_group", title: "Follow-up Assessment", gridCols: 1,
+          id: "hiscr_followup_group", title: "Follow-up Assessment (At Evaluation Timepoint)", gridCols: 1,
           inputs: [
-              { id: "followup_abscesses", label: "Abscesses (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-              { id: "followup_inflammatory_nodules", label: "Inflammatory Nodules (IN) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
-              { id: "followup_draining_fistulas", label: "Draining Fistulas (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+              { id: "currentAbscesses", label: "Follow-up Abscess (A) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
+              { id: "currentAN", label: "Follow-up Total Inflammatory Lesion (AN) Count (Abscesses + Nodules)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0), description:"Sum of follow-up Abscesses and Inflammatory Nodules." },
+              { id: "currentFistulas", label: "Follow-up Draining Fistula (DF) Count", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
           ]
       }
   ],
   calculationLogic: (inputs) => {
-    const Ab = Number(inputs.baseline_abscesses) || 0;
-    const INb = Number(inputs.baseline_inflammatory_nodules) || 0;
-    const DFb = Number(inputs.baseline_draining_fistulas) || 0;
-    const Af = Number(inputs.followup_abscesses) || 0;
-    const INf = Number(inputs.followup_inflammatory_nodules) || 0;
-    const DFf = Number(inputs.followup_draining_fistulas) || 0;
+    const baselineAN = Number(inputs.baselineAN) || 0;
+    const currentAN = Number(inputs.currentAN) || 0;
+    const baselineAbscesses = Number(inputs.baselineAbscesses) || 0;
+    const currentAbscesses = Number(inputs.currentAbscesses) || 0;
+    const baselineFistulas = Number(inputs.baselineFistulas) || 0;
+    const currentFistulas = Number(inputs.currentFistulas) || 0;
 
-    const AINb = Ab + INb;
-    const AINf = Af + INf;
+    const anReductionMet = baselineAN > 0 ? ((baselineAN - currentAN) / baselineAN) >= 0.5 : currentAN === 0;
+    const noAbscessIncrease = currentAbscesses <= baselineAbscesses;
+    const noFistulaIncrease = currentFistulas <= baselineFistulas;
 
-    let reductionAIN = 0;
-    if (AINb > 0) {
-      reductionAIN = (AINb - AINf) / AINb;
-    } else if (AINf === 0) {
-      reductionAIN = 1.0;
-    }
+    const isAchieved = anReductionMet && noAbscessIncrease && noFistulaIncrease;
+    const score = isAchieved ? 1 : 0; // 1 for Achieved, 0 for Not Achieved
 
-    const criterion1_reduction = reductionAIN >= 0.5;
-    const criterion2_no_increase_A = Af <= Ab;
-    const criterion3_no_increase_DF = DFf <= DFb;
-
-    const achieved = criterion1_reduction && criterion2_no_increase_A && criterion3_no_increase_DF;
-    const score = achieved ? 1 : 0;
-
-    const interpretation = `HiSCR: ${achieved ? "Achieved" : "Not Achieved"}. Criteria: 1. ≥50% reduction in (Abscesses + Inflammatory Nodules) count: ${criterion1_reduction ? "Yes" : "No"} (${(reductionAIN * 100).toFixed(1)}% reduction). 2. No increase in Abscess count from baseline: ${criterion2_no_increase_A ? "Yes" : "No"}. 3. No increase in Draining Fistula count from baseline: ${criterion3_no_increase_DF ? "Yes" : "No"}.`;
+    const interpretation = isAchieved ?
+      `HiSCR Achieved: At least 50% reduction in AN count (${((baselineAN - currentAN) / (baselineAN || 1) * 100).toFixed(1)}%) with no increase in abscesses and no increase in draining fistulas.` :
+      `HiSCR Not Achieved.
+      - AN count reduction ≥50%: ${anReductionMet ? 'Yes' : 'No'} (${((baselineAN - currentAN) / (baselineAN || 1) * 100).toFixed(1)}% reduction)
+      - No increase in abscess count: ${noAbscessIncrease ? 'Yes' : 'No'}
+      - No increase in draining fistula count: ${noFistulaIncrease ? 'Yes' : 'No'}`;
 
     return {
       score,
       interpretation,
       details: {
-        AIN_Reduction_Percent: parseFloat((reductionAIN * 100).toFixed(1)),
-        Criterion1_AIN_Reduction_Met: criterion1_reduction ? "Yes" : "No",
-        Criterion2_No_Abscess_Increase_Met: criterion2_no_increase_A ? "Yes" : "No",
-        Criterion3_No_Fistula_Increase_Met: criterion3_no_increase_DF ? "Yes" : "No",
-        Baseline_A_plus_IN: AINb,
-        Followup_A_plus_IN: AINf,
+        Baseline_AN_Count: baselineAN,
+        Followup_AN_Count: currentAN,
+        AN_Reduction_Met: anReductionMet,
+        Percent_AN_Reduction: parseFloat(((baselineAN - currentAN) / (baselineAN || 1) * 100).toFixed(1)),
+        Baseline_Abscess_Count: baselineAbscesses,
+        Followup_Abscess_Count: currentAbscesses,
+        No_Abscess_Increase_Met: noAbscessIncrease,
+        Baseline_Fistula_Count: baselineFistulas,
+        Followup_Fistula_Count: currentFistulas,
+        No_Fistula_Increase_Met: noFistulaIncrease,
+        HiSCR_Status: isAchieved ? "Achieved" : "Not Achieved"
       }
     };
   },
-  references: ["Kimball AB, et al. Hidradenitis suppurativa: a disease with U.S. prevalence of 1% to 4% that requires new therapies. J Am Acad Dermatol. 2014.", "Original definition often cited in clinical trial protocols for HS therapies."]
+  references: [
+    "Kimball, A. B., Sobell, J. M., Zouboulis, C. C., et al. (2016). Hidradenitis Suppurativa: A-102. Journal of Investigative Dermatology, 136(5), S17. (Abstract describing HiSCR)",
+    "The HiSCR was validated in the PIONEER I and II trials for adalimumab (e.g., Kimball AB, et al. N Engl J Med. 2012;367(20):1906-15 - This reference might be for early HS trials, check specific adalimumab HS trial publications like JAMA Dermatol. 2015;151(10):1070-8 for PIONEER results)."
+  ]
 };

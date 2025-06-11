@@ -16,7 +16,7 @@ export const bvasSkinTool: Tool = {
   id: "bvas_skin",
   name: "BVAS - Skin Component",
   acronym: "BVAS Skin",
-  description: "Scores skin manifestations for the Birmingham Vasculitis Activity Score (BVAS), a validated instrument to score disease activity in systemic vasculitis, especially ANCA-associated vasculitis. The skin component evaluates lesions attributed to vasculitis. BVAS (version 3) includes multiple skin-related items. Each item carries a point value if present and considered active.",
+  description: "BVAS is a validated instrument to score disease activity in systemic vasculitis, especially ANCA-associated vasculitis. The skin component evaluates lesions attributed to vasculitis (e.g. purpura, ulcers, gangrene, infarcts). BVAS (version 3) includes up to 9 skin-related items. Each item carries a point value if present and considered active. This tool represents common skin items.",
   condition: "Vasculitis",
   keywords: ["bvas", "vasculitis", "skin involvement", "activity score", "purpura", "ulcer", "gangrene", "infarcts", "anca"],
   sourceType: 'Clinical Guideline',
@@ -25,8 +25,8 @@ export const bvasSkinTool: Tool = {
     {
       id: "bvas_skin_items_group",
       title: "BVAS Skin Activity Items",
-      description: "Select all active skin manifestations of vasculitis present.",
-      gridCols: 1, // Or 2 for a wider layout
+      description: "Select all active skin manifestations of vasculitis present. Points will be assigned based on the item.",
+      gridCols: 1,
       inputs: bvasSkinInputs
     }
   ],
@@ -56,7 +56,6 @@ export const bvasSkinTool: Tool = {
   },
   references: [
     "Luqmani RA, Bacon PA, Moots RJ, et al. Birmingham Vasculitis Activity Score (BVAS) in systemic necrotizing vasculitis. QJM. 1994;87(11):671-8.",
-    "Mukhtyar C, Lee R, Brown D, et al. Modification and validation of the Birmingham Vasculitis Activity Score (version 3). Ann Rheum Dis. 2009;68(12):1827-32.",
     "Suppiah R, et al. Performance of a new tool to assess global disease activity in ANCA-associated vasculitis. Ann Rheum Dis. 2011;70(3):491–498." // References OMERACT Vasculitis Working Group tool
     ]
 };

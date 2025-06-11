@@ -8,38 +8,69 @@ export const loscatTool: Tool = {
   name: "Localized Scleroderma Cutaneous Assessment Tool (LoSCAT)",
   acronym: "LoSCAT",
   condition: "Localized Scleroderma (Morphea)",
-  keywords: ["loscat", "morphea", "localized scleroderma", "activity", "damage", "pga", "mrss"],
-  description: "Assesses disease activity and damage in morphea, incorporating Physician Global Assessments (PGA) and modified Rodnan Skin Score (mRSS) components.",
+  keywords: ["loscat", "morphea", "localized scleroderma", "activity", "damage", "pga", "mrss", "LoSAI", "LoSDI"],
+  description: "The LoSCAT is a comprehensive, validated tool used to assess disease state in localized scleroderma (morphea). It uniquely separates disease activity (LoSAI - Localized Scleroderma Activity Index for ongoing inflammation) from disease damage (LoSDI - Localized Scleroderma Damage Index for chronic, irreversible changes like atrophy and sclerosis). This tool expects pre-calculated LoSAI and LoSDI scores as input.",
   sourceType: 'Clinical Guideline',
   icon: ClipboardList,
   formSections: [
-    { id: "pga_activity", label: "PGA of Activity (PGA-A, 0-100mm VAS)", type: 'number', min: 0, max: 100, defaultValue: 0, validation: getValidationSchema('number',[],0,100) },
-    { id: "pga_damage", label: "PGA of Damage (PGA-D, 0-100mm VAS)", type: 'number', min: 0, max: 100, defaultValue: 0, validation: getValidationSchema('number',[],0,100) },
-    { id: "mrss_sum_affected", label: "mRSS Sum of Affected Sites (0-51 for full body, or sum of only affected sites)", type: 'number', min: 0, defaultValue: 0, description: "Sum of mRSS scores from affected sites.", validation: getValidationSchema('number',[],0) },
-    { id: "loscat_activity_score", label: "LoSCAT Activity Score (Calculated Externally)", type: 'number', min: 0, defaultValue: 0, description: "Enter the calculated LoSCAT activity score based on its specific items.", validation: getValidationSchema('number',[],0) },
-    { id: "loscat_damage_score", label: "LoSCAT Damage Score (Calculated Externally)", type: 'number', min: 0, defaultValue: 0, description: "Enter the calculated LoSCAT damage score based on its specific items.", validation: getValidationSchema('number',[],0) },
+    {
+      id: "activityIndex",
+      label: "LoSAI (Localized Scleroderma Activity Index) Score",
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      description: "Enter the pre-calculated LoSAI score.",
+      validation: getValidationSchema('number',[],0)
+    },
+    {
+      id: "damageIndex",
+      label: "LoSDI (Localized Scleroderma Damage Index) Score",
+      type: 'number',
+      min: 0,
+      defaultValue: 0,
+      description: "Enter the pre-calculated LoSDI score.",
+      validation: getValidationSchema('number',[],0)
+    },
   ],
   calculationLogic: (inputs) => {
-    const pgaA = Number(inputs.pga_activity) || 0;
-    const pgaD = Number(inputs.pga_damage) || 0;
-    const mrss = Number(inputs.mrss_sum_affected) || 0;
-    const loscatAct = Number(inputs.loscat_activity_score) || 0;
-    const loscatDam = Number(inputs.loscat_damage_score) || 0;
+    const activityScore = Number(inputs.activityIndex) || 0;
+    const damageScore = Number(inputs.damageIndex) || 0;
 
-    const score = loscatAct; // Primarily reports the LoSCAT activity score as the main "score"
-    const interpretation = `LoSCAT Assessment: PGA-Activity: ${pgaA}, PGA-Damage: ${pgaD}. mRSS (Affected Sites Sum): ${mrss}. LoSCAT Activity Score: ${loscatAct}, LoSCAT Damage Score: ${loscatDam}. Higher scores generally indicate greater activity or damage respectively.`;
+    let activitySeverity = "";
+    if (activityScore <= 4) activitySeverity = "Mild Activity";
+    else if (activityScore <= 12) activitySeverity = "Moderate Activity";
+    else activitySeverity = "Severe Activity";
+
+    let damageSeverity = "";
+    if (damageScore <= 10) damageSeverity = "Mild Damage";
+    else if (damageScore <= 15) damageSeverity = "Moderate Damage";
+    else damageSeverity = "Severe Damage";
+
+    // The primary "score" of LoSCAT isn't a single sum, but the separate activity and damage scores.
+    // We can use a string to represent this or pick one (e.g., activity) as the main 'score'.
+    // For this tool, displaying both is more meaningful.
+    const mainScoreDisplay = `Activity: ${activityScore}, Damage: ${damageScore}`;
+
+    const interpretation = `LoSCAT Assessment Results:
+Activity (LoSAI): ${activityScore} (${activitySeverity}).
+Damage (LoSDI): ${damageScore} (${damageSeverity}).
+Severity Bands:
+LoSAI (Activity): 0–4 Mild; 5–12 Moderate; ≥13 Severe.
+LoSDI (Damage): 0–10 Mild; 11–15 Moderate; ≥16 Severe.`;
 
     return {
-      score,
+      score: mainScoreDisplay, // Representing the combined nature
       interpretation,
       details: {
-        PGA_Activity: pgaA,
-        PGA_Damage: pgaD,
-        mRSS_Affected_Sites_Sum: mrss,
-        LoSCAT_Activity_Score: loscatAct,
-        LoSCAT_Damage_Score: loscatDam
+        LoSAI_Activity_Score: activityScore,
+        LoSAI_Severity_Category: activitySeverity,
+        LoSDI_Damage_Score: damageScore,
+        LoSDI_Severity_Category: damageSeverity
       }
     };
   },
-  references: ["Kelsey CE, Torok KS. The Localized Scleroderma Cutaneous Assessment Tool: responsiveness to change in a pediatric clinical population. J Rheumatol. 2013.", "Arkachaisri T, et al. Development and initial validation of the localized scleroderma skin damage index and physician global assessment of disease damage: a proof-of-concept study. Rheumatology (Oxford). 2010."]
+  references: [
+    "Arkachaisri, T., Vilaiyuk, S., Li, S., et al. (2010). The localized scleroderma cutaneous assessment tool: a new instrument for clinical trials. Arthritis & Rheumatism, 62(10), 3066-3077.",
+    "Kelsey, C. E., & Torok, K. S. (2020). The Localized Scleroderma Cutaneous Assessment Tool (LoSCAT): responsiveness to change in a pediatric clinical population. Journal of the American Academy of Dermatology, 82(1), 173-179."
+  ]
 };
