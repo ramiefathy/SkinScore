@@ -17,7 +17,7 @@ export const igaRosaceaTool: Tool = {
   acronym: "IGA-R",
   condition: "Rosacea",
   keywords: ["iga", "rosacea", "physician global assessment", "severity", "erythema", "papules", "pustules"],
-  description: "A clinician-rated assessment of overall rosacea severity, typically on a 5-point scale (0=Clear to 4=Severe). Definitions vary slightly.",
+  description: "The Investigator’s Global Assessment for Rosacea (IGA Rosacea) is a clinician-reported, ordinal scale typically ranging from 0 (clear) to 4 (severe), based on the overall severity of key rosacea features—primarily erythema, papules, and pustules—on the face. The IGA is widely used in clinical trials and correlates well with more detailed indices such as the Rosacea Area and Severity Index (RASI), but it is less nuanced, as it does not account for area involvement or specific subtypes. Its simplicity supports feasibility and interobserver reliability, but it may lack sensitivity to subtle changes compared to more granular tools.",
   sourceType: 'Research',
   icon: UserCheck,
   formSections: [
@@ -45,5 +45,10 @@ export const igaRosaceaTool: Tool = {
       }
     };
   },
-  references: ["Various versions used in clinical trials for rosacea treatments. Example: Fowler J, et al. Efficacy and safety of once-daily ivermectin 1% cream in treatment of papulopustular rosacea: results of two randomized, double-blind, vehicle-controlled pivotal studies. J Drugs Dermatol. 2014."]
+  references: [
+    "Fowler J, et al. Efficacy and safety of once-daily ivermectin 1% cream in treatment of papulopustular rosacea: results of two randomized, double-blind, vehicle-controlled pivotal studies. J Drugs Dermatol. 2014.",
+    "Tan J, et al. Updating the diagnosis, classification and assessment of rosacea: recommendations from the global ROSacea COnsensus (ROSCO) panel. Br J Dermatol. 2017.",
+    "Thiboutot D, et al. Standard management options for rosacea: The 2019 update by the National Rosacea Society Expert Committee. J Am Acad Dermatol. 2020."
+    ]
 };
+

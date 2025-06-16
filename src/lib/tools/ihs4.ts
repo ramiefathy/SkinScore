@@ -9,7 +9,7 @@ export const ihs4Tool: Tool = {
   acronym: "IHS4",
   condition: "Hidradenitis Suppurativa",
   keywords: ["ihs4", "hs", "hidradenitis suppurativa", "severity", "dynamic score", "inflammatory nodules", "abscesses", "draining tunnels"],
-  description: "Developed by the European HS Foundation (EHSF), the IHS4 is a simple, dynamic scoring system designed for clinical practice and trials. It quantifies HS severity based on a weighted count of key inflammatory lesions (inflammatory nodules, abscesses, draining tunnels/fistulas), making it sensitive to change.",
+  description: "The International Hidradenitis Suppurativa Severity Score System (IHS4) is a validated, dynamic scoring system for hidradenitis suppurativa (HS) severity. The IHS4 is calculated as: IHS4 = (number of nodules) × 1 + (number of abscesses) × 2 + (number of draining tunnels) × 4. Scores classify disease as mild (≤3), moderate (4–10), or severe (≥11). IHS4 is more quantitative and responsive than static systems like Hurley staging, and correlates well with other dynamic measures such as the HS-PGA and HiSCR, though agreement is not perfect due to the clinical heterogeneity of HS.",
   sourceType: 'Clinical Guideline',
   icon: SquarePen,
   formSections: [
@@ -47,6 +47,9 @@ Severity bands: ≤3 Mild; 4–10 Moderate; ≥11 Severe.`;
     };
   },
   references: [
-    "Zouboulis, C. C., Tzellos, T., Kyrgidis, A., et al. (2017). Development and validation of the International Hidradenitis Suppurativa Severity Score System (IHS4). Journal of the American Academy of Dermatology, 77(4), 633-641."
+    "Zouboulis, C. C., Tzellos, T., Kyrgidis, A., et al. (2017). Development and validation of the International Hidradenitis Suppurativa Severity Score System (IHS4). Journal of the American Academy of Dermatology, 77(4), 633-641.",
+    "Horváth B, et al. Validation of the International Hidradenitis Suppurativa Severity Score System (IHS4) - A multicenter study. J Am Acad Dermatol. 2020.",
+    "Ingram JR, et al. The Hidradenitis Suppurativa Core Outcome Set International Collaboration (HISCORE). Br J Dermatol. 2019."
   ]
 };
+
