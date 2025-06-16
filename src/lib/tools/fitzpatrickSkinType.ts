@@ -16,27 +16,30 @@ export const fitzpatrickSkinTypeTool: Tool = {
   id: "fitzpatrick_skin_type",
   name: "Fitzpatrick Skin Type Classification",
   acronym: "Fitzpatrick Scale",
-  description: "Classifies skin type based on its reaction to UV light exposure (sunburning and tanning ability).",
+  description: "The Fitzpatrick Skin Type Classification is a six-category system (Types I–VI) based on a patient’s self-reported tendency to burn and ability to tan after sun exposure. It is determined by a structured questionnaire or clinical interview, with Type I (always burns, never tans) through Type VI (never burns, deeply pigmented). This classification is clinically significant for predicting risk of photodamage, skin cancer, and response to phototherapy or laser procedures. While widely used, it is subjective and less precise than objective colorimetric methods, and its limitations in diverse populations have been highlighted in recent literature.",
   condition: "Skin Typing",
-  keywords: ["fitzpatrick", "skin type", "sun sensitivity", "uv", "tanning"],
+  keywords: ["fitzpatrick", "skin type", "sun sensitivity", "uv", "tanning", "photodamage", "phototherapy"],
   sourceType: 'Research',
   icon: Sun,
+  displayType: 'staticList',
   formSections: [
     {
-      id: "fitzpatrick_type",
-      label: "Select Fitzpatrick Skin Type",
-      type: 'select',
+      id: "fitzpatrick_type", // ID for ToolInfo to potentially find options
+      label: "Select Fitzpatrick Skin Type", // Not directly displayed in form but good for consistency
+      type: 'select', // So ToolInfo can find the options list
       options: fitzpatrickOptions,
-      defaultValue: 3,
-      validation: getValidationSchema('select', fitzpatrickOptions,1,6)
+      defaultValue: 3, // Default, though not used for active selection in 'staticList'
+      validation: getValidationSchema('select', fitzpatrickOptions,1,6) // Not used by UI if staticList
     }
   ],
-  calculationLogic: (inputs) => {
-    const type = Number(inputs.fitzpatrick_type);
-    const typeDescription = fitzpatrickOptions.find(opt => opt.value === type)?.label || "Invalid type selected.";
+  calculationLogic: (inputs) => { // Not called by UI if displayType='staticList'
+    const type = Number(inputs.fitzpatrick_type); // inputs.fitzpatrick_type won't be present if displayType='staticList'
+    const typeDescriptionObj = fitzpatrickOptions.find(opt => opt.value === type);
+    const typeDescription = typeDescriptionObj ? typeDescriptionObj.label : "Invalid type selected.";
     const score = type;
-    const interpretation = `Fitzpatrick Skin Type ${type}. ${typeDescription}`;
+    const interpretation = `Fitzpatrick Skin Type ${type}. Description: ${typeDescription}`;
     return { score, interpretation, details: { classification_description: typeDescription } };
   },
-  references: ["Fitzpatrick TB. Arch Dermatol. 1988;124(6):869-71."]
+  references: ["Fitzpatrick TB. The validity and practicality of sun-reactive skin types I through VI. Arch Dermatol. 1988;124(6):869-71."]
 };
+

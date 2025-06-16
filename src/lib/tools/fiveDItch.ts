@@ -10,8 +10,8 @@ export const fiveDItchTool: Tool = {
   name: "5-D Itch Scale",
   acronym: "5-D Itch",
   condition: "Pruritus",
-  keywords: ["5d itch", "pruritus", "itch", "multidimensional", "patient reported"],
-  description: "A multidimensional patient-reported outcome measure for chronic pruritus, assessing Duration, Degree, Direction, Disability, and Distribution.",
+  keywords: ["5d itch", "pruritus", "itch", "multidimensional", "patient reported", "quality of life"],
+  description: "The 5-D Itch Scale is a validated, multidimensional patient-reported outcome measure for pruritus. It assesses five domains: degree (intensity), duration (frequency), direction (change over time), disability (impact on daily activities), and distribution (body surface area affected). Each domain is scored, and the total score ranges from 5 (least severe) to 25 (most severe). The 5-D Itch Scale is sensitive to change, correlates well with other pruritus and quality-of-life measures (such as the DLQI), and is feasible for use in both clinical trials and practice, similar to the DLQI and CDLQI for quality of life and the EASI for atopic dermatitis severity.",
   sourceType: 'Research',
   icon: Puzzle,
   formSections: [
@@ -34,3 +34,4 @@ export const fiveDItchTool: Tool = {
   },
   references: ["Elman S, Hynan LS, Gabriel V, Mayo MJ. The 5-D Itch Scale: a new measure of pruritus. Br J Dermatol. 2010 Mar;162(3):587-93."]
 };
+
