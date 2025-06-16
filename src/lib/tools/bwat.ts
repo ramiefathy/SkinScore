@@ -116,7 +116,7 @@ export const bwatTool: Tool = {
   id: "bwat",
   name: "Bates-Jensen Wound Assessment Tool",
   acronym: "BWAT",
-  description: "BWAT is a validated scoring tool to evaluate and monitor pressure ulcers and chronic wounds. It considers 13 wound characteristics (size, depth, edges, necrosis, exudate, tissue type, etc.), each scored from 1 (healthy tissue) to 5 (worst severity). The total score ranges from 13–65. Higher scores indicate more severe wounds. It's designed for regular bedside tracking and used in long-term care and dermatology wound clinics.",
+  description: "The BWAT assesses and monitors healing in pressure injuries and other chronic wounds. It evaluates 13 wound characteristics (e.g., size, depth, edges, undermining, necrotic tissue type/amount, exudate type/amount, skin color, peripheral tissue edema/induration, granulation, epithelialization), each scored from 1 (best) to 5 (worst).",
   condition: "Chronic Wounds, Pressure Ulcers, Diabetic Foot Ulcers, Venous Leg Ulcers, Surgical Wounds",
   keywords: ["bwat", "Bates-Jensen", "wound assessment", "pressure ulcer", "chronic wound", "wound healing", "score", "monitoring"],
   sourceType: 'Clinical Guideline',
@@ -129,20 +129,21 @@ export const bwatTool: Tool = {
     bwatFormSections.forEach(section => {
       if ('type' in section) { // Type guard for InputConfig
         const inputConfig = section as InputConfig;
-        const score = Number(inputs[inputConfig.id]) || 0; // Default to 0 if undefined, though schema should give 1
+        const score = Number(inputs[inputConfig.id]) || 0;
         totalScore += score;
-        itemScores[inputConfig.label.substring(inputConfig.label.indexOf(". ") + 2)] = score;
+        // Extract a cleaner key for details, e.g., "Size of Wound" from "1. Size of Wound"
+        const detailKey = inputConfig.label.includes(". ") ? inputConfig.label.substring(inputConfig.label.indexOf(". ") + 2) : inputConfig.label;
+        itemScores[detailKey] = score;
       }
     });
 
-    let severityCategory = "Undefined";
+    let severityCategory = "";
     if (totalScore <= 20) severityCategory = "Minimal severity";
     else if (totalScore <= 30) severityCategory = "Mild severity";
     else if (totalScore <= 40) severityCategory = "Moderate severity";
-    else severityCategory = "Severe wound requiring aggressive management";
+    else severityCategory = "Severe wound requiring aggressive management"; // Consistent with prompt
 
-
-    const interpretation = `Total BWAT Score: ${totalScore} (Range: 13–65). Wound Status: ${severityCategory}.\nA lower score indicates a healthier wound. Decreasing score over time indicates healing.`;
+    const interpretation = `Total BWAT Score: ${totalScore} (Range: 13–65). Wound Status: ${severityCategory}.\nA lower score indicates better wound status and healing. Decreasing score over time indicates improvement.`;
 
     return {
       score: totalScore,
@@ -155,8 +156,6 @@ export const bwatTool: Tool = {
   },
   references: [
     "Bates-Jensen BM. The Pressure Sore Status Tool a few thousand assessments later. Adv Wound Care. 1997;10(5):65-73.",
-    "Bates-Jensen BM, et al. Validity and reliability of the Bates-Jensen Wound Assessment Tool (BWAT): (Formerly the Pressure Sore Status Tool [PSST]). Wound Repair Regen. 2001;9(5):387-398.",
-    "Sussman C, Bates-Jensen BM. Wound Care: A Collaborative Practice Manual for Health Professionals. 4th ed. Wolters Kluwer Health; 2007. Chapter 6: “Tools to Measure Wound Healing.”",
-    "National Pressure Injury Advisory Panel (NPIAP) resources often reference BWAT."
+    "Bates-Jensen BM, et al. Validity and reliability of the Bates-Jensen Wound Assessment Tool (BWAT): (Formerly the Pressure Sore Status Tool [PSST]). Wound Repair Regen. 2001;9(5):387-398."
   ]
 };

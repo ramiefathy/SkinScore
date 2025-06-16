@@ -41,7 +41,7 @@ export const cdlqiTool: Tool = {
   acronym: "CDLQI",
   condition: "Quality of Life",
   keywords: ["cdlqi", "quality of life", "children", "pediatric", "skin disease", "patient reported"],
-  description: "A 10-question questionnaire to measure the impact of skin disease on the quality of life of children aged 4-16 years.",
+  description: "The CDLQI measures the impact of skin disease on quality of life in children aged 4–16. It's a 10-item questionnaire covering symptoms, feelings, leisure, school, personal relationships, sleep, and treatment. Each question is scored 0–3.",
   sourceType: 'Expert Consensus',
   icon: Baby,
   formSections: cdlqiFormSections,
@@ -53,14 +53,22 @@ export const cdlqiTool: Tool = {
       details[`Q${i}`] = val;
       score += val;
     }
-    let interpretation = `CDLQI Score: ${score} (Range: 0-30). `;
-    if (score === 0) interpretation += 'No effect at all on child\'s life.';
-    else if (score <= 6) interpretation += 'Small effect on child\'s life.';
-    else if (score <= 12) interpretation += 'Moderate effect on child\'s life.';
-    else if (score <= 18) interpretation += 'Very large effect on child\'s life.';
-    else interpretation += 'Extremely large effect on child\'s life.';
-    interpretation += " (Severity bands examples: 0 No effect, 1-6 Small, 7-12 Moderate, 13-18 Very large, 19-30 Extremely large)";
+    let interpretationText = "";
+    if (score <= 2) {
+      interpretationText = "Small effect on quality of life";
+    } else if (score <= 8) {
+      interpretationText = "Moderate effect on quality of life";
+    } else if (score <= 15) {
+      interpretationText = "Very large effect on quality of life";
+    } else {
+      interpretationText = "Extremely large effect on quality of life";
+    }
+    const interpretation = `CDLQI Score: ${score} (Range: 0-30). ${interpretationText}. Higher scores indicate greater impairment.`;
     return { score, interpretation, details };
   },
-  references: ["Lewis-Jones MS, Finlay AY. The Children's Dermatology Life Quality Index (CDLQI): initial validation and practical application. Br J Dermatol. 1995 Jul;132(6):942-9."]
+  references: [
+    "Lewis-Jones, M. S., & Finlay, A. Y. (1995). The Children's Dermatology Life Quality Index (CDLQI): initial validation and practical use. British Journal of Dermatology, 132(6), 942-949.",
+    "Cardiff University. (n.d.). CDLQI (Children's Dermatology Life Quality Index). Retrieved from https://www.cardiff.ac.uk/medicine/research/themes/dermatology/quality-of-life/childrens-dermatology-life-quality-index"
+    // Additional references from the prompt could be added here if they are distinct and relevant.
+    ]
 };

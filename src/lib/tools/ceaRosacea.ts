@@ -1,6 +1,6 @@
 
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
-import { Palette } from 'lucide-react';
+import { Palette } from 'lucide-react'; // Or UserCheck if focusing on clinician assessment
 import { getValidationSchema } from '../toolValidation';
 
 const ceaRosaceaOptions: InputOption[] = [
@@ -16,33 +16,36 @@ export const ceaRosaceaTool: Tool = {
   name: "Clinician's Erythema Assessment (CEA) for Rosacea",
   acronym: "CEA Rosacea",
   condition: "Rosacea",
-  keywords: ["cea", "rosacea", "erythema", "redness", "severity"],
-  description: "A clinician-rated assessment of the severity of facial erythema associated with rosacea, typically on a 5-point scale.",
+  keywords: ["cea", "rosacea", "erythema", "redness", "severity", "clinician-rated"],
+  description: "The CEA is a 5-point (0-4) static scale rated by a clinician to assess the severity of persistent facial erythema in rosacea. Validation studies show fair to substantial agreement (Weighted κ = 0.54-0.69; ICC ≈ 0.60 for inter-rater; Weighted κ = 0.66-0.74; ICC ≈ 0.58 for intra-rater).",
   sourceType: 'Research',
   icon: Palette,
   formSections: [
     {
-      id: "cea_grade_rosacea",
-      label: "Select CEA Grade for Rosacea Erythema",
-      type: 'select',
+      id: "ceaScore",
+      label: "Erythema Grade (0–4)",
+      type: 'select', // Changed to select to provide descriptive options
       options: ceaRosaceaOptions,
       defaultValue: 0,
       validation: getValidationSchema('select', ceaRosaceaOptions, 0, 4)
     }
   ],
   calculationLogic: (inputs) => {
-    const grade = Number(inputs.cea_grade_rosacea);
-    const gradeDescription = ceaRosaceaOptions.find(opt => opt.value === grade)?.label || "N/A";
-    const gradeTitle = gradeDescription.substring(0, gradeDescription.indexOf(':')).trim();
+    const grade = Number(inputs.ceaScore);
+    const gradeLabelObj = ceaRosaceaOptions.find(opt => opt.value === grade);
+    const gradeInterpretation = gradeLabelObj ? gradeLabelObj.label : `Grade ${grade} (Unknown description)`;
 
-    const interpretation = `CEA for Rosacea: Grade ${grade} (${gradeTitle}). This score reflects the severity of facial erythema. Full description: ${gradeDescription}`;
     return {
       score: grade,
-      interpretation,
+      interpretation: `CEA for Rosacea: ${gradeInterpretation}.`,
       details: {
-        Selected_Grade_Description: gradeDescription
+        Selected_CEA_Grade_Description: gradeInterpretation
       }
     };
   },
-  references: ["Used in clinical trials evaluating treatments for rosacea-associated erythema. Example: Fowler J Jr, et al. J Drugs Dermatol. 2013;12(6):650-6 (brimonidine trials)."]
+  references: [
+    "Tan, J., et al. (2017). Reliability of the Clinician's Erythema Assessment and Patient's Self-Assessment of rosacea. Journal of Cutaneous Medicine and Surgery, 21(1), 30-34.",
+    // Example reference of its use, can be kept or replaced if more specific validation study is preferred.
+    "Fowler J Jr, et al. J Drugs Dermatol. 2013;12(6):650-6 (brimonidine trials)."
+    ]
 };
