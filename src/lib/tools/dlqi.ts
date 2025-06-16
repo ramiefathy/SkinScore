@@ -26,11 +26,9 @@ const dlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i) 
     if (i === 6) { // Question 7 special handling
         q_options = [
             { value: 3, label: 'Yes (Prevented work/study)' },
-            { value: 0, label: 'No' },
+            { value: 0, label: 'No' }, // "No" also scores 0 if work/study not relevant to the disease's impact
             { value: 0, label: 'Not relevant (Scores 0)' },
         ];
-    } else if (i === 7 && dlqiQuestionTexts[i].includes("partner")) { // Q8, for consistency with DLQI guidance if no partner
-         // No specific "not relevant" for Q8, but scoring 0 for "not at all" is standard.
     }
     return {
       id: `q${i + 1}`,
@@ -46,7 +44,7 @@ export const dlqiTool: Tool = {
   id: 'dlqi',
   name: 'Dermatology Life Quality Index',
   acronym: 'DLQI',
-  description: 'Developed by Finlay & Khan in 1994, the DLQI is a widely used, 10-question patient-reported questionnaire that measures the impact of a skin disease on a person\'s quality of life (QoL). It is not specific to any single disease. Each question is scored from 0 to 3, with a total score ranging from 0 to 30.',
+  description: 'To assess the impact of skin disease on adult patients’ quality of life. It is a 10-item self-administered questionnaire covering symptoms, feelings, daily activities, leisure, work/school, personal relationships, and treatment over the previous week. Each item scored 0 (not at all) to 3 (very much). The DLQI is widely validated and used in clinical trials and practice to assess dermatology-specific quality of life.',
   condition: 'Quality of Life',
   keywords: ['dlqi', 'quality of life', 'skin disease', 'impact', 'patient reported'],
   sourceType: 'Expert Consensus',
@@ -60,12 +58,13 @@ export const dlqiTool: Tool = {
       details[`Q${i}`] = val;
       score += val;
     }
-    let interpretation = '';
-    if (score <= 1) interpretation = 'No effect at all on patient\'s life.';
-    else if (score <= 5) interpretation = 'Small effect on patient\'s life.';
-    else if (score <= 10) interpretation = 'Moderate effect on patient\'s life.';
-    else if (score <= 20) interpretation = 'Very large effect on patient\'s life.';
-    else interpretation = 'Extremely large effect on patient\'s life.';
+    let interpretationText = '';
+    if (score <= 1) interpretationText = 'No effect at all on patient\'s life';
+    else if (score <= 5) interpretationText = 'Small effect on patient\'s life';
+    else if (score <= 10) interpretationText = 'Moderate effect on patient\'s life';
+    else if (score <= 20) interpretationText = 'Very large effect on patient\'s life';
+    else interpretationText = 'Extremely large effect on patient\'s life';
+    const interpretation = `Total DLQI Score: ${score} (Range: 0–30). ${interpretationText}.`;
     return { score, interpretation, details };
   },
   references: [

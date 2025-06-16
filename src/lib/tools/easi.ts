@@ -17,7 +17,7 @@ export const easiTool: Tool = {
   id: "easi",
   name: "Eczema Area and Severity Index (EASI)",
   acronym: "EASI",
-  description: "Developed by Hanifin et al. (2001), EASI is a validated tool for assessing the severity and extent of atopic dermatitis (AD). It is the core outcome measure recommended by the Harmonising Outcome Measures for Eczema (HOME) initiative for AD clinical trials. An examiner rates four clinical signs (Erythema, Induration/Papulation, Excoriation, Lichenification) in four body regions, along with the area score for each region.",
+  description: "To quantify severity and extent of atopic dermatitis. It evaluates four body regions (head/neck, trunk, upper limbs, lower limbs) for erythema, induration/papulation, excoriation, and lichenification (each scored 0–3), and percentage of area involved (0–6). Each region is weighted by body surface area. The EASI is recommended by the American Academy of Allergy, Asthma, and Immunology and the American College of Allergy, Asthma and Immunology for atopic dermatitis severity assessment, and is extensively validated for both clinical trials and practice.",
   condition: "Atopic Dermatitis / Eczema",
   keywords: ["easi", "atopic dermatitis", "ad", "eczema", "severity", "area", "HOME initiative"],
   sourceType: 'Clinical Guideline',
@@ -25,9 +25,10 @@ export const easiTool: Tool = {
   formSections: [
     { id: "age_group", label: "Age Group (determines regional weights)", type: 'select', options: [ {value: "adult", label: "Adult/Child >7 years"}, {value: "child", label: "Child 0-7 years"} ], defaultValue: "adult", validation: getValidationSchema('select', [ {value: "adult", label: "Adult/Child >7 years"}])},
     ...regionDataEASI.map(region => {
+      const ageBasedWeight = `Adult Weight: ${region.adultWeight}, Child (0-7 yrs) Weight: ${region.childWeight}`;
       return {
           id: `easi_group_${region.id}`,
-          title: `${region.name} (Adult Wt: ${region.adultWeight}, Child Wt: ${region.childWeight})`,
+          title: `${region.name} (${ageBasedWeight})`,
           gridCols: 2,
           inputs: [
               { id: `${region.id}_area`, label: `Area Affected Score (0-6)`, type: 'select', options: areaOptionsEASI, defaultValue: 0, validation: getValidationSchema('select',areaOptionsEASI,0,6) },
@@ -73,7 +74,8 @@ export const easiTool: Tool = {
       else if (score <= 50.0) severityInterpretationText = "Severe";
       else severityInterpretationText = "Very severe";
 
-      const interpretation = `EASI Score: ${score} (Range: 0-72). Severity: ${severityInterpretationText} eczema.`;
+      const interpretation = `Total EASI Score: ${score} (Range: 0-72). Severity: ${severityInterpretationText} eczema.
+Interpretation Bands: 0 Clear; 0.1–1.0 Almost clear; 1.1–7.0 Mild; 7.1–21.0 Moderate; 21.1–50.0 Severe; 50.1–72.0 Very severe.`;
 
       return {
         score,
