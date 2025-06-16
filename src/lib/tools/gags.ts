@@ -37,7 +37,7 @@ export const gagsTool: Tool = {
   acronym: "GAGS",
   condition: "Acne Vulgaris",
   keywords: ["gags", "acne", "acne vulgaris", "global acne grading system", "severity"],
-  description: "Introduced by Doshi et al. (1997), GAGS provides a method to grade acne severity by assessing the most severe lesion type in six key anatomical locations, weighted by their surface area. It avoids laborious lesion counting.",
+  description: "The Global Acne Grading System (GAGS) is a clinician-administered tool for assessing acne severity. It divides the face, chest, and back into six regions, each assigned a factor based on surface area. Lesion types (comedones, papules, pustules, nodules) are scored 0–4 by severity, and the local score for each region is calculated as (most severe lesion score) × (region factor). The global score is the sum of all local scores, categorizing acne as mild, moderate, severe, or very severe. GAGS is practical for clinical and research use, but, like other global acne scales, it does not account for scarring or postinflammatory changes, which are increasingly recognized as important for patient outcomes and quality of life.",
   sourceType: 'Clinical Guideline',
   icon: Calculator,
   formSections: gagsFormSections,
@@ -58,7 +58,7 @@ export const gagsTool: Tool = {
       else if (totalScore <= 38) severityInterpretationText = "Severe";
       else severityInterpretationText = "Very Severe";
 
-      const interpretation = `Total GAGS Score: ${totalScore} (Range: 0-44). Severity: ${severityInterpretationText} acne.`;
+      const interpretation = `Total GAGS Score: ${totalScore} (Range: 0-44). Severity: ${severityInterpretationText} acne.\nInterpretation Bands: 0 Clear; 1–18 Mild; 19–30 Moderate; 31–38 Severe; ≥39 Very Severe.`;
       return {
         score: totalScore,
         interpretation,

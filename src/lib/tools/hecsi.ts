@@ -27,7 +27,7 @@ export const hecsiTool: Tool = {
   acronym: "HECSI",
   condition: "Atopic Dermatitis / Eczema",
   keywords: ["hecsi", "hand eczema", "eczema", "atopic dermatitis", "severity", "hand"],
-  description: "HECSI is a clinician-reported tool designed to objectively quantify the severity of hand eczema. It evaluates the intensity of various clinical features and the extent of involvement across defined areas of the hands (5 areas per hand, 10 total).",
+  description: "The Hand Eczema Severity Index (HECSI) quantifies hand eczema by scoring the intensity (0–3) of six clinical signs (erythema, infiltration/papulation, vesicles, fissures, scaling, edema) across five hand areas (fingertips, fingers, palms, back of hands, wrists) for each hand. Each of these 10 hand areas is also scored for extent of involvement (0–4). The total HECSI is the sum of (sum of intensity scores × extent score) for all 10 hand areas. HECSI is validated and sensitive to change, making it suitable for both clinical trials and practice.",
   sourceType: 'Clinical Guideline',
   icon: Hand,
   formSections: hecsiHandAreas.map(area => ({
@@ -66,31 +66,19 @@ export const hecsiTool: Tool = {
               currentAreaSignScores[sign.name] = signScore;
           });
           const areaAffectedScore = Number(inputs[`${area.id}_area_affected`]) || 0;
-          const areaScore = intensitySum * areaAffectedScore;
+          const areaScore = intensitySum * areaAffectedScore; // Max per area: (6 signs * 3 severity) * 4 area = 18 * 4 = 72
           totalHecsiScore += areaScore;
           areaDetails[area.name] = {intensity_sum: intensitySum, area_affected_score: areaAffectedScore, regional_score: areaScore, signs: currentAreaSignScores};
       });
 
-      const score = totalHecsiScore; // Max (18 intensity * 4 area) * 10 regions = 720, but original paper states 360. This implies sum over 5 combined regions, not 10. Let's assume current setup aims for 10 distinct area inputs then sums. Max score per area is (6 signs * 3 severity) * 4 area = 18 * 4 = 72. Total max for 10 areas = 720.
-      // The original HECSI paper sums scores from 5 anatomical regions, with each region's score being a sum of signs from both hands combined.
-      // For simplicity if each of 10 specific areas is scored, the max score is indeed 720.
-      // The tool creator might mean to sum (L+R) for each of the 5 anatomical regions before multiplying by area.
-      // Sticking to direct sum of 10 areas calculation based on current form structure:
-      // Max total score = 10 areas * (6 signs * 3 max severity) * 4 max area = 10 * 18 * 4 = 720.
-      // However, if it means 5 regions (each L+R combined), max score is 5 * 18 * 4 = 360.
-      // The Held et al. paper states "The total HECSI score thus ranges from 0 to 360." This implies the 5 combined regions.
-      // To reconcile, the inputs could be for 5 regions, where each sign is an average/worst of L+R.
-      // Given current granular inputs, the score is for 10 areas.
-      // For now, I'll use the 0-360 interpretation from the paper, implying the provided input logic needs adjustment or interpretation.
-      // Let's re-evaluate based on "sum of the scores from all 10 hand areas".
-      // Max intensity sum per site: 6 signs * 3 = 18. Max area score: 4. Max per site: 18 * 4 = 72.
-      // Total score (10 sites): 720. The reference to 0-360 in user text might be a common simplification or alternative method.
-      // I will calculate based on the defined inputs giving max 720, and note the discrepancy.
+      const score = totalHecsiScore; // Max score: 10 areas * 72 = 720. The original paper refers to a 0-360 scale.
+                                    // This discrepancy arises if the 5 *paired* hand areas are combined (L+R for fingertips, etc.) and an average/worst intensity taken for those 5 combined areas.
+                                    // Current granular input structure calculates for 10 distinct areas.
 
-      let interpretation = `Total HECSI Score: ${score} (Calculated Max: 720 based on 10 distinct areas).
-Higher scores indicate greater severity. There are no consensus severity bands (mild/moderate/severe).
-In clinical trials, a percentage reduction from baseline, such as HECSI-75 (a ≥75% improvement), is often used as a primary endpoint.
-Note: The original HECSI paper describes a max score of 360, typically by combining left/right assessment for 5 regions. This calculator sums scores from 10 distinct hand areas.`;
+      let interpretation = `Total HECSI Score: ${score} (Max: 720 based on 10 distinct areas scored).
+Higher scores indicate greater severity. There are no consensus severity bands.
+In clinical trials, a percentage reduction from baseline (e.g., HECSI-75 for ≥75% improvement) is a common endpoint.
+Note: The original HECSI paper describes a max score of 360, achieved by assessing 5 combined (L+R) hand regions. This calculator sums scores from 10 separate hand areas (5 per hand).`;
 
       return { score, interpretation, details: areaDetails };
   },

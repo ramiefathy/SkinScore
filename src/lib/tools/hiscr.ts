@@ -9,7 +9,7 @@ export const hiscrTool: Tool = {
   acronym: "HiSCR",
   condition: "Hidradenitis Suppurativa",
   keywords: ["hiscr", "hs", "hidradenitis suppurativa", "treatment response", "clinical trial", "an count"],
-  description: "The HiSCR is a dichotomous (yes/no) outcome measure developed specifically for HS clinical trials to assess treatment response. It is considered more sensitive to change than the HS-PGA. It measures a significant reduction in inflammatory lesions without disease worsening. Requires counts of Abscesses (A), Inflammatory Nodules (IN), and Draining Fistulas (DF) at baseline and follow-up.",
+  description: "The Hidradenitis Suppurativa Clinical Response (HiSCR) is the most widely used dynamic outcome measure in HS trials. It is defined as at least a 50% reduction in the combined count of abscesses and inflammatory nodules (AN count) from baseline, with no increase in abscess or draining fistula count. HiSCR is dichotomous (responder/non-responder) and is recommended by the United States Hidradenitis Suppurativa Foundation and Canadian Hidradenitis Suppurativa Foundation for research settings due to its responsiveness and ease of use. However, it does not capture changes in draining tunnels, which is a limitation compared to newer instruments.",
   sourceType: 'Clinical Guideline',
   icon: ListChecks,
   formSections: [
@@ -38,7 +38,16 @@ export const hiscrTool: Tool = {
     const baselineFistulas = Number(inputs.baselineFistulas) || 0;
     const currentFistulas = Number(inputs.currentFistulas) || 0;
 
-    const anReductionMet = baselineAN > 0 ? ((baselineAN - currentAN) / baselineAN) >= 0.5 : currentAN === 0;
+    // Handle baselineAN = 0 case for reduction percentage correctly
+    let anReductionPercentage = 0;
+    if (baselineAN > 0) {
+      anReductionPercentage = ((baselineAN - currentAN) / baselineAN) * 100;
+    } else if (currentAN === 0) { // If baseline was 0 and current is 0, it's 100% reduction effectively for the purpose of "no worsening"
+      anReductionPercentage = 100;
+    }
+
+
+    const anReductionMet = baselineAN > 0 ? anReductionPercentage >= 50 : currentAN === 0; // If baselineAN is 0, then currentAN must also be 0 to meet this.
     const noAbscessIncrease = currentAbscesses <= baselineAbscesses;
     const noFistulaIncrease = currentFistulas <= baselineFistulas;
 
@@ -46,11 +55,11 @@ export const hiscrTool: Tool = {
     const score = isAchieved ? 1 : 0; // 1 for Achieved, 0 for Not Achieved
 
     const interpretation = isAchieved ?
-      `HiSCR Achieved: At least 50% reduction in AN count (${((baselineAN - currentAN) / (baselineAN || 1) * 100).toFixed(1)}%) with no increase in abscesses and no increase in draining fistulas.` :
+      `HiSCR Achieved: At least 50% reduction in AN count (${anReductionPercentage.toFixed(1)}%) with no increase in abscesses and no increase in draining fistulas.` :
       `HiSCR Not Achieved.
-      - AN count reduction ≥50%: ${anReductionMet ? 'Yes' : 'No'} (${((baselineAN - currentAN) / (baselineAN || 1) * 100).toFixed(1)}% reduction)
-      - No increase in abscess count: ${noAbscessIncrease ? 'Yes' : 'No'}
-      - No increase in draining fistula count: ${noFistulaIncrease ? 'Yes' : 'No'}`;
+      - AN count reduction ≥50%: ${anReductionMet ? 'Yes' : 'No'} (${anReductionPercentage.toFixed(1)}% reduction from baseline of ${baselineAN})
+      - No increase in abscess count from baseline: ${noAbscessIncrease ? 'Yes' : 'No'} (Baseline: ${baselineAbscesses}, Follow-up: ${currentAbscesses})
+      - No increase in draining fistula count from baseline: ${noFistulaIncrease ? 'Yes' : 'No'} (Baseline: ${baselineFistulas}, Follow-up: ${currentFistulas})`;
 
     return {
       score,
@@ -59,7 +68,7 @@ export const hiscrTool: Tool = {
         Baseline_AN_Count: baselineAN,
         Followup_AN_Count: currentAN,
         AN_Reduction_Met: anReductionMet,
-        Percent_AN_Reduction: parseFloat(((baselineAN - currentAN) / (baselineAN || 1) * 100).toFixed(1)),
+        Percent_AN_Reduction: parseFloat(anReductionPercentage.toFixed(1)),
         Baseline_Abscess_Count: baselineAbscesses,
         Followup_Abscess_Count: currentAbscesses,
         No_Abscess_Increase_Met: noAbscessIncrease,
@@ -72,6 +81,6 @@ export const hiscrTool: Tool = {
   },
   references: [
     "Kimball, A. B., Sobell, J. M., Zouboulis, C. C., et al. (2016). Hidradenitis Suppurativa: A-102. Journal of Investigative Dermatology, 136(5), S17. (Abstract describing HiSCR)",
-    "The HiSCR was validated in the PIONEER I and II trials for adalimumab (e.g., Kimball AB, et al. N Engl J Med. 2012;367(20):1906-15 - This reference might be for early HS trials, check specific adalimumab HS trial publications like JAMA Dermatol. 2015;151(10):1070-8 for PIONEER results)."
+    "The HiSCR was validated in the PIONEER I and II trials for adalimumab (e.g., Kimball AB, et al. Adalimumab for the treatment of moderate to severe Hidradenitis Suppurativa: A phase II, randomized, double-blind, placebo-controlled study. J Am Acad Dermatol. 2012 Dec;67(6):1370-7. See also later Phase III publications for PIONEER trials such as Kimball AB, et al. JAMA Dermatol. 2015 Oct;151(10):1070-8)."
   ]
 };
