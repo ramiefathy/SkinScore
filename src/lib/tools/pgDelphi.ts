@@ -1,5 +1,5 @@
 
-import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
+import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
 
@@ -16,7 +16,7 @@ const pgDelphiFormSections: FormSectionConfig[] = [
     inputs: [
       {
         id: "pg_delphi_major_biopsy",
-        label: "Biopsy of ulcer edge demonstrating a neutrophilic infiltrate without vasculitis or infection",
+        label: "Biopsy of ulcer edge demonstrating a neutrophilic infiltrate (without evidence of vasculitis or infection)",
         type: 'select',
         options: commonYesNoOptions,
         defaultValue: 0,
@@ -27,16 +27,16 @@ const pgDelphiFormSections: FormSectionConfig[] = [
   {
     id: 'pg_delphi_minor_criteria_group',
     title: 'Minor Criteria (Need ≥ 4 to fulfill)',
-    gridCols: 1, // Or 2 if preferred for layout
+    gridCols: 1,
     inputs: [
-      { id: "pg_delphi_minor_exclude_infxn", label: "Exclusion of infection by appropriate cultures and/or histology", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_pathergy", label: "History of pathergy (new lesion or ulceration at site of minor trauma or surgery)", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_ibd_or_arth", label: "History of inflammatory bowel disease or inflammatory arthritis", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_rapid_ulcer", label: "History of papule, pustule, or vesicle that rapidly ulcerated (≤ 4 days) prior to presentation", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_erythema_border", label: "Peripheral erythema, undermining borders, and tenderness at the ulcer site", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_multiple_ulcers", label: "Multiple ulcerations, at least one located on an anterior lower leg", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_cribriform_scars", label: "Cribriform (‘wrinkled paper’) scars at healed ulcer sites", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
-      { id: "pg_delphi_minor_response_immu", label: "Decrease in ulcer size within one month of initiating immunosuppressive medication(s)", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) }
+      { id: "pg_delphi_minor_exclude_infxn", label: "1. Exclusion of infection by appropriate cultures and/or histology", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_pathergy", label: "2. History of pathergy (new lesion or ulceration at site of minor trauma or surgery)", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_ibd_or_arth", label: "3. History of inflammatory bowel disease or inflammatory arthritis", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_rapid_ulcer", label: "4. History of papule, pustule, or vesicle that rapidly ulcerated (≤ 4 days) prior to presentation", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_erythema_border", label: "5. Peripheral erythema, undermining borders, and tenderness at the ulcer site", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_multiple_ulcers", label: "6. Multiple ulcerations, at least one located on an anterior lower leg", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_cribriform_scars", label: "7. Cribriform (‘wrinkled paper’) scars at healed ulcer sites", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_delphi_minor_response_immu", label: "8. Decrease in ulcer size within one month of initiating immunosuppressive medication(s)", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) }
     ]
   }
 ];
@@ -46,13 +46,13 @@ export const pgDelphiTool: Tool = {
   name: "Delphi Consensus Criteria for Ulcerative Pyoderma Gangrenosum",
   acronym: "Delphi Criteria (PG)",
   condition: "Pyoderma Gangrenosum",
-  description: "Developed via a multi-centre Delphi process (2015–2017), these criteria require one major criterion—histopathology showing a neutrophilic infiltrate at the ulcer edge (without evidence of vasculitis or infection)—plus at least four of eight minor criteria. Meeting the major criterion and ≥4 minors yields sensitivity ≈ 86% and specificity ≈ 90% for diagnosing ulcerative PG.",
+  description: "The Delphi consensus criteria, developed by international experts, provide a standardized diagnostic framework for ulcerative pyoderma gangrenosum (PG). The criteria require 1 major criterion (biopsy of ulcer edge showing neutrophilic infiltrate) and at least 4 of 8 minor criteria. This approach demonstrated high sensitivity and specificity in validation studies.",
   keywords: ["delphi", "pyoderma gangrenosum", "ulcerative", "diagnostic criteria", "neutrophilic infiltrate", "pathergy", "inflammatory bowel disease"],
   sourceType: 'Research',
   icon: ClipboardList,
   formSections: pgDelphiFormSections,
   calculationLogic: (inputs) => {
-    const majorBiopsyPresent = Number(inputs.pg_delphi_major_biopsy) || 0;
+    const majorBiopsyPresent = Number(inputs.pg_delphi_major_biopsy) === 1;
 
     const minorCriteriaKeys = [
       "pg_delphi_minor_exclude_infxn",
@@ -66,38 +66,40 @@ export const pgDelphiTool: Tool = {
     ];
 
     let minorCriteriaCount = 0;
-    const minorCriteriaIndividualScores: Record<string, number> = {};
-    minorCriteriaKeys.forEach(key => {
-      const val = Number(inputs[key]) || 0;
-      minorCriteriaIndividualScores[key] = val;
-      minorCriteriaCount += val;
+    const minorCriteriaDetails: Record<string, string> = {};
+    minorCriteriaKeys.forEach((key, index) => {
+      const present = Number(inputs[key]) === 1;
+      if (present) {
+        minorCriteriaCount++;
+      }
+      minorCriteriaDetails[`Minor_Criterion_${index + 1}`] = present ? "Present" : "Absent";
     });
 
-    const meetsDelphiCriteria = majorBiopsyPresent === 1 && minorCriteriaCount >= 4;
+    const meetsDelphiCriteria = majorBiopsyPresent && minorCriteriaCount >= 4;
     const score = meetsDelphiCriteria ? 1 : 0; // 1 if criteria met, 0 if not
 
-    let interpretation = "";
+    let interpretationText = "";
     if (meetsDelphiCriteria) {
-      interpretation = `Meets Delphi Criteria (Major criterion present AND ${minorCriteriaCount} of 8 minor criteria present).\nSensitivity: ~86%, Specificity: ~90%.\nHigh likelihood of true ulcerative PG; supports initiation of immunosuppressive therapy.`;
+      interpretationText = `Meets Delphi Criteria for Ulcerative PG (Major criterion present AND ${minorCriteriaCount} of 8 minor criteria met).\nThis indicates a high likelihood of pyoderma gangrenosum (Sensitivity ≈ 86%, Specificity ≈ 90%).`;
     } else {
-      interpretation = `Does Not Meet Delphi Criteria. Major criterion present: ${majorBiopsyPresent === 1 ? 'Yes' : 'No'}. Minor criteria met: ${minorCriteriaCount} of 8 (requires ≥4).\nConsider alternative diagnoses (e.g., venous stasis ulcer, vasculitis, infection).`;
+      interpretationText = `Does Not Meet Delphi Criteria for Ulcerative PG.
+Major criterion met: ${majorBiopsyPresent ? 'Yes' : 'No'}.
+Minor criteria met: ${minorCriteriaCount} of 8 (Requires ≥ 4).
+Consider alternative diagnoses.`;
     }
 
     return {
-      score,
-      interpretation,
+      score: score, // "Met" (1) or "Not Met" (0)
+      interpretation: interpretationText,
       details: {
-        major_biopsy_present: majorBiopsyPresent,
-        minor_criteria_count: minorCriteriaCount,
-        minor_criteria_individual_scores: minorCriteriaIndividualScores,
-        meets_delphi_criteria: meetsDelphiCriteria
+        Major_Criterion_Biopsy: majorBiopsyPresent ? "Present" : "Absent",
+        Minor_Criteria_Met_Count: minorCriteriaCount,
+        ...minorCriteriaDetails,
+        Overall_Delphi_Criteria_Status: meetsDelphiCriteria ? "Met" : "Not Met"
       }
     };
   },
   references: [
-    "Maverakis E, Wang E, Shinkai K, et al. Diagnostic Criteria of Ulcerative Pyoderma Gangrenosum: Delphi Consensus. JAMA Dermatol. 2018;154(4):461–466.",
-    "Maverakis E, Wang E, Shinkai K, et al. Delphi Consensus on PG: Supplement. JAMA Dermatol. 2018;154(4):S1–S15.",
-    "Grimstad J, Nelson CA, Blackmon S, Schleich S. Comparison of PG Diagnostic Frameworks vs Venous Ulcers. J Wound Care. 2020;29(12):732–739.",
-    "Weenig RH, Davis MD, Dahl PR, Su WP. Skin Ulcers Misdiagnosed as PG. N Engl J Med. 2002;347(18):1412–1418."
+    "Maverakis E, Ma C, Shinkai K, et al. Diagnostic Criteria of Ulcerative Pyoderma Gangrenosum: A Delphi Consensus of International Experts. JAMA Dermatology. 2018; 154(4):461-466. doi:10.1001/jamadermatol.2017.5980."
   ]
 };
