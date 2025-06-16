@@ -15,7 +15,7 @@ export const bilagSkinTool: Tool = {
   id: "bilag_skin",
   name: "BILAG - Skin Component",
   acronym: "BILAG Skin",
-  description: "The BILAG index was developed to assess disease activity in systemic lupus erythematosus (SLE) across organ systems, including the skin. The skin domain captures a wide range of lupus-related cutaneous manifestations (e.g., malar rash, discoid lesions, vasculitis). It is intended for longitudinal assessment of SLE activity and treatment response. Developed based on physician intention-to-treat principle (2004 revision most widely used). The BILAG Skin score helps determine disease activity severity and guides escalation of therapy. Skin Grade A requires active rash (e.g., vasculitis or extensive lesions needing systemic therapy); B includes discoid rash or widespread subacute CLE.",
+  description: "The BILAG index is designed to assess disease activity in systemic lupus erythematosus (SLE) across organ systems, including the skin, based on the physician’s intention to treat. The skin (mucocutaneous) component evaluates new or worsening cutaneous manifestations attributable to SLE, such as malar rash, discoid lesions, and alopecia. Each organ/system, including skin, is scored from A (very active) to E (never involved). The BILAG-2004 numerical scoring assigns: A = 12, B = 8, C = 1, D/E = 0. The skin component is scored based on the most severe manifestation present, using a standardized glossary. The total BILAG score is the sum across all systems, but individual system scores are used for clinical decision-making.",
   condition: "Lupus",
   keywords: ["bilag", "lupus", "sle", "skin", "mucocutaneous", "activity", "disease activity index"],
   sourceType: 'Clinical Guideline',
@@ -33,6 +33,7 @@ export const bilagSkinTool: Tool = {
   ],
   calculationLogic: (inputs) => {
     const grade = inputs.bilagSkinGrade as string || "E";
+    const scoreMap: Record<string, number> = { "A": 12, "B": 8, "C": 1, "D": 0, "E": 0 };
     const interpretationMap: Record<string, string> = {
       A: "Severe activity – consider systemic immunosuppression",
       B: "Moderate disease – likely needs escalation",
@@ -40,13 +41,22 @@ export const bilagSkinTool: Tool = {
       D: "Inactive disease (resolved)",
       E: "No current or historical skin involvement"
     };
+    const numericalScore = scoreMap[grade] !== undefined ? scoreMap[grade] : 0;
     const interpretationText = interpretationMap[grade] || "Invalid grade selected.";
-    const interpretation = `BILAG Skin Component Grade: ${grade}. ${interpretationText}`;
-    return { score: grade, interpretation, details: { BILAG_Grade: grade, Activity_Level: interpretationText } };
+    const interpretation = `BILAG Skin Component Grade: ${grade} (Numerical Score: ${numericalScore}). ${interpretationText}`;
+    return {
+        score: numericalScore, // Store the numerical score
+        interpretation,
+        details: {
+            BILAG_Letter_Grade: grade,
+            Numerical_Score_Equivalent: numericalScore,
+            Activity_Level_Description: interpretationText
+        }
+    };
   },
   references: [
-    "Isenberg DA, Rahman A, Allen E, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford). 2005;44(7):902–906.",
-    "Gordon C, Akil M, Isenberg D, et al. The British Isles Lupus Assessment Group's new flare index for lupus nephritis. Lupus. 2003;12(5):408–413.",
-    "Hay EM, Bacon PA, Gordon C, et al. The BILAG index: a reliable and valid instrument for measuring clinical disease activity in systemic lupus erythematosus. Q J Med. 1993;86(7):447-458."
+    "Isenberg DA, Rahman A, Allen E, et al. BILAG 2004. Development and initial validation of an updated version of the British Isles Lupus Assessment Group's disease activity index for patients with systemic lupus erythematosus. Rheumatology (Oxford, England). 2005;44(7):902-6. doi:10.1093/rheumatology/keh624.",
+    "Gordon C, Akil M, Isenberg D, et al. The British Isles Lupus Assessment Group's new flare index for lupus nephritis. Lupus. 2003;12(5):408–413."
     ]
 };
+
