@@ -8,23 +8,23 @@ export const loscatTool: Tool = {
   name: "Localized Scleroderma Cutaneous Assessment Tool (LoSCAT)",
   acronym: "LoSCAT",
   condition: "Localized Scleroderma (Morphea)",
-  keywords: ["loscat", "morphea", "localized scleroderma", "activity", "damage", "pga", "mrss", "LoSAI", "LoSDI"],
-  description: "The LoSCAT is a comprehensive, validated tool used to assess disease state in localized scleroderma (morphea). It uniquely separates disease activity (LoSAI - Localized Scleroderma Activity Index for ongoing inflammation) from disease damage (LoSDI - Localized Scleroderma Damage Index for chronic, irreversible changes like atrophy and sclerosis). This tool expects pre-calculated LoSAI and LoSDI scores as input.",
+  keywords: ["loscat", "morphea", "localized scleroderma", "activity", "damage", "pga", "mrss", "LoSAI", "LoSDI", "mLoSSI"],
+  description: "The LoSCAT (Localized Scleroderma Cutaneous Assessment Tool) combines the modified Localized Scleroderma Skin Severity Index (mLoSSI, assessing activity: new/enlarging lesions, erythema, skin thickness) and the Localized Scleroderma Damage Index (LoSDI, assessing damage: dermal atrophy, subcutaneous atrophy, dyspigmentation). Each item within these sub-indices is typically scored 0–3 per lesion, then summed for total activity (LoSAI/mLoSSI) and damage (LoSDI) scores. LoSCAT is validated, sensitive to change, and widely used in morphea trials. It provides separate activity and damage indices, unlike single-dimension global assessments (e.g., HS-PGA or IGA), and is more responsive than static staging systems like Hurley staging. This tool expects pre-calculated LoSAI and LoSDI scores as input.",
   sourceType: 'Clinical Guideline',
   icon: ClipboardList,
   formSections: [
     {
       id: "activityIndex",
-      label: "LoSAI (Localized Scleroderma Activity Index) Score",
+      label: "LoSAI / mLoSSI (Activity Index) Score",
       type: 'number',
       min: 0,
       defaultValue: 0,
-      description: "Enter the pre-calculated LoSAI score.",
+      description: "Enter the pre-calculated LoSAI or mLoSSI score.",
       validation: getValidationSchema('number',[],0)
     },
     {
       id: "damageIndex",
-      label: "LoSDI (Localized Scleroderma Damage Index) Score",
+      label: "LoSDI (Damage Index) Score",
       type: 'number',
       min: 0,
       defaultValue: 0,
@@ -37,29 +37,30 @@ export const loscatTool: Tool = {
     const damageScore = Number(inputs.damageIndex) || 0;
 
     let activitySeverity = "";
-    if (activityScore <= 4) activitySeverity = "Mild Activity";
+    // Standard LoSCAT Activity (mLoSSI/LoSAI) severity bands
+    if (activityScore === 0) activitySeverity = "No activity";
+    else if (activityScore <= 4) activitySeverity = "Mild Activity";
     else if (activityScore <= 12) activitySeverity = "Moderate Activity";
     else activitySeverity = "Severe Activity";
 
     let damageSeverity = "";
-    if (damageScore <= 10) damageSeverity = "Mild Damage";
+    // Standard LoSCAT Damage (LoSDI) severity bands
+    if (damageScore === 0) damageSeverity = "No damage";
+    else if (damageScore <= 10) damageSeverity = "Mild Damage";
     else if (damageScore <= 15) damageSeverity = "Moderate Damage";
     else damageSeverity = "Severe Damage";
 
-    // The primary "score" of LoSCAT isn't a single sum, but the separate activity and damage scores.
-    // We can use a string to represent this or pick one (e.g., activity) as the main 'score'.
-    // For this tool, displaying both is more meaningful.
     const mainScoreDisplay = `Activity: ${activityScore}, Damage: ${damageScore}`;
 
     const interpretation = `LoSCAT Assessment Results:
-Activity (LoSAI): ${activityScore} (${activitySeverity}).
+Activity (LoSAI/mLoSSI): ${activityScore} (${activitySeverity}).
 Damage (LoSDI): ${damageScore} (${damageSeverity}).
 Severity Bands:
-LoSAI (Activity): 0–4 Mild; 5–12 Moderate; ≥13 Severe.
-LoSDI (Damage): 0–10 Mild; 11–15 Moderate; ≥16 Severe.`;
+LoSAI/mLoSSI (Activity): 0 No activity; 1–4 Mild; 5–12 Moderate; ≥13 Severe.
+LoSDI (Damage): 0 No damage; 1–10 Mild; 11–15 Moderate; ≥16 Severe.`;
 
     return {
-      score: mainScoreDisplay, // Representing the combined nature
+      score: mainScoreDisplay,
       interpretation,
       details: {
         LoSAI_Activity_Score: activityScore,
@@ -74,3 +75,4 @@ LoSDI (Damage): 0–10 Mild; 11–15 Moderate; ≥16 Severe.`;
     "Kelsey, C. E., & Torok, K. S. (2020). The Localized Scleroderma Cutaneous Assessment Tool (LoSCAT): responsiveness to change in a pediatric clinical population. Journal of the American Academy of Dermatology, 82(1), 173-179."
   ]
 };
+

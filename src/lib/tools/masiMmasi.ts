@@ -13,8 +13,8 @@ export const masiMmasiTool: Tool = {
   name: "Melasma Area & Severity Index (MASI/mMASI)",
   acronym: "MASI/mMASI",
   condition: "Melasma",
-  keywords: ["masi", "mmasi", "melasma", "pigmentation", "severity"],
-  description: "Assesses the severity of melasma by evaluating area of involvement, darkness, and homogeneity (for MASI).",
+  keywords: ["masi", "mmasi", "melasma", "pigmentation", "severity", "facial regions"],
+  description: "MASI (Melasma Area and Severity Index) and mMASI (modified MASI) are clinician-reported indices for melasma. MASI divides the face into four regions (forehead, right malar, left malar, chin), scoring area of involvement (0–6), darkness (0–4), and homogeneity (0–4) for each. These are combined in a weighted sum (max score 48). The mMASI omits the homogeneity component for simplicity and improved reliability, with a correspondingly lower maximum score (max 24). Both indices are validated, reliable, and sensitive to change, with mMASI often preferred for ease of use. These indices are more quantitative than global assessments like IGA for acne/rosacea and more detailed than ordinal staging systems such as Hurley staging for HS.",
   sourceType: 'Clinical Guideline',
   icon: Palette,
   formSections: [
@@ -54,20 +54,21 @@ export const masiMmasiTool: Tool = {
       });
       const score = parseFloat(totalScore.toFixed(2));
       let interpretation = `Total ${type.toUpperCase()} Score: ${score}. `;
-      if (type === "masi") {
+      if (type === "masi") { // Max score 48
           if (score === 0) interpretation += "No melasma.";
-          else if (score < 16) interpretation += "Mild melasma.";
-          else if (score <= 32) interpretation += "Moderate melasma.";
+          else if (score <= 12) interpretation += "Mild melasma."; // Example bands, ~25% of max
+          else if (score <= 24) interpretation += "Moderate melasma."; // Example bands, ~50% of max
           else interpretation += "Severe melasma.";
-          interpretation += " (MASI Range: 0-48. Severity bands example: <16 Mild, 16-32 Moderate, >32 Severe).";
-      } else {
+          interpretation += " (MASI Range: 0-48).";
+      } else { // mMASI max score 24
           if (score === 0) interpretation += "No melasma.";
-          else if (score < 8) interpretation += "Mild melasma.";
-          else if (score <= 16) interpretation += "Moderate melasma.";
+          else if (score <= 6) interpretation += "Mild melasma."; // Example bands, ~25% of max
+          else if (score <= 12) interpretation += "Moderate melasma."; // Example bands, ~50% of max
           else interpretation += "Severe melasma.";
-          interpretation += " (mMASI Range: 0-24. Severity bands are less standardized for mMASI but can be inferred).";
+          interpretation += " (mMASI Range: 0-24).";
       }
       return { score, interpretation, details: { type: type.toUpperCase(), ...regionDetails } };
   },
   references: ["MASI: Kimbrough-Green CK, et al. Arch Dermatol. 1994.", "mMASI: Pandya AG, et al. J Am Acad Dermatol. 2011."]
 };
+
