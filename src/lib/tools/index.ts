@@ -41,6 +41,7 @@ import { napsiTool } from './napsi';
 import { nrsPruritusTool } from './nrsPruritus';
 import { pasiTool } from './pasi';
 import { pdaiTool } from './pdai';
+import { pedisClassificationTool } from './pedisClassification';
 import { pestTool } from './pest';
 import { pgDelphiTool } from './pgDelphi';
 import { pgParacelsusTool } from './pgParacelsus';
@@ -56,6 +57,7 @@ import { scoradTool } from './scorad';
 import { scortenTool } from './scorten';
 import { scqoli10Tool } from './scqoli10';
 import { sevenPointChecklistTool } from './sevenPointChecklist';
+import { sinbadScoreTool } from './sinbadScore';
 import { skindex29Tool } from './skindex29';
 import { sledaiSkinTool } from './sledaiSkin';
 import { uas7Tool } from './uas7';
@@ -110,6 +112,7 @@ export const toolData: Tool[] = [
   nrsPruritusTool,
   pasiTool,
   pdaiTool,
+  pedisClassificationTool,
   pestTool,
   pgDelphiTool,
   pgParacelsusTool,
@@ -125,6 +128,7 @@ export const toolData: Tool[] = [
   scortenTool,
   scqoli10Tool,
   sevenPointChecklistTool,
+  sinbadScoreTool,
   skindex29Tool,
   sledaiSkinTool,
   uas7Tool,
@@ -136,4 +140,3 @@ export const toolData: Tool[] = [
   vigaAdTool,
   vitiqolTool,
 ].sort((a, b) => a.name.localeCompare(b.name));
-
