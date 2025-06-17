@@ -60,6 +60,7 @@ import { skindex29Tool } from './skindex29';
 import { sledaiSkinTool } from './sledaiSkin';
 import { uas7Tool } from './uas7';
 import { uctTool } from './uct';
+import { utWoundClassificationTool } from './utWoundClassification';
 import { vasiTool } from './vasi';
 import { vasPruritusTool } from './vasPruritus';
 import { vidaTool } from './vida';
@@ -128,9 +129,11 @@ export const toolData: Tool[] = [
   sledaiSkinTool,
   uas7Tool,
   uctTool,
+  utWoundClassificationTool,
   vasiTool,
   vasPruritusTool,
   vidaTool,
   vigaAdTool,
   vitiqolTool,
 ].sort((a, b) => a.name.localeCompare(b.name));
+
