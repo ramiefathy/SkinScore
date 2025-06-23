@@ -67,7 +67,7 @@ export const mswatTool: Tool = {
   acronym: "mSWAT",
   condition: "Cutaneous T-Cell Lymphoma (CTCL)",
   keywords: ["mswat", "ctcl", "mycosis fungoides", "sezary syndrome", "skin severity", "body surface area"],
-  description: "Assesses skin severity in Mycosis Fungoides (MF) and Sézary Syndrome (SS) by evaluating the Body Surface Area (BSA) percentage covered by patches, plaques, and tumors/ulcers across various body regions. Weighted scores are summed to produce the total mSWAT score.",
+  description: "The modified Severity-Weighted Assessment Tool (mSWAT) is a validated, clinician-reported index for quantifying skin disease burden in mycosis fungoides and Sézary syndrome. The mSWAT divides the body into 12 regions (head, neck, anterior trunk, arms, forearms, hands, posterior trunk, buttocks, thighs, legs, feet, groin), each with a defined percentage of total body surface area (BSA). For each region, the percentage of BSA involved by patch, plaque, and tumor lesions is estimated separately. Each lesion type is assigned a weighting factor: patch ×1, plaque ×2, tumor ×4. The total mSWAT score is the sum of weighted scores for all lesion types and all regions.",
   sourceType: 'Clinical Guideline',
   icon: ShieldHalf,
   formSections: mswatFormSections,
@@ -133,7 +133,7 @@ export const mswatTool: Tool = {
           Plaque: "x2",
           Tumor_Ulcer: "x4",
         },
-        Subtotal_Lesion_BSA_x_Weighting_Factor: {
+        "Subtotal_Lesion_BSA_x_Weighting_Factor": {
           Patch: parseFloat(weightedPatchScore.toFixed(1)),
           Plaque: parseFloat(weightedPlaqueScore.toFixed(1)),
           Tumor_Ulcer: parseFloat(weightedTumorScore.toFixed(1)),
@@ -143,7 +143,5 @@ export const mswatTool: Tool = {
       }
     };
   },
-  references: ["Olsen E, Whittaker S, Kim YH, et al. Clinical end points and response criteria in mycosis fungoides and Sézary syndrome: a consensus statement of the International Society for Cutaneous Lymphomas, the United States Cutaneous Lymphoma Consortium, and the Cutaneous Lymphoma Task Force of the European Organisation for Research and Treatment of Cancer. J Clin Oncol. 2011.", "Example based on Stevens SR, Ke MS, Parry EJ, et al. A modified severity-weighted assessment tool (mSWAT) for cutaneous T-cell lymphoma, mycosis fungoides type: a validation study. Arch Dermatol. 2002;138(4):485-490 (though this reference might describe a slightly different version than the most common one, the principles are similar)."]
+  references: ["Olsen EA, Whittaker S, Kim YH, et al. Clinical end points and response criteria in mycosis fungoides and Sézary syndrome: a consensus statement of the International Society for Cutaneous Lymphomas, the United States Cutaneous Lymphoma Consortium, and the Cutaneous Lymphoma Task Force of the European Organisation for Research and Treatment of Cancer. J Clin Oncol. 2011;29(18):2598-607. doi:10.1200/JCO.2010.32.0630."]
 };
-
-    
