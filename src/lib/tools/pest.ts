@@ -55,11 +55,13 @@ export const pestTool: Tool = {
   id: "pest",
   name: "Psoriasis Epidemiology Screening Tool",
   acronym: "PEST",
-  description: "The PEST was developed to address the underdiagnosis of psoriatic arthritis (PsA) among patients with psoriasis, particularly in non-rheumatology settings. The tool was designed to be simple, rapid, and feasible for use by dermatologists and primary care providers to identify patients who may require rheumatologic evaluation. The PEST consists of five yes/no questions and a manikin diagram for patients to indicate joint involvement.",
+  description: "The PEST was developed to address the underdiagnosis of psoriatic arthritis (PsA) among patients with psoriasis, particularly in non-rheumatology settings.",
   condition: "Psoriasis / Psoriatic Arthritis",
   keywords: ["pest", "psoriasis", "psoriatic arthritis", "screening", "questionnaire", "arthritis", "nail pitting"],
   sourceType: 'Research',
   icon: ClipboardList,
+  rationale: "The tool was designed to be simple, rapid, and feasible for use by dermatologists and primary care providers to identify patients who may require rheumatologic evaluation. The PEST consists of five yes/no questions and a manikin diagram for patients to indicate joint involvement. Each \"yes\" response on the PEST scores 1 point, for a total possible score of 0 to 5. A score of ≥3 is considered suggestive of PsA and warrants further rheumatologic assessment.",
+  clinicalPerformance: "The PEST has demonstrated high sensitivity and moderate specificity in both original and subsequent validation studies. In the original development, sensitivity was 0.94 and specificity was 0.78. In a Japanese cohort, sensitivity was 93.1% and specificity was 78.9%. In a Brazilian Portuguese validation, sensitivity was 84.6% and specificity was 63.3%, with an area under the ROC curve of 0.81 and a Cronbach's alpha of 0.72, indicating acceptable internal consistency. In a pediatric pilot study, the PEST achieved both sensitivity and specificity of 100% for juvenile PsA, outperforming the Early Arthritis for Psoriatic Patients (EARP) questionnaire. Comparative studies in European and North American dermatology clinics have shown that the PEST, PASQ, and ToPAS are all useful for screening, with the PEST offering a favorable trade-off between sensitivity and specificity. In primary care, the PEST had a sensitivity of 0.68 and specificity of 0.71, outperforming the PASE and EARP in terms of balanced accuracy.",
   formSections: pestFormSections,
   calculationLogic: (inputs) => {
     const score =

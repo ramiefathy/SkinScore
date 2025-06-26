@@ -39,6 +39,8 @@ export const poemTool: Tool = {
   description: "The POEM is a patient-reported outcome measure (PROM) that quantifies eczema severity from the patient’s perspective. POEM is a simple 7-question survey focusing on frequency of eczema symptoms (itch, sleep loss, bleeding, weeping, cracking, flaking, dryness) over the past week.",
   sourceType: 'Research',
   icon: MessageSquare,
+  rationale: "The POEM consists of seven items, each addressing a core symptom: itching, sleep disturbance, bleeding, weeping/oozing, cracking, flaking, and dryness/roughness. Each item is scored from 0 (\"no days\") to 4 (\"every day\"), for a total score range of 0 to 28. Severity bands are defined as 0–7 (mild), 8–19 (moderate), and 20–28 (severe). A change of ≥3 points is considered the minimal clinically important difference (MCID).",
+  clinicalPerformance: "The POEM has demonstrated good internal consistency (Cronbach's alpha = 0.86), construct validity, and responsiveness in both clinical trials and real-world practice. It correlates moderately to strongly with other patient-reported and clinician-reported measures, including the Dermatology Life Quality Index (DLQI), ItchyQOL, and Eczema Area and Severity Index (EASI). Test-retest reliability is good, and the POEM is feasible for use in both research and clinical settings, with a median completion time of 1 minute. Comparative studies have shown that the POEM has better measurement properties than the Patient-Oriented Scoring Atopic Dermatitis (PO-SCORAD) and is more strongly correlated with quality of life measures. The POEM is the preferred patient-reported outcome for assessing symptoms of atopic dermatitis.",
   formSections: poemFormSections,
   calculationLogic: (inputs) => {
     let totalScore = 0;
