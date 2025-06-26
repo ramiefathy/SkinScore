@@ -7,7 +7,7 @@ export const pasiTool: Tool = {
   id: "pasi",
   name: "Psoriasis Area and Severity Index (PASI)",
   acronym: "PASI",
-  description: "Gold standard for assessing severity of extensive plaque psoriasis and monitoring treatment response.",
+  description: "The PASI is the most widely used clinical severity scale for psoriasis, combining the extent of body surface area involvement with the severity of erythema, induration, and desquamation into a single composite score (range 0-72). The body is divided into four weighted regions (head, trunk, upper limbs, lower limbs). It has good internal consistency and moderate to high interobserver reliability among trained users (ICC ~0.9). Its main limitations include complexity, low responsiveness in mild disease, and lack of quality of life assessment. The AAD and NPF recommend using it with other clinical and patient-reported measures.",
   condition: "Psoriasis / Psoriatic Arthritis",
   keywords: ["pasi", "psoriasis", "plaque psoriasis", "severity", "index", "psoriatic arthritis"],
   sourceType: 'Clinical Guideline',
@@ -55,5 +55,12 @@ export const pasiTool: Tool = {
       interpretation += " (Common bands: <10 Mild; 10-20 Moderate; >20 Severe. Response: PASI 50, 75, 90, 100 indicate % reduction from baseline.)";
       return { score, interpretation, details: regionalScoresOutput };
   },
-  references: ["Fredriksson T, Pettersson U. Dermatologica. 1978;157(4):238-44."]
+  references: [
+      "Sampogna F, Sera F, Mazzotti E, et al. Performance of the Self-administered Psoriasis Area and Severity Index in Evaluating Clinical and Sociodemographic Subgroups of Patients With Psoriasis. JAMA Archives of Dermatology. 2003;139(3):353-8; discussion 357. doi:10.1001/archderm.139.3.353.",
+      "Fink C, Alt C, Uhlmann L, et al. Intra- And Interobserver Variability of Image-Based PASI Assessments in 120 Patients Suffering From Plaque-Type Psoriasis. Journal of the European Academy of Dermatology and Venereology : JEADV. 2018;32(8):1314-1319. doi:10.1111/jdv.14960.",
+      "Fink C, Alt C, Uhlmann L, et al. Precision and Reproducibility of Automated Computer-Guided Psoriasis Area and Severity Index Measurements in Comparison With Trained Physicians. The British Journal of Dermatology. 2019;180(2):390-396. doi:10.1111/bjd.17200.",
+      "Puzenat E, Bronsard V, Prey S, et al. What Are the Best Outcome Measures for Assessing Plaque Psoriasis Severity? A Systematic Review of the Literature. Journal of the European Academy of Dermatology and Venereology : JEADV. 2010;24 Suppl 2:10-6. doi:10.1111/j.1468-3083.2009.03562.x.",
+      "van Geel MJ, Otero ME, de Jong EM, van de Kerkhof PC, Seyger MM. Validation of the Simplified Psoriasis Index in Dutch Children and Adolescents With Plaque Psoriasis. The British Journal of Dermatology. 2017;176(3):771-776. doi:10.1111/bjd.15120.",
+      "Folle L, Fenzl P, Fagni F, et al. DeepNAPSI Multi-Reader Nail Psoriasis Prediction Using Deep Learning. Scientific Reports. 2023;13(1):5329. doi:10.1038/s41598-023-32440-8."
+  ]
 };

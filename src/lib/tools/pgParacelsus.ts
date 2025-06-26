@@ -47,7 +47,7 @@ export const pgParacelsusTool: Tool = {
   name: "PARACELSUS Score for Pyoderma Gangrenosum",
   acronym: "PARACELSUS Score (PG)",
   condition: "Pyoderma Gangrenosum",
-  description: "Developed by Jockenhöfer et al. (2019), the PARACELSUS Score is a 10‐item weighted diagnostic tool for PG. Major criteria score 3 points each, minor criteria 2 points each, and additional criteria 1 point each, producing a total 0–20 scale. A score ≥ 10 strongly suggests PG (sensitivity ∼ 94%, specificity ∼ 90%) compared to venous ulcers.",
+  description: "A weighted diagnostic tool to differentiate pyoderma gangrenosum (PG) from other ulcerative conditions. The score comprises 10 criteria across major (3 pts), minor (2 pts), and additional (1 pt) categories, with a total score range of 0–20. A score of ≥10 strongly suggests PG, showing high sensitivity (~94%) and specificity (~90%) in its original validation against venous ulcers. Further prospective validation is needed to establish broader reliability.",
   keywords: ["paracelsus", "pyoderma gangrenosum", "diagnostic score", "ulcer", "pathergy", "immunosuppressive response"],
   sourceType: 'Research',
   icon: ClipboardList,
@@ -96,9 +96,8 @@ export const pgParacelsusTool: Tool = {
     };
   },
   references: [
-    "Jockenhöfer F, Wollina U, Salva KA, Benson S, Dissemond J. The PARACELSUS Score: A Novel Diagnostic Tool for PG. Br J Dermatol. 2019;180(3):615–620.",
-    "Jockenhöfer F, et al. Multicenter Validation of PARACELSUS Score vs Venous Leg Ulcers. Wound Repair Regen. 2019;27(2):234–241.",
-    "Fife CF. Scoring PG: Clinical Pearls Using PARACELSUS. CarolineFifeMD.com Blog. 2022.",
-    "Schreml S. Commentary on the PARACELSUS Score. Br J Dermatol. 2019;180(3):438–439."
+    "Jockenhöfer F, Wollina U, Salva KA, Benson S, Dissemond J. The PARACELSUS Score: A Novel Diagnostic Tool for Pyoderma Gangrenosum. The British Journal of Dermatology. 2019;180(3):615-620. doi:10.1111/bjd.16401.",
+    "Haag C, Hansen T, Hajar T, et al. Comparison of Three Diagnostic Frameworks for Pyoderma Gangrenosum. The Journal of Investigative Dermatology. 2021;141(1):59-63. doi:10.1016/j.jid.2020.04.019.",
+    "Lu JD, Hobbs MM, Huang WW, Ortega-Loayza AG, Alavi A. Identification and Evaluation of Outcome Measurement Instruments in Pyoderma Gangrenosum: A Systematic Review. The British Journal of Dermatology. 2020;183(5):821-828. doi:10.1111/bjd.19027."
   ]
 };
