@@ -37,9 +37,11 @@ export const gagsTool: Tool = {
   acronym: "GAGS",
   condition: "Acne Vulgaris",
   keywords: ["gags", "acne", "acne vulgaris", "global acne grading system", "severity"],
-  description: "The Global Acne Grading System (GAGS) is a clinician-administered tool for assessing acne severity. It divides the face, chest, and back into six regions, each assigned a factor based on surface area. Lesion types (comedones, papules, pustules, nodules) are scored 0–4 by severity, and the local score for each region is calculated as (most severe lesion score) × (region factor). The global score is the sum of all local scores, categorizing acne as mild, moderate, severe, or very severe. GAGS is practical for clinical and research use, but, like other global acne scales, it does not account for scarring or postinflammatory changes, which are increasingly recognized as important for patient outcomes and quality of life.",
+  description: "The Global Acne Grading System (GAGS) is a quantitative, composite scoring system designed to provide a standardized, reproducible measure of acne severity by incorporating both the type and distribution of lesions across different anatomical regions.",
   sourceType: 'Clinical Guideline',
   icon: Calculator,
+  rationale: "The rationale is to integrate lesion type, number, and regional involvement into a single composite score, improving objectivity and comparability across studies and clinical settings. The GAGS divides the face, chest, and back into six regions, each assigned a factor based on surface area and cosmetic significance. For each region, the most severe lesion type is identified and assigned a grade (0: no lesions, 1: comedones, 2: papules, 3: pustules, 4: nodules). The regional score is calculated as the grade multiplied by the region’s factor, and the total GAGS score is the sum of all regional scores.",
+  clinicalPerformance: "The GAGS has been evaluated in multiple studies and systematic reviews, which report good inter- and intra-rater reliability and practical utility in both research and clinical practice. Comparative studies have found that the GAGS is less time-consuming and more practical than lesion counting, with similar or better reliability. However, subjectivity remains a concern, particularly in the assessment of lesion severity and regional involvement. Sensitivity and specificity are not routinely reported, as the GAGS is not a diagnostic tool. In pediatric populations, the GAGS has been used in adolescent studies, and a multidimensional acne global grading system integrating primary and secondary lesions has been developed and validated in a pediatric cohort (ages 0–21 years), demonstrating good agreement with clinician ratings and treatment decisions. Further validation in adult populations and real-world practice is needed.",
   formSections: gagsFormSections,
   calculationLogic: (inputs) => {
       let totalScore = 0;
@@ -70,6 +72,10 @@ export const gagsTool: Tool = {
       };
   },
   references: [
-    "Doshi, A., Zaheer, A., & Stiller, M. J. (1997). A comparison of current acne grading systems and proposal of a novel system. International Journal of Dermatology, 36(6), 416–418."
+    "Reynolds RV, Yeung H, Cheng CE, et al. Guidelines of Care for the Management of Acne Vulgaris. Journal of the American Academy of Dermatology. 2024;90(5):1006.e1-1006.e30. doi:10.1016/j.jaad.2023.12.017.",
+    "Bernardis E, Shou H, Barbieri JS, et al. Development and Initial Validation of a Multidimensional Acne Global Grading System Integrating Primary Lesions and Secondary Changes. JAMA Dermatology. 2020;156(3):296-302. doi:10.1001/jamadermatol.2019.4668.",
+    "Ramli R, Malik AS, Hani AF, Jamil A. Acne Analysis, Grading and Computational Assessment Methods: An Overview. Skin Research and Technology. 2012;18(1):1-14. doi:10.1111/j.1600-0846.2011.00542.x.",
+    "Barratt H, Hamilton F, Car J, et al. Outcome Measures in Acne Vulgaris: Systematic Review. The British Journal of Dermatology. 2009;160(1):132-6. doi:10.1111/j.1365-2133.2008.08819.x.",
+    "Becker M, Wild T, Zouboulis CC. Objective Assessment of Acne. Clinics in Dermatology. 2017 Mar - Apr;35(2):147-155. doi:10.1016/j.clindermatol.2016.10.006."
   ]
 };

@@ -50,6 +50,8 @@ export const pgDelphiTool: Tool = {
   keywords: ["delphi", "pyoderma gangrenosum", "ulcerative", "diagnostic criteria", "neutrophilic infiltrate", "pathergy", "inflammatory bowel disease"],
   sourceType: 'Research',
   icon: ClipboardList,
+  rationale: "The Delphi Consensus Criteria were developed to standardize the diagnosis of ulcerative pyoderma gangrenosum (PG), a rare neutrophilic dermatosis. The rationale was to move from a diagnosis of exclusion to an evidence-based, consensus-driven framework to improve diagnostic accuracy and facilitate research. Diagnosis requires one major criterion (biopsy of ulcer edge demonstrating neutrophilic infiltrate) and at least four of eight minor criteria, which include: exclusion of infection, pathergy, history of inflammatory bowel disease or arthritis, rapid ulceration, characteristic ulcer features, multiple ulcers, cribriform scarring, and response to immunosuppression. The process is categorical.",
+  clinicalPerformance: "Validation studies report sensitivity of 70–85% and specificity of 80–95% compared to expert clinical diagnosis. Inter-rater reliability is generally good, with kappa values above 0.6. The criteria have been validated in both retrospective and prospective cohorts, including diverse populations, but most data are from adult cohorts. The Delphi criteria have been compared to other diagnostic frameworks, such as the PARACELSUS and Su criteria. In a retrospective cohort, the PARACELSUS score identified the highest proportion of PG cases (89%), followed by Delphi and Su criteria (74% each). Multirater agreement among the three frameworks was moderate (Fleiss’ kappa 0.44).",
   formSections: pgDelphiFormSections,
   calculationLogic: (inputs) => {
     const majorBiopsyPresent = Number(inputs.pg_delphi_major_biopsy) === 1;
@@ -100,6 +102,10 @@ Consider alternative diagnoses.`;
     };
   },
   references: [
-    "Maverakis E, Ma C, Shinkai K, et al. Diagnostic Criteria of Ulcerative Pyoderma Gangrenosum: A Delphi Consensus of International Experts. JAMA Dermatology. 2018; 154(4):461-466. doi:10.1001/jamadermatol.2017.5980."
+    "Maverakis E, Ma C, Shinkai K, et al. Diagnostic Criteria of Ulcerative Pyoderma Gangrenosum: A Delphi Consensus of International Experts. JAMA Dermatology. 2018; 154(4):461-466. doi:10.1001/jamadermatol.2017.5980.",
+    "Haag C, Hansen T, Hajar T, et al. Comparison of Three Diagnostic Frameworks for Pyoderma Gangrenosum. The Journal of Investigative Dermatology. 2021;141(1):59-63. doi:10.1016/j.jid.2020.04.019.",
+    "Lu JD, Hobbs MM, Huang WW, Ortega-Loayza AG, Alavi A. Identification and Evaluation of Outcome Measurement Instruments in Pyoderma Gangrenosum: A Systematic Review. The British Journal of Dermatology. 2020;183(5):821-828. doi:10.1111/bjd.19027.",
+    "Jockenhöfer F, Wollina U, Salva KA, Benson S, Dissemond J. The PARACELSUS Score: A Novel Diagnostic Tool for Pyoderma Gangrenosum. The British Journal of Dermatology. 2019;180(3):615-620. doi:10.1111/bjd.16401.",
+    "Kamal K, Xia E, Li SJ, et al. Eligibility Criteria for Active Ulcerative Pyoderma Gangrenosum in Clinical Trials: A Delphi Consensus on Behalf of the UPGRADE (Understanding Pyoderma Gangrenosum: Review and Assessment of Disease Effects) Group. The Journal of Investigative Dermatology. 2024;144(6):1295-1300.e6. doi:10.1016/j.jid.2023.12.006."
   ]
 };

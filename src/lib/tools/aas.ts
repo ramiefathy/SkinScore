@@ -41,9 +41,11 @@ export const aasTool: Tool = {
   acronym: "AAS",
   condition: "Angioedema",
   keywords: ["aas", "angioedema", "activity score", "patient reported", "urticaria", "swelling"],
-  description: "The AAS is a patient-reported daily diary tool used to quantify disease activity in recurrent angioedema (with or without chronic urticaria). Developed by Weller et al. (2013), it captures daily angioedema burden. It's recommended by international urticaria guidelines. Scores can be aggregated (AAS7, AAS28) for longer-term activity.",
+  description: "The AAS is a patient-reported outcome measure designed to quantify disease activity in patients with recurrent angioedema. It consists of five items, each scored daily by the patient, reflecting the presence and severity of angioedema symptoms.",
   sourceType: 'Research',
   icon: Activity,
+  rationale: "The rationale for its development was the absence of standardized, validated activity measures for angioedema, which is characterized by unpredictable, episodic swelling that can significantly impact quality of life. The AAS consists of five items, each scored daily by the patient, reflecting the presence and severity of angioedema symptoms. The total score is the sum of daily scores over a specified period (e.g., 28 days), providing a continuous measure of disease activity.",
+  clinicalPerformance: "The AAS has been validated in multiple adult populations and languages, including Thai and Japanese versions, with studies consistently demonstrating excellent internal consistency (Cronbach’s alpha >0.9), strong test-retest reliability (intraclass correlation coefficient >0.8), and robust convergent and known-groups validity. Sensitivity and specificity are not reported, as the AAS is not a diagnostic tool but a continuous activity measure. The tool is recommended by international guidelines, including those from the European Academy of Allergy and Clinical Immunology, for use in both clinical trials and practice. There is a lack of published validation or comparative studies in pediatric populations, and further research is needed to establish its psychometric properties in children.",
   formSections: [
     {id:"swellingCount", label:"1. Number of angioedema swellings today?", type:"select", options:aasSwellingCountOptions, defaultValue:0, validation:getValidationSchema('select',aasSwellingCountOptions,0,3)},
     {id:"duration", label:"2. Longest swelling duration today?", type:"select", options:aasDurationOptions, defaultValue:0, validation:getValidationSchema('select',aasDurationOptions,0,3)},
@@ -71,10 +73,13 @@ Example AAS7 interpretation: <6 low activity, ≥30 severe activity. A 50% drop 
       };
   },
   references: [
-    "Weller K, Groffik A, Magerl M, et al. Development and validation of the Angioedema Activity Score. Allergy. 2013;68(9):1185-1192.",
-    "Zuberbier T, Aberer W, Asero R, et al. The EAACI/GA²LEN/EDF/WAO guideline for the definition, classification, diagnosis and management of urticaria. Allergy. 2018;73(7):1393-1414.",
-    "Kulthanan K, Chularojanamontri L, Tuchinda P, et al. Angioedema Activity Score: Validity and reliability in a Thai population. Asian Pac J Allergy Immunol. 2019;37(2):90-95."
+    "Weller K, Groffik A, Magerl M, et al. Development, Validation, and Initial Results of the Angioedema Activity Score. Allergy. 2013;68(9):1185-92. doi:10.1111/all.12209.",
+    "Kulthanan K, Chularojanamontri L, Rujitharanawong C, et al. Angioedema Activity Score (AAS): A Valid and Reliable Tool to Use in Asian Patients. BioMed Research International. 2019;2019:9157895. doi:10.1155/2019/9157895.",
+    "Morioke S, Takahagi S, Kawano R, et al. A Validation Study of the Japanese Version of the Angioedema Activity Score (AAS) and the Angioedema Quality of Life Questionnaire (AE-QoL). Allergology International : Official Journal of the Japanese Society of Allergology. 2021;70(4):471-479. doi:10.1016/j.alit.2021.04.006.",
+    "Lapiņa L, Kaņepa A, Zolovs M, Buttgereit T, Kurjāne N. Adaptation and Linguistic Validation of Angioedema PROMs in Latvian for Assessing Recurrent Angioedema. Journal of Clinical Medicine. 2025;14(4):1375. doi:10.3390/jcm14041375.",
+    "Katelaris CH, Lima H, Marsland A, et al. How to Measure Disease Activity, Impact, and Control in Patients With Recurrent Wheals, Angioedema, or Both. The Journal of Allergy and Clinical Immunology. In Practice. 2021;9(6):2151-2157. doi:10.1016/j.jaip.2021.02.026.",
+    "Reshef A, Buttgereit T, Betschel SD, et al. Definition, Acronyms, Nomenclature, and Classification of Angioedema (DANCE): AAAAI, ACAAI, ACARE, and APAAACI DANCE Consensus. The Journal of Allergy and Clinical Immunology. 2024;154(2):398-411.e1. doi:10.1016/j.jaci.2024.03.024.",
+    "Krishnamurthy A, Naguwa SM, Gershwin ME. Pediatric Angioedema. Clinical Reviews in Allergy & Immunology. 2008;34(2):250-9. doi:10.1007/s12016-007-8037-y.",
+    "Pattanaik D, Lieberman JA. Pediatric Angioedema. Current Allergy and Asthma Reports. 2017;17(9):60. doi:10.1007/s11882-017-0729-7."
     ]
 };
-
-    

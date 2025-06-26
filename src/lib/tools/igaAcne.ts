@@ -24,9 +24,11 @@ export const igaAcneTool: Tool = {
   acronym: "IGA Acne",
   condition: "Acne Vulgaris",
   keywords: ["iga", "acne", "acne vulgaris", "physician global assessment", "severity"],
-  description: "The Investigator's Global Assessment (IGA) for Acne Vulgaris is a static, clinician-rated, 5-point ordinal scale (0–4: clear, almost clear, mild, moderate, severe) based on lesion type, number, and distribution, as recommended by the American Academy of Dermatology. It is the most commonly used global assessment in US clinical trials and practice, providing a standardized, qualitative measure of acne severity.",
+  description: "The Investigator's Global Assessment (IGA) for Acne Vulgaris is a static, clinician-rated, 5-point ordinal scale (0–4) used to assess the overall severity of acne based on lesion counts and types.",
   sourceType: 'Research',
   icon: UserCheck,
+  rationale: "The IGA is a clinician-reported, ordinal scale used to assess the overall severity of acne vulgaris. The rationale is to provide a simple, rapid, and reproducible method for grading acne severity in both clinical practice and research, facilitating therapeutic decision-making and standardized outcome reporting. The IGA is typically a 5-point scale (0–4), with each point anchored by descriptive criteria ranging from clear to severe. The American Academy of Dermatology, in its 2024 Guidelines of Care for the Management of Acne Vulgaris, recognizes the IGA as the most commonly used acne grading tool in the United States, with good agreement between clinician and patient ratings.",
+  clinicalPerformance: "The IGA has been used extensively in both clinical trials and real-world practice, including in adolescent populations. Studies have demonstrated good inter- and intra-rater reliability, strong face validity, and good agreement with patient ratings. The U.S. Food and Drug Administration recommends the use of a 5-point IGA scale as a primary endpoint in acne clinical trials, with treatment success typically defined as achieving a score of clear or almost clear or a 2-point reduction from baseline. Sensitivity and specificity are not routinely reported, as the IGA is not a diagnostic tool but a severity grading instrument. The IGA is widely used in adolescents, but formal validation in younger children is limited, and further work is needed to standardize descriptors and validate the tool for use in both facial and truncal acne and across age groups.",
   formSections: [
     {
       id: "current_iga_grade",
@@ -79,9 +81,11 @@ export const igaAcneTool: Tool = {
       };
   },
   references: [
-    "Bernardis E, Shou H, Barbieri JS, et al. Development and Initial Validation of a Multidimensional Acne Global Grading System Integrating Primary Lesions and Secondary Changes. JAMA Dermatology. 2020;156(3):296-302. doi:10.1001/jamadermatol.2019.4668.",
-    "Thiboutot, D. M., et al. (2008). A multicenter, randomized, double-blind, parallel-group study of the efficacy and safety of a novel tretinoin 0.04% gel microsphere formulation in the treatment of acne vulgaris. Cutis, 81(1), 71-78. (Example of IGA use in a clinical trial).",
-    "FDA Guidance for Industry: Acne Vulgaris: Developing Drugs for Treatment."
+    "Reynolds RV, Yeung H, Cheng CE, et al. Guidelines of Care for the Management of Acne Vulgaris. Journal of the American Academy of Dermatology. 2024;90(5):1006.e1-1006.e30. doi:10.1016/j.jaad.2023.12.017.",
+    "Cho SI, Yang JH, Suh DH. Analysis of Trends and Status of Physician-Based Evaluation Methods in Acne Vulgaris From 2000 to 2019. The Journal of Dermatology. 2021;48(1):42-48. doi:10.1111/1346-8138.15613.",
+    "Pascoe VL, Enamandram M, Corey KC, et al. Using the Physician Global Assessment in a Clinical Setting to Measure and Track Patient Outcomes. JAMA Dermatology. 2015;151(4):375-81. doi:10.1001/jamadermatol.2014.3513.",
+    "Tan J, Wolfe B, Weiss J, et al. Acne Severity Grading: Determining Essential Clinical Components and Features Using a Delphi Consensus. Journal of the American Academy of Dermatology. 2012;67(2):187-93. doi:10.1016/j.jaad.2011.09.005.",
+    "Tan JKL, Jones E, Allen E, et al. Evaluation of Essential Clinical Components and Features of Current Acne Global Grading Scales. Journal of the American Academy of Dermatology. 2013;69(5):754-761. doi:10.1016/j.jaad.2013.07.029.",
+    "Bernardis E, Shou H, Barbieri JS, et al. Development and Initial Validation of a Multidimensional Acne Global Grading System Integrating Primary Lesions and Secondary Changes. JAMA Dermatology. 2020;156(3):296-302. doi:10.1001/jamadermatol.2019.4668."
   ]
 };
-
