@@ -17,9 +17,11 @@ export const igaRosaceaTool: Tool = {
   acronym: "IGA-R",
   condition: "Rosacea",
   keywords: ["iga", "rosacea", "physician global assessment", "severity", "erythema", "papules", "pustules"],
-  description: "The Investigator’s Global Assessment for Rosacea (IGA Rosacea) is a clinician-reported, ordinal scale typically ranging from 0 (clear) to 4 (severe), based on the overall severity of key rosacea features—primarily erythema, papules, and pustules—on the face. The IGA is widely used in clinical trials and correlates well with more detailed indices such as the Rosacea Area and Severity Index (RASI), but it is less nuanced, as it does not account for area involvement or specific subtypes. Its simplicity supports feasibility and interobserver reliability, but it may lack sensitivity to subtle changes compared to more granular tools.",
+  description: "The IGA is a clinician-rated global severity scale used to assess the overall severity of rosacea, integrating multiple clinical features such as erythema, papules, pustules, and telangiectasia. It provides a simple, standardized measure for use in clinical trials and practice.",
   sourceType: 'Research',
   icon: UserCheck,
+  rationale: "The IGA is a clinician-rated global severity scale used to assess the overall severity of rosacea, integrating multiple clinical features such as erythema, papules, pustules, and telangiectasia. It provides a simple, standardized measure for use in clinical trials and practice. The IGA is typically a single-item, 5-point or 7-point ordinal scale, with scores ranging from 0 (clear) to 4 (severe) or higher. The score reflects the investigator’s overall impression of disease severity. There are no subscores or domains. The IGA has been validated as a standard global assessment tool in rosacea, with recent studies comparing it to more nuanced instruments such as the Rosacea Area and Severity Index (RASI). Wienholtz et al. found a Spearman correlation coefficient of 0.75 between the IGA and RASI, with moderate-to-strong intraobserver agreement and poor-to-moderate interobserver reliability. The IGA is widely used as a primary endpoint in clinical trials.",
+  clinicalPerformance: "Internal consistency is not applicable for the IGA. Interobserver reliability is described as poor to moderate, while intraobserver agreement is moderate to strong. Sensitivity, specificity, and AUC may be reported in the context of defining response or remission, but these metrics are highly dependent on the population and study design. The IGA has been validated in clinical trials and real-world practice, with evidence supporting its use as a global severity measure. Comparative studies indicate that while the IGA is simple and reliable, it may not fully reflect the complexity of rosacea or capture all relevant clinical features. Criticisms of the IGA include its lack of specificity, potential for interrater variability, and the risk of obscuring specific features of rosacea. The global score may not adequately capture the heterogeneity of the disease or the impact of individual symptoms.",
   formSections: [
     {
       id: "iga_grade_rosacea",
@@ -46,9 +48,11 @@ export const igaRosaceaTool: Tool = {
     };
   },
   references: [
-    "Fowler J, et al. Efficacy and safety of once-daily ivermectin 1% cream in treatment of papulopustular rosacea: results of two randomized, double-blind, vehicle-controlled pivotal studies. J Drugs Dermatol. 2014.",
+    "Wienholtz NKF, Christensen CE, Do TP, et al. Erenumab for Treatment of Persistent Erythema and Flushing in Rosacea: A Nonrandomized Controlled Trial. JAMA Dermatology. 2024;160(6):612-619. doi:10.1001/jamadermatol.2024.0408.",
     "Tan J, et al. Updating the diagnosis, classification and assessment of rosacea: recommendations from the global ROSacea COnsensus (ROSCO) panel. Br J Dermatol. 2017.",
-    "Thiboutot D, et al. Standard management options for rosacea: The 2019 update by the National Rosacea Society Expert Committee. J Am Acad Dermatol. 2020."
-    ]
+    "Thiboutot D, et al. Standard management options for rosacea: The 2019 update by the National Rosacea Society Expert Committee. J Am Acad Dermatol. 2020.",
+    "Wienholtz NKF, Thyssen JP, Christensen CE, et al. Validity and Reliability of the Rosacea Area and Severity Index: A Novel Scoring System for Clinical Assessment of Rosacea Severity. Journal of the European Academy of Dermatology and Venereology : JEADV. 2023;37(3):573-580. doi:10.1111/jdv.18721.",
+    "Geng RSQ, Bourkas AN, Sibbald RG, Sibbald C. Biomarkers in Rosacea: A Systematic Review. Journal of the European Academy of Dermatology and Venereology : JEADV. 2024;38(6):1048-1057. doi:10.1111/jdv.19732.",
+    "Katrak P, Bialocerkowski AE, Massy-Westropp N, Kumar S, Grimmer KA. A Systematic Review of the Content of Critical Appraisal Tools. BMC Medical Research Methodology. 2004;4:22. doi:10.1186/1471-2288-4-22."
+  ]
 };
-
