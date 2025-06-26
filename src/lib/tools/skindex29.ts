@@ -9,7 +9,7 @@ export const skindex29Tool: Tool = {
   acronym: "Skindex-29",
   condition: "Quality of Life",
   keywords: ["skindex", "quality of life", "symptoms", "emotions", "functioning", "patient reported"],
-  description: "A 29-item questionnaire assessing the effects of skin diseases on patients' quality of life, divided into three domains: Symptoms, Emotions, and Functioning. Scores are typically transformed to a 0-100 scale for each domain and overall.",
+  description: "Skindex-29 is a dermatology-specific health-related quality of life instrument designed to measure the impact of skin diseases on patients’ lives. It consists of 29 items grouped into three domains: symptoms (7 items), emotions (10 items), and functioning (12 items). Each item is scored on a 5-point Likert scale, and responses are transformed to a linear scale from 0 to 100, with higher scores indicating greater impairment. Domain scores and an overall score are calculated by averaging the relevant items.",
   sourceType: 'Research',
   icon: Presentation,
   formSections: [
@@ -26,5 +26,16 @@ export const skindex29Tool: Tool = {
     const interpretation = `Skindex-29 Scores: Symptoms=${symptoms.toFixed(1)}, Emotions=${emotions.toFixed(1)}, Functioning=${functioning.toFixed(1)}. Overall Average=${averageScore}. Higher scores indicate worse quality of life. Each domain and the average score range from 0 to 100.`;
     return { score: averageScore, interpretation, details: { Symptoms_Domain: symptoms, Emotions_Domain: emotions, Functioning_Domain: functioning, Overall_Average_Score: averageScore } };
   },
-  references: ["Chren MM, Lasek RJ, Sahay AP, Sands LP. Measurement properties of Skindex-29: a quality-of-life measure for patients with skin disease. J Cutan Med Surg. 1997.", "Chren MM. The Skindex instruments to measure the effects of skin disease on quality of life. Dermatol Clin. 2012 Apr;30(2):231-6, xiii."]
+  references: [
+    "Chren MM, Lasek RJ, Quinn LM, Mostow EN, Zyzanski SJ. Skindex, a Quality-of-Life Measure for Patients With Skin Disease: Reliability, Validity, and Responsiveness. The Journal of Investigative Dermatology. 1996;107(5):707-13. doi:10.1111/1523-1747.ep12365600.",
+    "Abeni D, Picardi A, Pasquini P, Melchi CF, Chren MM. Further Evidence of the Validity and Reliability of the Skindex-29: An Italian Study on 2,242 Dermatological Outpatients. Dermatology (Basel, Switzerland). 2002;204(1):43-9. doi:10.1159/000051809.",
+    "Both H, Essink-Bot ML, Busschbach J, Nijsten T. Critical Review of Generic and Dermatology-Specific Health-Related Quality of Life Instruments. The Journal of Investigative Dermatology. 2007;127(12):2726-39. doi:10.1038/sj.jid.5701142.",
+    "Chren MM. The Skindex Instruments to Measure the Effects of Skin Disease on Quality of Life. Dermatologic Clinics. 2012;30(2):231-6, xiii. doi:10.1016/j.det.2011.11.003.",
+    "Nguyen HL, Bonadurer GF, Tollefson MM. Vascular Malformations and Health-Related Quality of Life: A Systematic Review and Meta-analysis. JAMA Dermatology. 2018;154(6):661-669. doi:10.1001/jamadermatol.2018.0002.",
+    "De Korte J, Mombers FM, Sprangers MA, Bos JD. The Suitability of Quality-of-Life Questionnaires for Psoriasis Research: A Systematic Literature Review. Archives of Dermatology. 2002;138(9):1221-7; discussion 1227. doi:10.1001/archderm.138.9.1221.",
+    "Prinsen CA, Lindeboom R, Sprangers MA, Legierse CM, de Korte J. Health-Related Quality of Life Assessment in Dermatology: Interpretation of Skindex-29 Scores Using Patient-Based Anchors. The Journal of Investigative Dermatology. 2010;130(5):1318-22. doi:10.1038/jid.2009.404.",
+    "Sampogna F, Spagnoli A, Di Pietro C, et al. Field Performance of the Skindex-17 Quality of Life Questionnaire: A Comparison With the Skindex-29 in a Large Sample of Dermatological Outpatients. The Journal of Investigative Dermatology. 2013;133(1):104-9. doi:10.1038/jid.2012.244.",
+    "Pascual MG, Schmiege SJ, Manson SM, Kohn LL. Comparison of the Skindex-Teen and the Skindex-29 Quality of Life Survey Instruments in a Predominantly American Indian Adolescent Population. Pediatric Dermatology. 2024 Jul-Aug;41(4):606-612. doi:10.1111/pde.15592.",
+    "Recinos PF, Dunphy CJ, Thompson N, et al. Patient Satisfaction With Collection of Patient-Reported Outcome Measures in Routine Care. Advances in Therapy. 2017;34(2):452-465. doi:10.1007/s12325-016-0463-x."
+  ]
 };
