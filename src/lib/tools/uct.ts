@@ -13,9 +13,11 @@ export const uctTool: Tool = {
   acronym: "UCT",
   condition: "Urticaria",
   keywords: ["uct", "urticaria", "control", "patient reported"],
-  description: "Patient-reported questionnaire to assess urticaria control over the last 4 weeks.",
+  description: "The UCT is a patient-reported outcome measure developed to assess disease control in chronic urticaria from the patient's perspective. It was designed to complement the UAS7 by capturing the impact of urticaria on daily life, treatment efficacy, and overall disease control, facilitating shared decision-making and individualized management.",
   sourceType: 'Research',
   icon: CheckCircle,
+  rationale: "The UCT consists of four items, each scored from 0 to 4, for a total score of 0 to 16. The items address symptom frequency, interference with daily activities, treatment efficacy, and overall disease control over the previous four weeks. Higher scores indicate better disease control. A 7-day recall version (UCT7) has also been developed and validated, with similar scoring and interpretive thresholds. A score of 12 or higher indicates well-controlled disease, while a score below 12 suggests poorly controlled urticaria. The minimal clinically important difference (MCID) for improvement is 2 points.",
+  clinicalPerformance: "The UCT has demonstrated strong psychometric properties in multiple languages and populations:\n• Internal consistency: Cronbach's alpha 0.91 (UCT7), 0.73 (pediatric UCT).\n• Test-retest reliability: ICC 0.83 (UCT7).\n• Convergent validity: Strong correlations with disease activity, quality of life, and other control measures.\n• Screening accuracy: Area under the curve (AUC) 0.82 for identifying poorly controlled disease in children.\n• Sensitivity and specificity: In pediatric chronic urticaria, a cutoff of ≤10 yielded sensitivity of 95.5% and specificity of 63.3% for poorly controlled disease.\nThe UCT is sensitive to change and has been validated for both adult and pediatric populations, including in diverse cultural settings.",
   formSections: [
     {id:"q1_symptoms", label:"Q1: How much have you suffered from the physical symptoms of urticaria (itch, wheals, swelling) in the last 4 weeks?", type:"select", options:uctQ1Options, defaultValue:0, validation: getValidationSchema('select', uctQ1Options,0,4)},
     {id:"q2_qol", label:"Q2: How much has your quality of life been affected by urticaria in the last 4 weeks?", type:"select", options:uctQ1Options, defaultValue:0, validation: getValidationSchema('select', uctQ1Options,0,4)},
@@ -44,5 +46,11 @@ export const uctTool: Tool = {
           Raw_Input_Q1: q1_val, Raw_Input_Q2: q2_val, Raw_Input_Q3: q3_val, Raw_Input_Q4: q4_val
       }};
   },
-  references: ["Weller K, et al. J Allergy Clin Immunol. 2014."]
+  references: [
+    "Zuberbier T, Aberer W, Asero R, et al. The EAACI/GA²LEN/EDF/WAO Guideline for the Definition, Classification, Diagnosis and Management of Urticaria. Allergy. 2018;73(7):1393-1414. doi:10.1111/all.13397.",
+    "Weller K, Groffik A, Church MK, et al. Development and Validation of the Urticaria Control Test: A Patient-Reported Outcome Instrument for Assessing Urticaria Control. The Journal of Allergy and Clinical Immunology. 2014;133(5):1365-72, 1372.e1-6. doi:10.1016/j.jaci.2013.12.1076.",
+    "Buttgereit T, Salameh P, Sydorenko O, et al. The 7-Day Recall Period Version of the Urticaria Control Test-Uct7. The Journal of Allergy and Clinical Immunology. 2023;152(5):1210-1217.e14. doi:10.1016/j.jaci.2023.03.034.",
+    "Kulthanan K, Chularojanamontri L, Tuchinda P, et al. Validity, Reliability and Interpretability of the Thai Version of the Urticaria Control Test (UCT). Health and Quality of Life Outcomes. 2016;14:61. doi:10.1186/s12955-016-0466-y.",
+    "Prosty C, Gabrielli S, Mule P, et al. Validation of the Urticaria Control Test (UCT) in Children With Chronic Urticaria. The Journal of Allergy and Clinical Immunology. In Practice. 2022;10(12):3293-3298.e2. doi:10.1016/j.jaip.2022.07.037."
+  ]
 };

@@ -36,10 +36,12 @@ export const pgSuTool: Tool = {
   name: "Su Criteria for Pyoderma Gangrenosum",
   acronym: "Su Criteria (PG)",
   condition: "Pyoderma Gangrenosum",
-  description: "Proposed by Su WP et al. (2004, Mayo Clinic), these criteria require both of two major criteria plus at least two of four minor criteria. In retrospective cohorts, sensitivity ≈ 86.2% and specificity ≈ 69.6%.",
+  description: "Proposed by Su WP et al., these criteria require both of two major criteria plus at least two of four minor criteria to standardize the diagnosis of pyoderma gangrenosum (PG). In retrospective cohorts, sensitivity is approximately 86.2% and specificity is approximately 69.6%.",
   keywords: ["su", "pyoderma gangrenosum", "diagnostic criteria", "neutrophilic infiltrate", "undermined border", "pathergy"],
   sourceType: 'Research',
   icon: ClipboardList,
+  rationale: "The Su Criteria were developed to standardize the diagnosis of pyoderma gangrenosum (PG), a rare neutrophilic dermatosis characterized by chronic, painful ulcerations. Historically, PG has been a diagnosis of exclusion, leading to significant diagnostic uncertainty and misclassification in both clinical practice and research. The Su Criteria were first proposed by Su et al. in 2004 (as referenced in subsequent studies) to provide a reproducible, evidence-based framework for PG diagnosis, facilitating more consistent case ascertainment in clinical trials and epidemiological studies. The Su Criteria consist of one major criterion and eight minor criteria. The major criterion is a biopsy of the ulcer edge demonstrating a neutrophilic infiltrate. The minor criteria include: (1) exclusion of infection, (2) pathergy, (3) history of inflammatory bowel disease or inflammatory arthritis, (4) history of papule, pustule, or vesicle ulcerating within four days of appearing, (5) peripheral erythema, undermining border, and tenderness at ulceration site, (6) multiple ulcerations, at least one on the anterior lower leg, (7) cribriform or “wrinkled paper” scars at healed ulcer sites, and (8) decrease in ulcer size within one month of initiating immunosuppressive medication. A diagnosis of PG is established when the major criterion and at least four of the eight minor criteria are met. The criteria are binary (present/absent) and are not weighted or summed to produce a continuous score.",
+  clinicalPerformance: "The Su Criteria have been used in large retrospective cohort studies for case validation. In a comparative study of three diagnostic frameworks (Su, PARACELSUS, Delphi), the Su Criteria identified 74% of expert-validated PG cases, with moderate agreement with other frameworks (Fleiss' kappa 0.44). A separate Delphi consensus study proposed a similar framework and reported sensitivity and specificity of 86% and 90%, respectively, for a set of criteria closely related to the Su Criteria. However, the Su Criteria have not been formally validated in large, prospective, multi-center studies, and their performance may vary depending on the clinical setting and patient population. The lack of a gold standard for PG diagnosis remains a limitation, and the criteria are best used as part of a comprehensive clinical assessment.",
   formSections: pgSuFormSections,
   calculationLogic: (inputs) => {
     const majorRapidUlcer = Number(inputs.pg_su_major_rapid_ulcer) || 0;
@@ -84,8 +86,9 @@ export const pgSuTool: Tool = {
     };
   },
   references: [
-    "Su WP, Davis MD, Weenig RH, Powell FC, Perry HO. Pyoderma Gangrenosum: Clinicopathologic Correlation and Proposed Diagnostic Criteria. Int J Dermatol. 2004;43(11):790–800.",
-    "Weenig RH, Davis MD, Dahl PR, Su WP. Skin Ulcers Misdiagnosed as PG. N Engl J Med. 2002;347(18):1412–1418.",
-    "Grimstad J, Nelson CA, Blackmon S, Schleich S. Comparison of Three PG Diagnostic Frameworks. J Wound Care. 2020;29(12):732–739."
+    "Ashchyan HJ, Butler DC, Nelson CA, et al. The Association of Age With Clinical Presentation and Comorbidities of Pyoderma Gangrenosum. JAMA Dermatology. 2018;154(4):409-413. doi:10.1001/jamadermatol.2017.5978.",
+    "Haag C, Hansen T, Hajar T, et al. Comparison of Three Diagnostic Frameworks for Pyoderma Gangrenosum. The Journal of Investigative Dermatology. 2021;141(1):59-63. doi:10.1016/j.jid.2020.04.019.",
+    "Maverakis E, Ma C, Shinkai K, et al. Diagnostic Criteria of Ulcerative Pyoderma Gangrenosum: A Delphi Consensus of International Experts. JAMA Dermatology. 2018;154(4):461-466. doi:10.1001/jamadermatol.2017.5980.",
+    "Lu JD, Hobbs MM, Huang WW, Ortega-Loayza AG, Alavi A. Identification and Evaluation of Outcome Measurement Instruments in Pyoderma Gangrenosum: A Systematic Review. The British Journal of Dermatology. 2020;183(5):821-828. doi:10.1111/bjd.19027."
   ]
 };
