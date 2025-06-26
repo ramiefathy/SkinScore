@@ -7,11 +7,13 @@ export const scqoli10Tool: Tool = {
   id: 'scqolit', // Renamed from scqoli-10 to match new focus
   name: 'Skin Cancer Quality of Life Impact Tool',
   acronym: 'SCQOLIT',
-  description: 'The SCQOLI-10 is a 10-item patient-reported outcome measure designed to assess quality of life in individuals with non-melanoma skin cancer (NMSC), including basal cell carcinoma and squamous cell carcinoma. The rationale for its development was the recognition that NMSC, while rarely fatal, can cause significant morbidity and psychosocial burden, necessitating a disease-specific quality of life instrument. Each item is scored on a Likert scale, with the total score reflecting the overall impact of skin cancer on the patient’s quality of life. Higher scores indicate greater impairment.',
+  description: 'The SCQOLI-10 is a 10-item patient-reported outcome measure designed to assess quality of life in individuals with non-melanoma skin cancer (NMSC), including basal cell carcinoma and squamous cell carcinoma.',
   condition: 'Non-Melanoma Skin Cancer',
   keywords: ['scqolit', 'quality of life', 'non-melanoma skin cancer', 'nmsc', 'basal cell carcinoma', 'squamous cell carcinoma', 'patient reported'],
   sourceType: 'Research',
   icon: Users,
+  rationale: "The rationale for its development was the recognition that NMSC, while rarely fatal, can cause significant morbidity and psychosocial burden, necessitating a disease-specific quality of life instrument. Each item is scored on a Likert scale, with the total score reflecting the overall impact of skin cancer on the patient’s quality of life. Higher scores indicate greater impairment.",
+  clinicalPerformance: "The SCQOLI-10 has demonstrated good internal consistency (Cronbach’s alpha 0.84) and validity in NMSC populations. It is sensitive to changes over time, with scores decreasing after treatment, and is feasible for use in routine dermatology clinics. Recent psychometric analyses using factor analysis and Rasch Measurement Theory have led to the development of a short-form version (SCQOLIT-SF), which maintains unidimensionality and improves interpretability through continuous Rasch scoring. The tool is acceptable to patients and clinicians, facilitates communication, and helps express patient needs. However, there is a negative skew in item responses, suggesting the tool may be more relevant for patients with significant disease burden. There is no published MCID for SCQOLI-10, limiting interpretation of meaningful change.",
   formSections: [
     {
       id: "total_score",

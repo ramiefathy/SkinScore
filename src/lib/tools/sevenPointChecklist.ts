@@ -24,9 +24,11 @@ export const sevenPointChecklistTool: Tool = {
   acronym: "7-Point Checklist",
   condition: "Melanoma Screening",
   keywords: ["melanoma", "skin cancer", "screening", "checklist", "nevus", "mole"],
-  description: "The 7-Point Checklist is a clinical diagnostic aid developed in the United Kingdom to assist non-specialists, particularly general practitioners, in identifying pigmented skin lesions that may be melanoma and require urgent referral. The checklist comprises three major criteria (change in size, change in shape, change in color) and four minor criteria (inflammation, crusting or bleeding, sensory change, and diameter ≥7 mm). Each major criterion scores 2 points and each minor criterion scores 1 point (in the weighted version). A score of 3 or more (original) or 4 or more (weighted) is used as the threshold for referral.",
+  description: "The 7-Point Checklist is a clinical diagnostic aid developed in the United Kingdom to assist non-specialists, particularly general practitioners, in identifying pigmented skin lesions that may be melanoma and require urgent referral.",
   sourceType: 'Clinical Guideline',
   icon: ListChecks,
+  rationale: "The checklist comprises three major criteria (change in size, change in shape, change in color) and four minor criteria (inflammation, crusting or bleeding, sensory change, and diameter ≥7 mm). Each major criterion scores 2 points and each minor criterion scores 1 point in the weighted version. A score of 3 or more (original) or 4 or more (weighted) is used as the threshold for referral.",
+  clinicalPerformance: "Validation studies in primary care have demonstrated that the 7-Point Checklist performs well in identifying clinically significant lesions and melanoma, with sensitivity for melanoma detection as high as 91.7% and specificity around 53.4% at the revised cut-off. The tool is endorsed by the UK National Institute for Health and Care Excellence (NICE) for use in primary care. The weighted version with a cut-off of 4 improves specificity while maintaining high sensitivity. However, in pediatric populations, conventional criteria lack sensitivity, and pediatric-specific modifications have been proposed but may be less sensitive in some cohorts. Dermoscopy may aid diagnosis in children. Reliability metrics such as interrater agreement are not systematically reported.",
   formSections: [
     { id: "version", label: "Checklist Version", type: 'select', options: sevenPointChecklistVersionOptions, defaultValue:"weighted", validation: getValidationSchema('select')},
     {
@@ -57,7 +59,7 @@ export const sevenPointChecklistTool: Tool = {
     });
 
     let interpretation = `7-Point Checklist Score (${version}): ${score}. `;
-    const needsReferral = (version === 'weighted' && score >= 4) || (version !== 'weighted' && score >= 3);
+    const needsReferral = (version === 'weighted' && score >= 4) || (version === 'original' && score >= 3);
     if (needsReferral) {
       interpretation += "Urgent referral is recommended.";
     } else {

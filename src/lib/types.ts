@@ -49,4 +49,7 @@ export type Tool = {
   formSections: FormSectionConfig[]; // Changed from inputs: InputConfig[]
   calculationLogic: (inputs: Record<string, any>) => CalculationResult;
   references?: string[];
+  displayType?: 'staticList';
+  rationale?: string;
+  clinicalPerformance?: string;
 };

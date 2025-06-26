@@ -109,8 +109,8 @@ export default function AllToolsPage() {
                                 <AccordionContent className="pt-2 pb-3 space-y-3 text-sm">
                                     <div><h4 className="font-semibold text-foreground/80 mb-1">Condition:</h4><p className="text-muted-foreground text-xs leading-relaxed">{tool.condition}</p></div>
                                     <div><h4 className="font-semibold text-foreground/80 mb-1">Purpose:</h4><p className="text-muted-foreground text-xs leading-relaxed">{tool.description}</p></div>
-                                    <div><h4 className="font-semibold text-foreground/80 mb-1">Rationale:</h4><p className="text-muted-foreground text-xs italic">The specific rationale for the development and use of the {tool.name} will be detailed here, including the clinical need it addresses and its underlying principles. [Information to be updated]</p></div>
-                                    <div><h4 className="font-semibold text-foreground/80 mb-1">Clinical Performance & Reliability:</h4><p className="text-muted-foreground text-xs italic">Information regarding the {tool.name}'s clinical performance, such as sensitivity, specificity, inter-rater reliability, intra-rater reliability, and validation studies, will be provided here when available. [Information to be updated]</p></div>
+                                    {tool.rationale && <div><h4 className="font-semibold text-foreground/80 mb-1">Rationale:</h4><p className="text-muted-foreground text-xs italic">{tool.rationale}</p></div>}
+                                    {tool.clinicalPerformance && <div><h4 className="font-semibold text-foreground/80 mb-1">Clinical Performance & Reliability:</h4><p className="text-muted-foreground text-xs italic">{tool.clinicalPerformance}</p></div>}
                                     {tool.references && tool.references.length > 0 && (
                                       <div>
                                         <h4 className="font-semibold text-foreground/80 mb-1">Key References:</h4>
@@ -155,8 +155,8 @@ export default function AllToolsPage() {
                               <AccordionContent className="pt-2 pb-3 space-y-3 text-sm">
                                   <div><h4 className="font-semibold text-foreground/80 mb-1">Condition:</h4><p className="text-muted-foreground text-xs leading-relaxed">{tool.condition}</p></div>
                                   <div><h4 className="font-semibold text-foreground/80 mb-1">Purpose:</h4><p className="text-muted-foreground text-xs leading-relaxed">{tool.description}</p></div>
-                                   <div><h4 className="font-semibold text-foreground/80 mb-1">Rationale:</h4><p className="text-muted-foreground text-xs italic">The specific rationale for the development and use of the {tool.name} will be detailed here, including the clinical need it addresses and its underlying principles. [Information to be updated]</p></div>
-                                    <div><h4 className="font-semibold text-foreground/80 mb-1">Clinical Performance & Reliability:</h4><p className="text-muted-foreground text-xs italic">Information regarding the {tool.name}'s clinical performance, such as sensitivity, specificity, inter-rater reliability, intra-rater reliability, and validation studies, will be provided here when available. [Information to be updated]</p></div>
+                                   {tool.rationale && <div><h4 className="font-semibold text-foreground/80 mb-1">Rationale:</h4><p className="text-muted-foreground text-xs italic">{tool.rationale}</p></div>}
+                                   {tool.clinicalPerformance && <div><h4 className="font-semibold text-foreground/80 mb-1">Clinical Performance & Reliability:</h4><p className="text-muted-foreground text-xs italic">{tool.clinicalPerformance}</p></div>}
                                   {tool.references && tool.references.length > 0 && (
                                     <div>
                                       <h4 className="font-semibold text-foreground/80 mb-1">Key References:</h4>
