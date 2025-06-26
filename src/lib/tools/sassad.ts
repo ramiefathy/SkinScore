@@ -11,7 +11,7 @@ export const sassadTool: Tool = {
   acronym: "SASSAD",
   condition: "Atopic Dermatitis / Eczema",
   keywords: ["sassad", "atopic dermatitis", "ad", "eczema", "severity", "six area six sign"],
-  description: "Records and monitors Atopic Dermatitis (AD) activity by grading 6 signs (0-3) across 6 body sites. Lack of anchors for grades 1-3.",
+  description: "The SASSAD index assesses six clinical signs (erythema, exudation, excoriation, dryness, cracking, lichenification) at six defined body sites (arms, hands, legs, feet, head and neck, trunk). Each sign is scored from 0 (absent) to 3 (severe) at each site. The total score is the sum of all sign-site combinations, with a maximum possible score of 108.",
   sourceType: 'Clinical Guideline',
   icon: Scaling,
   rationale: "The SASSAD index was developed as a simple, objective tool for monitoring disease activity in atopic dermatitis, particularly in clinical trials. The rationale was to provide a rapid, reproducible, and practical method for assessing disease severity, focusing on observable clinical signs rather than subjective symptoms or surface area estimation. SASSAD assesses six clinical signs (erythema, exudation, excoriation, dryness, cracking, lichenification) at six defined body sites (arms, hands, legs, feet, head and neck, trunk). Each sign is scored from 0 (absent) to 3 (severe) at each site. The total score is the sum of all sign-site combinations, with a maximum possible score of 108.",

@@ -65,7 +65,7 @@ export const pushTool: Tool = {
   id: "push",
   name: "Pressure Ulcer Scale for Healing",
   acronym: "PUSH",
-  description: "The Pressure Ulcer Scale for Healing (PUSH Tool) is a quick, reliable instrument developed by the National Pressure Injury Advisory Panel (NPIAP) to monitor changes in pressure ulcer status over time by scoring three wound parameters: surface area, exudate amount, and tissue type.",
+  description: "The PUSH Tool is a quick, reliable instrument developed by the National Pressure Injury Advisory Panel (NPIAP) to monitor changes in pressure ulcer status over time by scoring three wound parameters: surface area, exudate amount, and tissue type.",
   condition: "Chronic Wounds, Pressure Ulcers, Diabetic Foot Ulcers, Venous Leg Ulcers, Surgical Wounds",
   keywords: ["push", "pressure ulcer", "wound healing", "monitoring", "score", "exudate", "tissue type", "surface area"],
   sourceType: 'Clinical Guideline',

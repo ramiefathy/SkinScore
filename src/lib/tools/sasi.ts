@@ -68,7 +68,7 @@ export const sasiTool: Tool = {
   id: "sasi",
   name: "Sarcoidosis Activity and Severity Index",
   acronym: "SASI",
-  description: "The SASI quantifies cutaneous sarcoidosis severity by evaluating erythema, induration, desquamation, and area involvement across five facial regions, yielding a total score from 0 to 72.",
+  description: "The SASI was developed as the first outcome instrument specifically for cutaneous sarcoidosis, with a focus on quantifying disease activity and severity on the face. It assesses erythema, induration, desquamation, and area involvement across five facial regions, yielding a total score from 0 to 72.",
   condition: "Cutaneous Sarcoidosis",
   keywords: ["sasi", "sarcoidosis", "cutaneous sarcoidosis", "facial lesions", "erythema", "induration", "desquamation", "severity index"],
   sourceType: 'Research',
