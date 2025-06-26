@@ -9,7 +9,7 @@ export const pdaiTool: Tool = {
   acronym: "PDAI",
   condition: "Pemphigus Vulgaris, Pemphigus Foliaceus",
   keywords: ["pdai", "pemphigus", "severity", "blister", "mucosal", "skin activity"],
-  description: "Clinician-reported scoring system for pemphigus activity. This version uses pre-calculated sub-scores for Skin, Scalp, and Mucosal involvement.",
+  description: "The PDAI was developed by the International Pemphigus Definitions Group to provide an objective, reproducible, and standardized measure of disease activity and damage in pemphigus, a rare autoimmune blistering disorder. The rationale for its development was the need for a reliable tool to quantify disease severity for both clinical trials and routine practice, facilitating consistent assessment and comparison across studies and centers. The PDAI was designed to overcome limitations of previous indices by offering detailed anatomical site-based scoring and by distinguishing between disease activity and chronic damage.",
   sourceType: 'Clinical Guideline', // Based on International Pemphigus Definitions Group
   icon: ClipboardList,
   formSections: [
@@ -53,13 +53,14 @@ export const pdaiTool: Tool = {
 
     let severity = "Not well defined for this cumulative score version without specific cutoffs for a 0-250 scale. ";
     if (totalPdaiscore === 0) severity = "No activity (remission). ";
-    else if (totalPdaiscore < 15) severity = "Mild pemphigus activity. ";
-    else if (totalPdaiscore <= 45) severity = "Moderate pemphigus activity. ";
-    else severity = "Severe pemphigus activity. ";
+    else if (totalPdaiscore <= 15) severity = "Mild pemphigus activity. "; // using ≤15 for mild based on new text
+    else if (totalPdaiscore <= 44) severity = "Moderate pemphigus activity. "; // Using 16-44 based on new text
+    else severity = "Extensive pemphigus activity. "; // Using >=45 for extensive
     
-    const interpretation = `Total PDAI Score: ${totalPdaiscore.toFixed(0)} (Max: 250, based on Skin 0-120, Scalp 0-10, Mucosal 0-120).
+    const interpretation = `Total PDAI Score: ${totalPdaiscore.toFixed(0)} (Max: 250).
 Severity: ${severity}
-(Commonly cited cut-offs: <15 Mild, 15-45 Moderate, >45 Severe for a combined score, but original PDAI interpretation is more nuanced and often focuses on individual domain scores or specific trial definitions).`;
+(Cut-offs for activity: ≤15 Mild, 16-44 Moderate, ≥45 Extensive).
+An improvement of >2.6 points or a worsening of >2.5 points is considered clinically meaningful (MCID).`;
 
     return {
       score: totalPdaiscore,
@@ -74,8 +75,12 @@ Severity: ${severity}
     };
   },
   references: [
-    "Harmon K, et al. Development of the Pemphigus Disease Area Index (PDAI). J Invest Dermatol. 2008;128(5):1200-1206.",
-    "Murrell DF, et al. Definitions and outcome measures for pemphigus: recommendations by an international panel of experts. J Am Acad Dermatol. 2008;58(6):1043-1046.",
-    "Rosenbach M, et al. International Pemphigus Definitions Group. Reliability of the Pemphigus Disease Area Index. JAMA Dermatol. 2014;150(1):86-88."
+    "Large International Validation of ABSIS and PDAI Pemphigus Severity Scores. Hébert V, Boulard C, Houivet E, et al. The Journal of Investigative Dermatology. 2019;139(1):31-37. doi:10.1016/j.jid.2018.04.042.",
+    "Calculation of Cut-Off Values Based on the Autoimmune Bullous Skin Disorder Intensity Score (ABSIS) and Pemphigus Disease Area Index (PDAI) Pemphigus Scoring Systems for Defining Moderate, Significant and Extensive Types of Pemphigus. Boulard C, Duvert Lehembre S, Picard-Dahan C, et al. The British Journal of Dermatology. 2016;175(1):142-9. doi:10.1111/bjd.14405.",
+    "Pemphigus Disease and Area Index: Unmet Needs in the Real-World Management of Pemphigus. Mahmoudi H, Toosi R, Salehi Farid A, Daneshpazhooh M. Oral Diseases. 2024;30(4):2275-2277. doi:10.1111/odi.14713.",
+    "Pemphigus Disease Activity Measurements: Pemphigus Disease Area Index, Autoimmune Bullous Skin Disorder Intensity Score, and Pemphigus Vulgaris Activity Score. Rahbar Z, Daneshpazhooh M, Mirshams-Shahshahani M, et al. JAMA Dermatology. 2014;150(3):266-72. doi:10.1001/jamadermatol.2013.8175.",
+    "Reliability and Convergent Validity of Two Outcome Instruments for Pemphigus. Rosenbach M, Murrell DF, Bystryn JC, et al. The Journal of Investigative Dermatology. 2009;129(10):2404-10. doi:10.1038/jid.2009.72.",
+    "Establishing Minimal Clinically Important Differences For the Pemphigus Disease Area Index. Tseng H, Stone C, Shulruf B, Murrell DF. The British Journal of Dermatology. 2024;191(5):823-831. doi:10.1093/bjd/ljae283.",
+    "Assessing the Correlation Between Disease Severity Indices and Quality of Life Measurement Tools in Pemphigus. Krain RL, Kushner CJ, Tarazi M, et al. Frontiers in Immunology. 2019;10:2571. doi:10.3389/fimmu.2019.02571."
   ]
 };

@@ -36,7 +36,7 @@ export const poemTool: Tool = {
   acronym: "POEM",
   condition: "Atopic Dermatitis / Eczema",
   keywords: ["poem", "patient-reported", "eczema symptoms", "quality of life", "symptom frequency", "atopic dermatitis", "NICE", "HOME initiative"],
-  description: "A patient-reported outcome measure (PROM) that quantifies eczema severity from the patient’s perspective. POEM is a simple 7-question survey focusing on frequency of eczema symptoms (itch, sleep loss, bleeding, weeping, cracking, flaking, dryness) over the past week.",
+  description: "The POEM is a patient-reported outcome measure (PROM) that quantifies eczema severity from the patient’s perspective. POEM is a simple 7-question survey focusing on frequency of eczema symptoms (itch, sleep loss, bleeding, weeping, cracking, flaking, dryness) over the past week.",
   sourceType: 'Research',
   icon: MessageSquare,
   formSections: poemFormSections,
@@ -51,13 +51,11 @@ export const poemTool: Tool = {
     });
 
     let severityCategory = "";
-    if (totalScore <= 2) severityCategory = "Clear or almost clear eczema";
-    else if (totalScore <= 7) severityCategory = "Mild eczema";
-    else if (totalScore <= 16) severityCategory = "Moderate eczema";
-    else if (totalScore <= 24) severityCategory = "Severe eczema";
-    else severityCategory = "Very severe eczema";
+    if (totalScore <= 7) severityCategory = "Mild eczema";
+    else if (totalScore <= 19) severityCategory = "Moderate eczema";
+    else severityCategory = "Severe eczema";
 
-    const interpretation = `Total POEM Score: ${totalScore} (Range: 0-28).\nSeverity Category: ${severityCategory}.\nHigher scores indicate more frequent or persistent symptoms.`;
+    const interpretation = `Total POEM Score: ${totalScore} (Range: 0-28).\nSeverity Category: ${severityCategory}.\nHigher scores indicate more frequent or persistent symptoms. A change of 3 or more points is considered clinically meaningful (MCID).`;
 
     return {
       score: totalScore,
@@ -70,8 +68,9 @@ export const poemTool: Tool = {
     };
   },
   references: [
-    "Charman CR, Venn AJ, Williams HC. The patient-oriented eczema measure: development and initial validation of a new tool for measuring eczema severity from the patients' perspective. Arch Dermatol. 2004;140(12):1513-1519.",
-    "Spuls PI, Gerbens LAA, Simpson E, et al. POEM, a core instrument to measure symptoms in routine clinical practice: a HOME statement. Br J Dermatol. 2017;176(3):679-685.",
-    "NICE guidelines on Atopic Eczema in under 12s (CG57) recommend POEM for monitoring."
+    "Severity Strata for POEM, PO-SCORAD, and DLQI in US Adults With Atopic Dermatitis. Silverberg JI, Gelfand JM, Margolis DJ, et al. Annals of Allergy, Asthma & Immunology : Official Publication of the American College of Allergy, Asthma, & Immunology. 2018;121(4):464-468.e3. doi:10.1016/j.anai.2018.07.004.",
+    "How Should Minimally Important Change Scores for the Patient-Oriented Eczema Measure Be Interpreted? A Validation Using Varied Methods. Howells L, Ratib S, Chalmers JR, Bradshaw L, Thomas KS. The British Journal of Dermatology. 2018;178(5):1135-1142. doi:10.1111/bjd.16367.",
+    "Validation of Five Patient-Reported Outcomes for Atopic Dermatitis Severity in Adults. Silverberg JI, Margolis DJ, Boguniewicz M, et al. The British Journal of Dermatology. 2020;182(1):104-111. doi:10.1111/bjd.18002.",
+    "Comparison of Patient-Oriented Eczema Measure and Patient-Oriented Scoring Atopic Dermatitis vs Eczema Area and Severity Index and Other Measures of Atopic Dermatitis: A Validation Study. Silverberg JI, Lei D, Yousaf M, et al. Annals of Allergy, Asthma & Immunology : Official Publication of the American College of Allergy, Asthma, & Immunology. 2020;125(1):78-83. doi:10.1016/j.anai.2020.03.006."
   ]
 };

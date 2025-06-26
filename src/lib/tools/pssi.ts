@@ -7,7 +7,7 @@ export const pssiTool: Tool = {
   id: "pssi",
   name: "Psoriasis Scalp Severity Index (PSSI)",
   acronym: "PSSI",
-  description: "Specifically assesses the severity of scalp psoriasis.",
+  description: "The PSSI was developed as a modification of the PASI to specifically assess the severity of scalp psoriasis, a common and therapeutically challenging site. The rationale was to provide a standardized, objective measure for scalp involvement, which is often underrepresented in global severity indices. The scalp is divided into four quadrants. For each quadrant, erythema, induration, and scaling are scored from 0 to 4. The percentage of scalp involvement in each quadrant is estimated. The score for each quadrant is calculated as the sum of the three parameters multiplied by the percentage area involved (expressed as a decimal). The total PSSI score is the sum of the scores for all four quadrants, with a range of 0 to 72.",
   condition: "Psoriasis / Psoriatic Arthritis",
   keywords: ["pssi", "psoriasis", "scalp psoriasis", "scalp", "severity", "psoriatic arthritis"],
   sourceType: 'Clinical Guideline',
@@ -27,5 +27,8 @@ export const pssiTool: Tool = {
       const interpretation = `PSSI Score: ${score} (Range: 0-72). Higher score indicates more severe scalp psoriasis. (E:${E} + T:${T} + S:${S}) x A:${A}.`;
       return { score, interpretation, details: { Erythema: E, Thickness: T, Scaling: S, Area_Score: A } };
   },
-  references: ["Ortonne JP, et al. J Eur Acad Dermatol Venereol. 2004;18(Suppl 2):28."]
+  references: [
+    "Assessing Psoriasis Severity and Outcomes for Clinical Trials and Routine Clinical Practice. Chalmers RJ. Dermatologic Clinics. 2015;33(1):57-71. doi:10.1016/j.det.2014.09.005.",
+    "The Brigham Scalp Nail Inverse Palmoplantar Psoriasis Composite Index (B-Snipi): A Novel Index to Measure All Non-Plaque Psoriasis Subsets. Patel M, Liu SW, Qureshi A, Merola JF. The Journal of Rheumatology. 2014;41(6):1230-2. doi:10.3899/jrheum.140177."
+  ]
 };
