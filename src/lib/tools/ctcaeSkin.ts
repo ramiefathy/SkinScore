@@ -15,7 +15,7 @@ export const ctcaeSkinTool: Tool = {
   id: "ctcae_skin",
   name: "CTCAE - Skin Toxicities",
   acronym: "CTCAE Skin",
-  description: "The Common Terminology Criteria for Adverse Events (CTCAE) is a standardized tool for grading adverse events in oncology. The skin toxicity component provides a framework for reporting dermatologic adverse events (e.g., rash, pruritus) on a 1-5 severity scale.",
+  description: "The Common Terminology Criteria for Adverse Events (CTCAE) is a standardized tool for grading adverse events in oncology, including dermatologic toxicities.",
   condition: "Adverse Drug Reactions",
   keywords: ["ctcae", "skin toxicity", "adverse event", "drug reaction", "grading", "chemotherapy", "oncology", "NCI"],
   sourceType: 'Clinical Guideline',

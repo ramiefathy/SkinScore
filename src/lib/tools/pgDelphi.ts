@@ -46,7 +46,7 @@ export const pgDelphiTool: Tool = {
   name: "Delphi Consensus Criteria for Ulcerative Pyoderma Gangrenosum",
   acronym: "Delphi Criteria (PG)",
   condition: "Pyoderma Gangrenosum",
-  description: "The Delphi consensus criteria, developed by international experts, provide a standardized diagnostic framework for ulcerative pyoderma gangrenosum (PG). The criteria require 1 major criterion (biopsy of ulcer edge showing neutrophilic infiltrate) and at least 4 of 8 minor criteria. This approach demonstrated high sensitivity and specificity in validation studies.",
+  description: "The Delphi consensus criteria provide a standardized diagnostic framework for ulcerative pyoderma gangrenosum (PG), requiring 1 major criterion (biopsy of ulcer edge showing neutrophilic infiltrate) and at least 4 of 8 minor criteria.",
   keywords: ["delphi", "pyoderma gangrenosum", "ulcerative", "diagnostic criteria", "neutrophilic infiltrate", "pathergy", "inflammatory bowel disease"],
   sourceType: 'Research',
   icon: ClipboardList,
