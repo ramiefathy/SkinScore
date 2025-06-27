@@ -25,9 +25,29 @@ export const skindex29Tool: Tool = {
     const functioning = Number(inputs.functioning_score) || 0;
     const averageScore = parseFloat(((symptoms + emotions + functioning) / 3).toFixed(1));
 
-    const interpretation = `Skindex-29 Scores: Symptoms=${symptoms.toFixed(1)}, Emotions=${emotions.toFixed(1)}, Functioning=${functioning.toFixed(1)}. Overall Average=${averageScore}. Higher scores indicate worse quality of life.
-Severity Cut-offs (example): Symptoms ≥52, Emotions ≥39, Functioning ≥37, Overall ≥44 indicate severely impaired HRQoL.`;
-    return { score: averageScore, interpretation, details: { Symptoms_Domain: symptoms, Emotions_Domain: emotions, Functioning_Domain: functioning, Overall_Average_Score: averageScore } };
+    let symptomsSeverity = symptoms >= 52 ? "Severely Impaired" : "Not Severely Impaired";
+    let emotionsSeverity = emotions >= 39 ? "Severely Impaired" : "Not Severely Impaired";
+    let functioningSeverity = functioning >= 37 ? "Severely Impaired" : "Not Severely Impaired";
+    let overallSeverity = averageScore >= 44 ? "Severely Impaired" : "Not Severely Impaired";
+
+
+    const interpretation = `Skindex-29 Scores:
+Symptoms: ${symptoms.toFixed(1)} (${symptomsSeverity})
+Emotions: ${emotions.toFixed(1)} (${emotionsSeverity})
+Functioning: ${functioning.toFixed(1)} (${functioningSeverity})
+Overall Average: ${averageScore.toFixed(1)} (${overallSeverity})
+Higher scores indicate worse quality of life.`;
+    return {
+      score: averageScore,
+      interpretation,
+      details: {
+        Symptoms_Domain: `${symptoms} (${symptomsSeverity})`,
+        Emotions_Domain: `${emotions} (${emotionsSeverity})`,
+        Functioning_Domain: `${functioning} (${functioningSeverity})`,
+        Overall_Average_Score: `${averageScore} (${overallSeverity})`,
+        Severity_Cutoffs_Note: "Symptoms ≥52, Emotions ≥39, Functioning ≥37, Overall ≥44 indicate severely impaired HRQoL."
+      }
+    };
   },
   references: [
     "Archer S, Donoso FS, Carver T, et al. Exploring the Barriers to and Facilitators of Implementing CanRisk in Primary Care: A Qualitative Thematic Framework Analysis. The British Journal of General Practice : The Journal of the Royal College of General Practitioners. 2023;73(733):e586-e596.",
