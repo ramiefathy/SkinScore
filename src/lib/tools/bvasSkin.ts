@@ -52,6 +52,9 @@ export const bvasSkinTool: Tool = {
   },
   references: [
     "Mukhtyar C, Lee R, Brown D, et al. Modification and Validation of the Birmingham Vasculitis Activity Score (Version 3). Annals of the Rheumatic Diseases. 2009;68(12):1827-32. doi:10.1136/ard.2008.101279.",
-    "Berti A, Boleto G, Merkel PA, et al. Psychometric Properties of Outcome Measurement Instruments for ANCA-associated Vasculitis: A Systematic Literature Review. Rheumatology (Oxford, England). 2022;61(12):4603-4618. doi:10.1093/rheumatology/keac175."
+    "Berti A, Boleto G, Merkel PA, et al. Psychometric Properties of Outcome Measurement Instruments for ANCA-associated Vasculitis: A Systematic Literature Review. Rheumatology (Oxford, England). 2022;61(12):4603-4618. doi:10.1093/rheumatology/keac175.",
+    "Version 1: Luqmani, RA, et al. (1994). \"Birmingham Vasculitis Activity Score (BVAS) in systemic necrotizing vasculitis.\" QJM 87(11):671-8.",
+    "Version 2: Luqmani, RA, et al. (1997). \"Disease assessment and management of the vasculitides.\" Baillieres Clin Rheumatol 11(2): 423-46.",
+    "Version 3: Mukhtyar C, et al (2008). \"Modification and validation of the Birmingham Vasculitis Activity Score (version 3) Ann Rheum Dis. 2008 Dec 3. [Epub ahead of print]\""
     ]
 };
