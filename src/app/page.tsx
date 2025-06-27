@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toolData } from '@/lib/tools';
 import type { Tool, CalculationResult } from '@/lib/types';
-import { ToolInfo } from '@/components/dermscore/ToolInfo';
 import { ToolForm } from '@/components/dermscore/ToolForm';
 import { ResultsDisplay } from '@/components/dermscore/ResultsDisplay';
 import { HeaderToolSelector } from '@/components/dermscore/HeaderToolSelector';
@@ -14,10 +13,27 @@ import { CategoryToolDropdown } from '@/components/dermscore/CategoryToolDropdow
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { FileText, Info, CheckSquare, LayoutGrid, Zap, ScrollText, List } from 'lucide-react';
+import { FileText, Info, CheckSquare, LayoutGrid, Zap, ScrollText, List, Link as LinkIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const MAX_RECENT_TOOLS = 3;
 const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools';
+
+
+const getSourceTypeBadgeProps = (sourceType: Tool['sourceType']): { variant?: "default" | "secondary" | "destructive" | "outline", className?: string } => {
+  switch (sourceType) {
+    case 'Research':
+      return { variant: "default" };
+    case 'Clinical Guideline':
+      return { className: "bg-accent text-accent-foreground border-transparent hover:bg-accent/80" };
+    case 'Expert Consensus':
+      return { variant: "secondary" };
+    default:
+      return { variant: "outline" };
+  }
+};
 
 function SkinScorePageContent() {
   const router = useRouter();
@@ -55,7 +71,6 @@ function SkinScorePageContent() {
     }
 
     if (isClient) {
-        // Clear toolId from query params after selection
         const currentPath = window.location.pathname;
         router.replace(currentPath, undefined);
         setTimeout(() => {
@@ -100,6 +115,7 @@ function SkinScorePageContent() {
   }, []);
 
   const SelectedToolIcon = selectedTool?.icon;
+  const badgeProps = selectedTool ? getSourceTypeBadgeProps(selectedTool.sourceType) : {};
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -187,7 +203,55 @@ function SkinScorePageContent() {
                  <CardTitle className="text-2xl font-headline flex items-center gap-2"><FileText className="text-primary h-7 w-7"/>Tool Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <ToolInfo tool={selectedTool} />
+                 <div className="space-y-4">
+                  <Badge variant={badgeProps.variant} className={`self-start ${badgeProps.className || ''}`}>
+                    {selectedTool.sourceType}
+                  </Badge>
+                  
+                  <p className="text-base leading-relaxed">
+                    <span className="font-semibold text-foreground/90">Condition:</span> {selectedTool.condition}
+                  </p>
+                  
+                  <ScrollArea className="h-auto max-h-[150px] pr-3 border rounded-md p-3 bg-muted/20">
+                     <p className="text-sm text-muted-foreground leading-relaxed">{selectedTool.description}</p>
+                  </ScrollArea>
+
+                  {selectedTool.displayType === 'staticList' && selectedTool.formSections && selectedTool.formSections.length > 0 && (
+                    <>
+                      <Separator className="my-3" />
+                      <div className="space-y-2">
+                        <h4 className="text-md font-semibold text-foreground/90">Assessment Levels:</h4>
+                        <ul className="list-none space-y-2">
+                          {selectedTool.formSections.flatMap((section, sectionIndex) => {
+                            if (!('inputs' in section) && section.options) { 
+                              return section.options.map((option, optionIndex) => (
+                                <li 
+                                  key={`${selectedTool.id}-s${sectionIndex}-opt${optionIndex}`} 
+                                  className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm"
+                                >
+                                  {option.label}
+                                </li>
+                              ));
+                            }
+                            if ('inputs' in section && section.inputs) {
+                              return section.inputs.flatMap((inputConfig, inputIndex) => 
+                                inputConfig.options ? inputConfig.options.map((option, optionIndex) => (
+                                  <li 
+                                    key={`${selectedTool.id}-s${sectionIndex}-i${inputIndex}-opt${optionIndex}`}
+                                    className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm"
+                                  >
+                                    {option.label}
+                                  </li>
+                                )) : []
+                              );
+                            }
+                            return [];
+                          })}
+                        </ul>
+                      </div>
+                    </>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
@@ -206,6 +270,69 @@ function SkinScorePageContent() {
                 <ResultsDisplay result={calculationResult} tool={selectedTool} />
             )}
           </div>
+          
+          {selectedTool && (selectedTool.rationale || selectedTool.clinicalPerformance || selectedTool.keywords || selectedTool.references) && (
+            <Card className="shadow-xl border mt-8">
+               <CardHeader>
+                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Details & References</CardTitle>
+              </CardHeader>
+              <CardContent>
+                 <div className="space-y-4">
+                    {(selectedTool.rationale || selectedTool.clinicalPerformance) && (
+                        <Accordion type="multiple" className="w-full" collapsible>
+                          {selectedTool.rationale && (
+                            <AccordionItem value="rationale">
+                              <AccordionTrigger>Rationale</AccordionTrigger>
+                              <AccordionContent>
+                                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{selectedTool.rationale}</p>
+                              </AccordionContent>
+                            </AccordionItem>
+                          )}
+                          {selectedTool.clinicalPerformance && (
+                            <AccordionItem value="performance">
+                              <AccordionTrigger>Clinical Performance & Reliability</AccordionTrigger>
+                              <AccordionContent>
+                                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{selectedTool.clinicalPerformance}</p>
+                              </AccordionContent>
+                            </AccordionItem>
+                          )}
+                        </Accordion>
+                    )}
+              
+                    {selectedTool.keywords && selectedTool.keywords.length > 0 && (
+                      <div className="mt-3">
+                        <span className="text-sm font-semibold text-foreground/90">Keywords: </span>
+                        {selectedTool.keywords.map(keyword => (
+                          <Badge key={keyword} variant="outline" className="mr-1.5 mb-1.5 text-xs py-1 px-2.5">{keyword}</Badge>
+                        ))}
+                      </div>
+                    )}
+              
+                    {selectedTool.references && selectedTool.references.length > 0 && (
+                      <>
+                        <Separator className="my-4"/>
+                        <div className="space-y-1.5">
+                          <h4 className="text-md font-semibold text-foreground/90">References:</h4>
+                          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1.5 pl-1">
+                            {selectedTool.references.map((ref, index) => (
+                              <li key={index}>
+                                {ref.startsWith('http') ? 
+                                  <a href={ref} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5 break-all">
+                                    {ref.length > 80 ? ref.substring(0,77) + '...' : ref} <LinkIcon size={14}/>
+                                  </a> 
+                                  : <span className="break-all">{ref.length > 100 ? ref.substring(0,97) + '...' : ref}</span>
+                                }
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
+                 </div>
+              </CardContent>
+            </Card>
+          )}
+
         </main>
       </div>
       <footer className="text-center p-6 border-t mt-auto">
@@ -224,4 +351,3 @@ export default function SkinScorePage() {
     </Suspense>
   );
 }
-
