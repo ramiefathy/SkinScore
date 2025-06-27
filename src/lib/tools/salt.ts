@@ -31,8 +31,8 @@ export const saltTool: Tool = {
   description: "The SALT score quantifies the extent of scalp hair loss in alopecia areata as a percentage of total scalp area. It is calculated by summing the weighted percentage of hair loss from four scalp regions: Vertex (40%), Right Side (18%), Left Side (18%), and Posterior (24%).",
   sourceType: 'Research',
   icon: UserMinus, // Placeholder icon
-  rationale: "The SALT score was developed to provide a standardized, quantitative assessment of scalp hair loss in patients with alopecia areata (AA). The rationale was to enable consistent measurement of disease extent for both clinical trials and routine practice, facilitating objective monitoring of disease progression and response to therapy. The SALT score divides the scalp into four regions, each assigned a percentage based on its relative surface area: • Vertex: 40% • Right profile: 18% • Left profile: 18% • Posterior: 24% For each region, the percentage of hair loss is estimated visually. The regional percentage hair loss is multiplied by the region’s weight, and the sum of all four regions gives the total SALT score, which ranges from 0 (no hair loss) to 100 (complete scalp hair loss).",
-  clinicalPerformance: "The SALT score is widely used in both research and clinical practice. A large prospective cross-sectional study of 303 patients with AA (ages 6 months to 84 years) demonstrated that higher SALT scores were associated with longer disease duration, nail involvement, and neuropsychiatric comorbidities, supporting the tool’s construct validity. Trichoscopic markers of disease activity and severity also correlated with SALT scores. Automated image analysis approaches have been developed to standardize SALT scoring. Gudobba et al. found that automated algorithms could estimate percentage hair loss with an absolute error of 7% compared to manual scoring, which is within the range of inter-rater variability reported for manual SALT scoring. This supports the reproducibility of the SALT score when standardized imaging protocols are followed. However, formal inter-rater and intra-rater reliability statistics are infrequently reported in the literature.",
+  rationale: "The SALT score was developed to provide a standardized, quantitative assessment of scalp hair loss in patients with alopecia areata (AA). The rationale was to enable consistent measurement of disease extent for both clinical trials and routine practice, facilitating objective monitoring of disease progression and response to therapy. The SALT score divides the scalp into four regions, each assigned a percentage based on its relative surface area: Vertex (40%), Right profile (18%), Left profile (18%), and Posterior (24%). For each region, the percentage of hair loss is estimated visually. The regional percentage hair loss is multiplied by the region’s weight, and the sum of all four regions gives the total SALT score, which ranges from 0 (no hair loss) to 100 (complete scalp hair loss).",
+  clinicalPerformance: "A large cross-sectional study of 303 patients with AA demonstrated that higher SALT scores were associated with longer disease duration, nail involvement, and neuropsychiatric comorbidities, supporting the tool’s construct validity. Trichoscopic markers of disease activity also correlated with SALT scores. Automated image analysis has been developed to standardize scoring, with an absolute error of 7% compared to manual scoring, which is within the range of inter-rater variability. However, formal inter-rater and intra-rater reliability statistics are infrequently reported.",
   formSections: [
     {
       id: "salt_inputs_group",
@@ -56,12 +56,11 @@ export const saltTool: Tool = {
     const score = parseFloat(totalSaltScore.toFixed(1));
 
     let severityCategory = "";
-    if (score === 0) severityCategory = "S0 - No hair loss";
-    else if (score <= 25) severityCategory = "S1 - Mild (≤25% loss)";
-    else if (score <= 50) severityCategory = "S2 - Moderate (26–50% loss)";
-    else if (score <= 75) severityCategory = "S3 - Severe (51–75% loss)";
-    else if (score < 100) severityCategory = "S4 - Very Severe (76–99% loss)";
-    else severityCategory = "S5 - Alopecia Totalis (100% loss)";
+    if (score <= 20) severityCategory = "S0/S1 - No or Limited Hair Loss (≤20%)";
+    else if (score <= 49) severityCategory = "S2 - Moderate Hair Loss (21–49%)";
+    else if (score <= 94) severityCategory = "S3 - Severe Hair Loss (50–94%)";
+    else severityCategory = "S4 - Very Severe Hair Loss (95–100%)";
+
 
     const interpretation = `Total SALT Score: ${score} (Range: 0-100). Severity Category: ${severityCategory}.`;
 
@@ -83,6 +82,7 @@ export const saltTool: Tool = {
     "Bernardis E, Nukpezah J, Li P, Christensen T, Castelo-Soccio L. Pediatric Severity of Alopecia Tool. Pediatric Dermatology. 2018;35(1):e68-e69. doi:10.1111/pde.13327.",
     "Rangu S, Rogers R, Castelo-Soccio L. Understanding Alopecia Areata Characteristics in Children Under the Age of 4 Years. Pediatric Dermatology. 2019;36(6):854-858. doi:10.1111/pde.13990.",
     "Putterman E, Patel DP, Andrade G, et al. Severity of Disease and Quality of Life in Parents of Children With Alopecia Areata, Totalis, and Universalis: A Prospective, Cross-Sectional Study. Journal of the American Academy of Dermatology. 2019;80(5):1389-1394. doi:10.1016/j.jaad.2018.12.051.",
-    "Moussa A, Bennett M, Wall D, et al. The Alopecia Areata Severity and Morbidity Index (ASAMI) Study: Results From a Global Expert Consensus Exercise on Determinants of Alopecia Areata Severity. JAMA Dermatology. 2024;160(3):341-350. doi:10.1001/jamadermatol.2023.5869."
+    "Moussa A, Bennett M, Wall D, et al. The Alopecia Areata Severity and Morbidity Index (ASAMI) Study: Results From a Global Expert Consensus Exercise on Determinants of Alopecia Areata Severity. JAMA Dermatology. 2024;160(3):341-350. doi:10.1001/jamadermatol.2023.5869.",
+    "Lee S, Kim BJ, Lee CH, Lee WS. Topographic Phenotypes of Alopecia Areata and Development of a Prognostic Prediction Model and Grading System: A Cluster Analysis. JAMA Dermatology. 2019;155(5):564-571. doi:10.1001/jamadermatol.2018.5894."
   ]
 };
