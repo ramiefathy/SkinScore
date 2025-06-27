@@ -20,7 +20,7 @@ const pgDelphiFormSections: FormSectionConfig[] = [
         type: 'select',
         options: commonYesNoOptions,
         defaultValue: 0,
-        validation: getValidationSchema('select', commonYesNoOptions, 0, 1)
+        validation: getValidationSchema('select', commonYesNoOptions)
       }
     ]
   },

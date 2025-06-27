@@ -4,12 +4,12 @@ import { Sun } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
 
 const fitzpatrickOptions: InputOption[] = [
-  { value: 1, label: "Type I: Always burns, never tans (pale white skin; blond or red hair; blue eyes; freckles)." },
-  { value: 2, label: "Type II: Usually burns, tans minimally (white skin; fair; blond or red hair; blue, green, or hazel eyes)." },
-  { value: 3, label: "Type III: Sometimes mild burn, tans uniformly (cream white skin; fair with any eye or hair color; very common)." },
-  { value: 4, label: "Type IV: Burns minimally, always tans well (moderate brown skin; typical Mediterranean Caucasian skin)." },
-  { value: 5, label: "Type V: Very rarely burns, tans very easily (dark brown skin; Middle Eastern skin types)." },
-  { value: 6, label: "Type VI: Never burns, tans very easily (deeply pigmented dark brown to black skin)." }
+  { value: 1, label: "Type I: Always burns, never tans (pale white)" },
+  { value: 2, label: "Type II: Usually burns, tans minimally (white)" },
+  { value: 3, label: "Type III: Sometimes mild burn, tans uniformly (light brown)" },
+  { value: 4, label: "Type IV: Burns minimally, always tans well (moderate brown)" },
+  { value: 5, label: "Type V: Very rarely burns, tans very easily (dark brown)" },
+  { value: 6, label: "Type VI: Never burns, deeply pigmented (black)" }
 ];
 
 export const fitzpatrickSkinTypeTool: Tool = {
@@ -22,7 +22,7 @@ export const fitzpatrickSkinTypeTool: Tool = {
   sourceType: 'Research',
   icon: Sun,
   displayType: 'staticList',
-  rationale: "The Fitzpatrick Skin Type Classification was developed to categorize individuals based on their skin’s response to ultraviolet (UV) radiation, specifically their tendency to burn and ability to tan. Its primary clinical applications include guiding phototherapy dosing, predicting risk for photodamage and skin cancer, and informing the selection and expected outcomes of cosmetic procedures. The rationale for its development was to provide a practical, clinically relevant method for estimating UV sensitivity, particularly in the context of psoriasis phototherapy, and to stratify risk for adverse outcomes related to sun exposure. The system is a categorical classification, not a numerical score, based on structured patient interviews assessing natural skin color, history of sunburn, and tanning response.",
+  rationale: "The Fitzpatrick Skin Type Classification was developed to categorize individuals based on their skin’s response to ultraviolet (UV) radiation, specifically their tendency to burn and ability to tan. Its primary clinical applications include guiding phototherapy dosing, predicting risk for photodamage and skin cancer, and informing the selection and expected outcomes of cosmetic procedures. The rationale for its development was to provide a practical, clinically relevant method for estimating UV sensitivity, particularly in the context of psoriasis phototherapy, and to stratify risk for adverse outcomes related to sun exposure. The most common approach is direct assignment to one of six types. Some versions use a point-based questionnaire, but the original and most widely used method is categorical assignment based on interview.",
   clinicalPerformance: "The Fitzpatrick system is not a diagnostic test, so sensitivity and specificity are not applicable. Reliability studies demonstrate moderate inter-rater agreement (kappa 0.4–0.7), with higher reliability when administered by trained dermatologists compared to self-assessment. The system’s accuracy is limited in ethnically diverse populations, particularly for types V and VI, due to conflation of skin color, ethnicity, and photoreactivity. Objective methods such as reflectance spectrophotometry have been proposed as alternatives, showing good correlation with clinician-assigned Fitzpatrick type. Modifications to the questionnaire have been developed for specific populations, such as the Indian population, with moderate correlation to objective melanin indices.",
   formSections: [
     {

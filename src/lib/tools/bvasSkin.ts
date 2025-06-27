@@ -4,9 +4,9 @@ import { HeartPulse } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
 
 const bvasSkinInputs: InputConfig[] = [
-    { id: "rash", label: "Rash (Purpura, maculopapular, urticaria) (1 pt)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-    { id: "ulcer", label: "Skin Ulceration (non-digital, excluding major gangrene) (3 pts)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
-    { id: "gangrene", label: "Major Digital Ischemia/Gangrene (6 pts)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+    { id: "rash", label: "Purpura, maculopapular rash, or urticaria (1 point)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+    { id: "ulcer", label: "Skin Ulceration (3 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
+    { id: "gangrene", label: "Major Digital Ischemia/Gangrene (6 points)", type: 'checkbox', defaultValue: false, validation: getValidationSchema('checkbox') },
 ];
 
 export const bvasSkinTool: Tool = {
@@ -18,8 +18,8 @@ export const bvasSkinTool: Tool = {
   keywords: ["bvas", "vasculitis", "skin involvement", "activity score", "purpura", "ulcer", "gangrene", "infarcts", "anca"],
   sourceType: 'Clinical Guideline',
   icon: HeartPulse,
-  rationale: "The BVAS is a comprehensive tool for assessing disease activity in systemic vasculitis, with the skin component capturing cutaneous manifestations such as purpura, ulcers, and gangrene. The rationale is to provide a standardized, validated measure of disease activity for clinical management and research. The skin domain includes specific items, each scored as present or absent, with some items weighted more heavily: Purpura, maculopapular rash, or urticaria (1 point), Skin ulceration (3 points), and Gangrene (6 points). The total skin score is the sum of the weighted items present.",
-  clinicalPerformance: "The BVAS, including its skin component, demonstrates good inter- and intra-rater reliability, with kappa values for the skin domain typically above 0.7. The tool is sensitive to change and correlates strongly with physician global assessment and laboratory markers of inflammation. The BVAS is not a diagnostic test, so sensitivity and specificity are not reported. The BVAS has been validated in multicenter cohorts of patients with various forms of vasculitis, showing strong construct validity, reliability, and responsiveness. Comparative studies confirm its superior performance in capturing multisystem disease activity, including skin involvement, compared to other indices. The weighting of items is based on expert consensus rather than empirical data, and the tool’s performance in rare or atypical vasculitic syndromes is less well established.",
+  rationale: "The rationale is to provide a standardized, validated measure of disease activity for clinical management and research. The skin domain includes specific items, each scored as present or absent, with some items weighted more heavily: Purpura, maculopapular rash, or urticaria (1 point), Skin ulceration (3 points), and Gangrene (6 points). The total skin score is the sum of the weighted items present.",
+  clinicalPerformance: "The BVAS, including its skin component, demonstrates good inter- and intra-rater reliability, with kappa values for the skin domain typically above 0.7. The tool is sensitive to change and correlates strongly with physician global assessment and laboratory markers of inflammation. The BVAS is not a diagnostic test, so sensitivity and specificity are not reported. The BVAS has been validated in multicenter cohorts of patients with various forms of vasculitis, showing strong construct validity, reliability, and responsiveness. Comparative studies confirm its superior performance in capturing multisystem disease activity, including skin involvement, compared to other indices.",
   formSections: [
     {
       id: "bvas_skin_items_group",
