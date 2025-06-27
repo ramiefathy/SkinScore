@@ -41,7 +41,7 @@ export const aasTool: Tool = {
   acronym: "AAS",
   condition: "Angioedema",
   keywords: ["aas", "angioedema", "activity score", "patient reported", "urticaria", "swelling"],
-  description: "The AAS is a patient-reported outcome measure designed to quantify disease activity in patients with recurrent angioedema.",
+  description: "The AAS is a patient-reported outcome measure designed to quantify disease activity in patients with recurrent angioedema, including hereditary and acquired forms.",
   sourceType: 'Research',
   icon: Activity,
   rationale: "The AAS is a patient-reported outcome measure designed to quantify disease activity in patients with recurrent angioedema, including hereditary and acquired forms. The rationale for its development was the absence of standardized, validated activity measures for angioedema, which is characterized by unpredictable, episodic swelling that can significantly impact quality of life. The AAS consists of five items, each scored daily by the patient, reflecting the presence and severity of angioedema symptoms. The total score is the sum of daily scores over a specified period (e.g., 28 days), providing a continuous measure of disease activity.",
