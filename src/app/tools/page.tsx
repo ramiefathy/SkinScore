@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from '@/components/ui/input';
 import { ScrollText, FileQuestion, Link as LinkIcon, Stethoscope, Search, LayoutGrid } from 'lucide-react';
+import { AdBanner } from '@/components/AdBanner';
 
 export default function AllToolsPage() {
   const router = useRouter();
@@ -186,6 +187,7 @@ export default function AllToolsPage() {
             ))}
           </CardContent>
         </Card>
+        <AdBanner />
       </main>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">

@@ -17,6 +17,7 @@ import { FileText, Info, CheckSquare, LayoutGrid, Zap, ScrollText, List, Link as
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { AdBanner } from '@/components/AdBanner';
 
 const MAX_RECENT_TOOLS = 3;
 const RECENT_TOOLS_STORAGE_KEY = 'skinscore_recently_used_tools';
@@ -334,6 +335,7 @@ function SkinScorePageContent() {
           )}
 
         </main>
+        <AdBanner />
       </div>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">
