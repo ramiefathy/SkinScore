@@ -30,11 +30,17 @@ export const sledaiSkinTool: Tool = {
     return { score, interpretation, details };
   },
   references: [
+    "Johnson E, Emani VK, Ren J. Breadth of Coverage, Ease of Use, and Quality of Mobile Point-of-Care Tool Information Summaries: An Evaluation. JMIR mHealth and uHealth. 2016;4(4):e117.",
+    "Bull C, Teede H, Watson D, Callander EJ. Selecting and Implementing Patient-Reported Outcome and Experience Measures to Assess Health System Performance. JAMA Health Forum. 2022;3(4):e220326.",
+    "Bowden A, Fox-Rushby JA. A Systematic and Critical Review of the Process of Translation and Adaptation of Generic Health-Related Quality of Life Measures in Africa, Asia, Eastern Europe, the Middle East, South America. Social Science & Medicine (1982). 2003;57(7):1289-306.",
+    "Peterson AM, Miller B, Ioerger P, et al. Most-Cited Patient-Reported Outcome Measures Within Otolaryngology—Revisiting the Minimal Clinically Important Difference: A Review. JAMA Otolaryngology-- Head & Neck Surgery. 2023;149(3):261-276.",
+    "Malec JF, Ketchum JM. A Standard Method for Determining the Minimal Clinically Important Difference for Rehabilitation Measures. Archives of Physical Medicine and Rehabilitation. 2020;101(6):1090-1094.",
+    "Angst F, Aeschlimann A, Angst J. The Minimal Clinically Important Difference Raised the Significance of Outcome Effects Above the Statistical Level, With Methodological Implications for Future Studies. Journal of Clinical Epidemiology. 2017;82:128-136.",
+    "Jayadevappa R, Cook R, Chhatre S. Minimal Important Difference to Infer Changes in Health-Related Quality Of life-a Systematic Review. Journal of Clinical Epidemiology. 2017;89:188-198.",
     "Gladman DD, Ibañez D, Urowitz MB. Systemic Lupus Erythematosus Disease Activity Index 2000. The Journal of Rheumatology. 2002;29(2):288-91.",
     "Castrejón I, Tani C, Jolly M, Huang A, Mosca M. Indices to Assess Patients With Systemic Lupus Erythematosus in Clinical Trials, Long-Term Observational Studies, and Clinical Care. Clinical and Experimental Rheumatology. 2014 Sep-Oct;32(5 Suppl 85):S-85-95.",
-    "Sato JO, Corrente JE, Saad-Magalhães C. Correlation Between the Modified Systemic Lupus Erythematosus Disease Activity Index 2000 and the European Consensus Lupus Activity Measurement in Juvenile Systemic Lupus Erythematosus. Lupus. 2016;25(13):1479-1484. doi:10.1177/0961203316651737.",
-    "Nelson MC, Mosley C, Bennett T, Orenstein E, Rouster-Stevens K. A Single-Center Model for Implementation of SLEDAI Documentation Adherence in Childhood-Onset Systemic Lupus Erythematosus (cSLE). Lupus. 2023;32(12):1447-1452. doi:10.1177/09612033231206451.",
-    "Inês LS, Fredi M, Jesus D, et al. What Is the Best Instrument to Measure Disease Activity in SLE? - SLE-DAS vs Easy BILAG. Autoimmunity Reviews. 2024;23(1):103428. doi:10.1016/j.autrev.2023.103428.",
-    "Bombardier C, Gladman DD, Urowitz MB, Caron D, Chang CH. Derivation of the SLEDAI. A disease activity index for lupus patients. The Committee on Prognosis Studies in SLE. Arthritis Rheum. 1992 Jun;35(6):630-40."
+    "Sato JO, Corrente JE, Saad-Magalhães C. Correlation Between the Modified Systemic Lupus Erythematosus Disease Activity Index 2000 and the European Consensus Lupus Activity Measurement in Juvenile Systemic Lupus Erythematosus. Lupus. 2016;25(13):1479-1484.",
+    "Nelson MC, Mosley C, Bennett T, Orenstein E, Rouster-Stevens K. A Single-Center Model for Implementation of SLEDAI Documentation Adherence in Childhood-Onset Systemic Lupus Erythematosus (cSLE). Lupus. 2023;32(12):1447-1452.",
+    "Inês LS, Fredi M, Jesus D, et al. What Is the Best Instrument to Measure Disease Activity in SLE? - SLE-DAS vs Easy BILAG. Autoimmunity Reviews. 2024;23(1):103428."
   ]
 };

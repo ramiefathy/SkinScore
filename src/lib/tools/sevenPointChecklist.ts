@@ -68,17 +68,19 @@ export const sevenPointChecklistTool: Tool = {
     return { score, interpretation, details: { Version: version, Present_Features: presentFeatures.join(', ') || "None" } };
   },
   references: [
-    "How Do Malignant Melanomas Present and Does This Correlate With the Seven-Point Check-List?. du Vivier AW, Williams HC, Brett JV, Higgins EM. Clinical and Experimental Dermatology. 1991;16(5):344-7. doi:10.1111/j.1365-2230.1991.tb00397.x.",
-    "Using the 7-Point Checklist as a Diagnostic Aid for Pigmented Skin Lesions in General Practice: A Diagnostic Validation Study. Walter FM, Prevost AT, Vasconcelos J, et al. The British Journal of General Practice : The Journal of the Royal College of General Practitioners. 2013;63(610):e345-53. doi:10.3399/bjgp13X667213.",
-    "Does This Patient Have a Mole or a Melanoma?. Whited JD, Grichnik JM. JAMA. 1998;279(9):696-701. doi:10.1001/jama.279.9.696.",
-    "Pediatric Melanoma: Results of a Large Cohort Study and Proposal for Modified ABCD Detection Criteria for Children. Cordoro KM, Gupta D, Frieden IJ, McCalmont T, Kashani-Sabet M. Journal of the American Academy of Dermatology. 2013;68(6):913-25. doi:10.1016/j.jaad.2012.12.953.",
-    "Is Pediatric Melanoma Really That Different From Adult Melanoma? A Multicenter Epidemiological, Clinical and Dermoscopic Study. De Giorgi V, Magnaterra E, Zuccaro B, et al. Cancers. 2023;15(6):1835. doi:10.3390/cancers15061835.",
-    "Psychometric and Pragmatic Properties of Social Risk Screening Tools: A Systematic Review. Henrikson NB, Blasi PR, Dorsey CN, et al. American Journal of Preventive Medicine. 2019;57(6 Suppl 1):S13-S24. doi:10.1016/j.amepre.2019.07.012.",
-    "Cross-Cultural Modification Strategies for Instruments Measuring Health Beliefs About Cancer Screening: Systematic Review. Lei F, Lee E. JMIR Cancer. 2021;7(4):e28393. doi:10.2196/28393.",
-    "Exploring the Barriers to and Facilitators of Implementing CanRisk in Primary Care: A Qualitative Thematic Framework Analysis. Archer S, Donoso FS, Carver T, et al. The British Journal of General Practice : The Journal of the Royal College of General Practitioners. 2023;73(733):e586-e596. doi:10.3399/BJGP.2022.0643.",
-    "Most-Cited Patient-Reported Outcome Measures Within Otolaryngology—Revisiting the Minimal Clinically Important Difference: A Review. Peterson AM, Miller B, Ioerger P, et al. JAMA Otolaryngology-- Head & Neck Surgery. 2023;149(3):261-276. doi:10.1001/jamaoto.2022.4703.",
-    "A Standard Method for Determining the Minimal Clinically Important Difference for Rehabilitation Measures. Malec JF, Ketchum JM. Archives of Physical Medicine and Rehabilitation. 2020;101(6):1090-1094. doi:10.1016/j.apmr.2019.12.008.",
-    "The Minimal Clinically Important Difference Raised the Significance of Outcome Effects Above the Statistical Level, With Methodological Implications for Future Studies. Angst F, Aeschlimann A, Angst J. Journal of Clinical Epidemiology. 2017;82:128-136. doi:10.1016/j.jclinepi.2016.11.016.",
-    "Minimal Important Difference to Infer Changes in Health-Related Quality Of life-a Systematic Review. Jayadevappa R, Cook R, Chhatre S. Journal of Clinical Epidemiology. 2017;89:188-198. doi:10.1016/j.jclinepi.2017.06.009."
+    "Archer S, Donoso FS, Carver T, et al. Exploring the Barriers to and Facilitators of Implementing CanRisk in Primary Care: A Qualitative Thematic Framework Analysis. The British Journal of General Practice : The Journal of the Royal College of General Practitioners. 2023;73(733):e586-e596.",
+    "Johnson E, Emani VK, Ren J. Breadth of Coverage, Ease of Use, and Quality of Mobile Point-of-Care Tool Information Summaries: An Evaluation. JMIR mHealth and uHealth. 2016;4(4):e117.",
+    "Peterson AM, Miller B, Ioerger P, et al. Most-Cited Patient-Reported Outcome Measures Within Otolaryngology—Revisiting the Minimal Clinically Important Difference: A Review. JAMA Otolaryngology-- Head & Neck Surgery. 2023;149(3):261-276.",
+    "Malec JF, Ketchum JM. A Standard Method for Determining the Minimal Clinically Important Difference for Rehabilitation Measures. Archives of Physical Medicine and Rehabilitation. 2020;101(6):1090-1094.",
+    "Angst F, Aeschlimann A, Angst J. The Minimal Clinically Important Difference Raised the Significance of Outcome Effects Above the Statistical Level, With Methodological Implications for Future Studies. Journal of Clinical Epidemiology. 2017;82:128-136.",
+    "Jayadevappa R, Cook R, Chhatre S. Minimal Important Difference to Infer Changes in Health-Related Quality Of life-a Systematic Review. Journal of Clinical Epidemiology. 2017;89:188-198.",
+    "Nyongesa V, Kathono J, Mwaniga S, et al. Cultural and Contextual Adaptation of Mental Health Measures in Kenya: An Adolescent-Centered Transcultural Adaptation of Measures Study. PloS One. 2022;17(12):e0277619.",
+    "Whited JD, Grichnik JM. Does This Patient Have a Mole or a Melanoma?. JAMA. 1998;279(9):696-701.",
+    "Walter FM, Prevost AT, Vasconcelos J, et al. Using the 7-Point Checklist as a Diagnostic Aid for Pigmented Skin Lesions in General Practice: A Diagnostic Validation Study. The British Journal of General Practice : The Journal of the Royal College of General Practitioners. 2013;63(610):e345-53.",
+    "du Vivier AW, Williams HC, Brett JV, Higgins EM. How Do Malignant Melanomas Present and Does This Correlate With the Seven-Point Check-List?. Clinical and Experimental Dermatology. 1991;16(5):344-7.",
+    "Cordoro KM, Gupta D, Frieden IJ, McCalmont T, Kashani-Sabet M. Pediatric Melanoma: Results of a Large Cohort Study and Proposal for Modified ABCD Detection Criteria for Children. Journal of the American Academy of Dermatology. 2013;68(6):913-25.",
+    "De Giorgi V, Magnaterra E, Zuccaro B, et al. Is Pediatric Melanoma Really That Different From Adult Melanoma? A Multicenter Epidemiological, Clinical and Dermoscopic Study. Cancers. 2023;15(6):1835.",
+    "Henrikson NB, Blasi PR, Dorsey CN, et al. Psychometric and Pragmatic Properties of Social Risk Screening Tools: A Systematic Review. American Journal of Preventive Medicine. 2019;57(6 Suppl 1):S13-S24.",
+    "Lei F, Lee E. Cross-Cultural Modification Strategies for Instruments Measuring Health Beliefs About Cancer Screening: Systematic Review. JMIR Cancer. 2021;7(4):e28393."
   ]
 };
