@@ -279,7 +279,7 @@ function SkinScorePageContent() {
               <CardContent>
                  <div className="space-y-4">
                     {(selectedTool.rationale || selectedTool.clinicalPerformance) && (
-                        <Accordion type="multiple" className="w-full" collapsible>
+                        <Accordion type="multiple" className="w-full">
                           {selectedTool.rationale && (
                             <AccordionItem value="rationale">
                               <AccordionTrigger>Rationale</AccordionTrigger>
