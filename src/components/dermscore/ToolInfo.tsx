@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Link as LinkIcon } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface ToolInfoProps {
   tool: Tool;
@@ -76,6 +77,27 @@ export function ToolInfo({ tool }: ToolInfoProps) {
         </>
       )}
 
+      {(tool.rationale || tool.clinicalPerformance) && (
+          <Accordion type="multiple" className="w-full" collapsible>
+            {tool.rationale && (
+              <AccordionItem value="rationale">
+                <AccordionTrigger>Rationale</AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{tool.rationale}</p>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+            {tool.clinicalPerformance && (
+              <AccordionItem value="performance">
+                <AccordionTrigger>Clinical Performance & Reliability</AccordionTrigger>
+                <AccordionContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{tool.clinicalPerformance}</p>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+          </Accordion>
+      )}
+
       {tool.keywords && tool.keywords.length > 0 && (
         <div className="mt-3">
           <span className="text-sm font-semibold text-foreground/90">Keywords: </span>
@@ -108,4 +130,3 @@ export function ToolInfo({ tool }: ToolInfoProps) {
     </div>
   );
 }
-
