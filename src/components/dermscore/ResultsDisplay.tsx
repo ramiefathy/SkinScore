@@ -1,10 +1,18 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { CalculationResult, Tool } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, ListOrdered, ClipboardCopy } from 'lucide-react';
+import { CheckCircle2, ListOrdered, ClipboardCopy, BarChart as BarChartIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+
 
 const formatValueForDisplay = (value: any): string => {
   if (value === null || value === undefined) {
@@ -147,6 +155,25 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
     }
   };
 
+  const chartData = useMemo(() => {
+    if (tool.id !== 'pasi' || !result.details) {
+      return null;
+    }
+    return Object.entries(result.details)
+      .filter(([, value]) => typeof value === 'object' && value !== null && 'Regional_PASI_Score' in value)
+      .map(([name, data]) => ({
+        name: name,
+        score: (data as any).Regional_PASI_Score,
+      }));
+  }, [tool.id, result.details]);
+
+  const chartConfig = {
+    score: {
+      label: "Score",
+      color: "hsl(var(--primary))",
+    },
+  } satisfies ChartConfig;
+
   return (
     <Card className="bg-accent/10 border-accent shadow-xl">
       <CardHeader className="pb-4 flex flex-row items-center justify-between">
@@ -168,6 +195,33 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
           <p className="text-sm font-medium text-muted-foreground mb-0.5">Clinical Interpretation</p>
           <p className="text-md leading-relaxed">{result.interpretation}</p>
         </div>
+
+        {chartData && (
+          <div className="pt-2">
+            <div className="flex items-center gap-2 mb-1.5">
+              <BarChartIcon className="h-5 w-5 text-muted-foreground" />
+              <p className="text-sm font-medium text-muted-foreground">Regional Score Contribution</p>
+            </div>
+            <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
+              <BarChart accessibilityLayer data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <YAxis />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="dot" />}
+                />
+                <Bar dataKey="score" fill="var(--color-score)" radius={4} />
+              </BarChart>
+            </ChartContainer>
+          </div>
+        )}
+
         {result.details && Object.keys(result.details).length > 0 && (
           <div className="pt-2">
             <div className="flex items-center gap-2 mb-1.5">
