@@ -9,9 +9,11 @@ export const ihs4Tool: Tool = {
   acronym: "IHS4",
   condition: "Hidradenitis Suppurativa",
   keywords: ["ihs4", "hs", "hidradenitis suppurativa", "severity", "dynamic score", "inflammatory nodules", "abscesses", "draining tunnels"],
-  description: "The International Hidradenitis Suppurativa Severity Score System (IHS4) is a validated, dynamic scoring system for hidradenitis suppurativa (HS) severity. The IHS4 is calculated as: IHS4 = (number of nodules) × 1 + (number of abscesses) × 2 + (number of draining tunnels) × 4. Scores classify disease as mild (≤3), moderate (4–10), or severe (≥11). IHS4 is more quantitative and responsive than static systems like Hurley staging, and correlates well with other dynamic measures such as the HS-PGA and HiSCR, though agreement is not perfect due to the clinical heterogeneity of HS.",
+  description: "The IHS4 is a dynamic, quantitative, and reproducible measure of HS severity suitable for both clinical practice and research. It is calculated by weighting and summing the number of inflammatory nodules, abscesses, and draining tunnels.",
   sourceType: 'Clinical Guideline',
   icon: SquarePen,
+  rationale: "The IHS4 was developed to provide a dynamic, quantitative, and reproducible measure of HS severity suitable for both clinical practice and research. Its rationale was to address the limitations of static, non-quantitative systems such as Hurley staging by focusing on the most clinically relevant lesion types—nodules, abscesses, and draining tunnels—thereby enabling sensitive tracking of disease activity and response to therapy over time. The IHS4 was established through a Delphi consensus process among members of the European Hidradenitis Suppurativa Foundation, followed by multicenter validation. The IHS4 is calculated as: (number of nodules) × 1 + (number of abscesses) × 2 + (number of draining tunnels) × 4. Severity is categorized as mild (IHS4 ≤ 3), moderate (IHS4 4–10), or severe (IHS4 ≥ 11). There are no formal subscores; the total is a weighted sum reflecting the relative clinical impact of each lesion type.",
+  clinicalPerformance: "The IHS4 has demonstrated good convergent validity with other severity measures, including Hurley staging, expert opinion, HS-PGA, and the modified Sartorius score, with Spearman’s rho values exceeding 0.6 for most comparisons. Its correlation with patient-reported quality of life, as measured by the Dermatology Life Quality Index (DLQI), is moderate (ρ = 0.36), reflecting the multifaceted impact of HS. The IHS4 has high intrarater reliability (intraclass correlation coefficient [ICC] > 0.75) and moderate interrater reliability, particularly among less experienced raters. However, interrater agreement can be limited by challenges in lesion identification and counting, especially in severe or confluent disease. The IHS4 is sensitive to change and has been validated as a dynamic measure of disease activity in both clinical trials and real-world practice. Recent studies have highlighted the potential for artificial intelligence–based automation (AIHS4) to further improve reproducibility and efficiency in lesion detection and scoring, with performance comparable to expert clinicians.",
   formSections: [
     { id: "nodules", label: "Number of Inflammatory Nodules (N) (x1 point each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
     { id: "abscesses", label: "Number of Abscesses (A) (x2 points each)", type: 'number', min: 0, defaultValue: 0, validation: getValidationSchema('number',[],0) },
@@ -47,9 +49,12 @@ Severity bands: ≤3 Mild; 4–10 Moderate; ≥11 Severe.`;
     };
   },
   references: [
-    "Zouboulis, C. C., Tzellos, T., Kyrgidis, A., et al. (2017). Development and validation of the International Hidradenitis Suppurativa Severity Score System (IHS4). Journal of the American Academy of Dermatology, 77(4), 633-641.",
-    "Horváth B, et al. Validation of the International Hidradenitis Suppurativa Severity Score System (IHS4) - A multicenter study. J Am Acad Dermatol. 2020.",
-    "Ingram JR, et al. The Hidradenitis Suppurativa Core Outcome Set International Collaboration (HISCORE). Br J Dermatol. 2019."
+    "Zouboulis CC, Tzellos T, Kyrgidis A, et al. Development and validation of the International Hidradenitis Suppurativa Severity Score System (IHS4), a novel dynamic scoring system to assess HS severity. Br J Dermatol. 2017;177(5):1401-1409.",
+    "Włodarek K, Stefaniak A, Matusiak Ł, Szepietowski JC. Could Residents Adequately Assess the Severity of Hidradenitis Suppurativa? Interrater and Intrarater Reliability Assessment of Major Scoring Systems. Dermatology (Basel, Switzerland). 2020;236(1):8-14.",
+    "Thorlacius L, Garg A, Riis PT, et al. Inter-Rater Agreement and Reliability of Outcome Measurement Instruments and Staging Systems Used in Hidradenitis Suppurativa. The British Journal of Dermatology. 2019;181(3):483-491.",
+    "Daoud M, Suppa M, Benhadou F, et al. Overview and Comparison of the Clinical Scores in Hidradenitis Suppurativa: A Real-Life Clinical Data. Frontiers in Medicine. 2023;10:1145152.",
+    "Hernández Montilla I, Medela A, Mac Carthy T, et al. Automatic International Hidradenitis Suppurativa Severity Score System (AIHS4): A Novel Tool to Assess the Severity of Hidradenitis Suppurativa Using Artificial Intelligence. Skin Research and Technology. 2023;29(6):e13357.",
+    "Tzellos T, van Straalen KR, Kyrgidis A, et al. Development and Validation of IHS4-55, an IHS4 Dichotomous Outcome to Assess Treatment Effect for Hidradenitis Suppurativa. Journal of the European Academy of Dermatology and Venereology. 2023;37(2):395-401.",
+    "Michelucci A, Granieri G, Cei B, et al. Enhancing Hidradenitis Suppurativa Assessment: The Role of Ultra-High Frequency Ultrasound in Detecting Microtunnels and Refining Disease Staging. Journal of Ultrasound in Medicine. 2025;44(4):739-745."
   ]
 };
-
