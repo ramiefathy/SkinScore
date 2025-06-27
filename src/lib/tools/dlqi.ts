@@ -23,11 +23,12 @@ const dlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i) 
         { value: 1, label: 'A little' },
         { value: 0, label: 'Not at all' },
     ];
-    if (i === 6) { // Question 7 special handling
+    // Special handling for Question 7 to make values unique
+    if (i === 6) {
         q_options = [
-            { value: 3, label: 'Yes (Prevented work/study)' },
-            { value: 0, label: 'No' }, // "No" also scores 0 if work/study not relevant to the disease's impact
-            { value: 0, label: 'Not relevant (Scores 0)' },
+            { value: '3', label: 'Yes (Prevented work/study)' },
+            { value: '0_no', label: 'No' },
+            { value: '0_nr', label: 'Not relevant (Scores 0)' },
         ];
     }
     return {
@@ -35,7 +36,7 @@ const dlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i) 
       label: `Q${i + 1}: ${dlqiQuestionTexts[i]}`,
       type: 'select' as 'select',
       options: q_options,
-      defaultValue: 0,
+      defaultValue: i === 6 ? '0_no' : 0, // Default to a valid unique value for Q7
       validation: getValidationSchema('select', q_options, 0, 3),
     } as InputConfig;
   });
@@ -56,9 +57,22 @@ export const dlqiTool: Tool = {
     let score = 0;
     const details: Record<string, number> = {};
     for (let i = 1; i <= 10; i++) {
-      const val = Number(inputs[`q${i}`]) || 0;
-      details[`Q${i}`] = val;
-      score += val;
+      const rawVal = inputs[`q${i}`];
+      let numVal = 0;
+      
+      if (i === 7) {
+        // Q7 uses string values '3', '0_no', '0_nr'
+        if (rawVal === '3') {
+          numVal = 3;
+        } else {
+          numVal = 0;
+        }
+      } else {
+        numVal = Number(rawVal) || 0;
+      }
+      
+      details[`Q${i}`] = numVal;
+      score += numVal;
     }
     let interpretationText = '';
     if (score <= 1) interpretationText = 'No effect at all on patient\'s life';

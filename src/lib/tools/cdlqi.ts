@@ -21,8 +21,13 @@ const cdlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i)
       { value: 3, label: 'Very much' }, { value: 2, label: 'A lot' },
       { value: 1, label: 'A little' }, { value: 0, label: 'Not at all' },
   ];
-   if (i === 6) { // Question 7
-       cdlqi_options.push({ value: 0, label: 'Not relevant / Does not apply (Scores 0)' });
+   // Special handling for Question 7 to make values unique
+   if (i === 6) {
+       cdlqi_options = [
+           { value: '3', label: 'Very much' }, { value: '2', label: 'A lot' },
+           { value: '1', label: 'A little' }, { value: '0_na', label: 'Not at all' },
+           { value: '0_nr', label: 'Not relevant / Does not apply (Scores 0)' }
+       ];
    }
 
   return {
@@ -30,7 +35,7 @@ const cdlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i)
     label: cdlqiQuestionPrompts[i],
     type: 'select' as 'select',
     options: cdlqi_options,
-    defaultValue: 0,
+    defaultValue: i === 6 ? '0_na' : 0, // Default to a valid unique value for Q7
     validation: getValidationSchema('select', cdlqi_options, 0, 3),
   } as InputConfig;
 });
@@ -51,9 +56,21 @@ export const cdlqiTool: Tool = {
     let score = 0;
     const details: Record<string, number> = {};
     for (let i = 1; i <= 10; i++) {
-      const val = Number(inputs[`cdlqi_q${i}`]) || 0;
-      details[`Q${i}`] = val;
-      score += val;
+      const rawVal = inputs[`cdlqi_q${i}`];
+      let numVal = 0;
+
+      if (i === 7) {
+        // Q7 uses string values '3', '2', '1', '0_na', '0_nr'
+        if (rawVal === '3') numVal = 3;
+        else if (rawVal === '2') numVal = 2;
+        else if (rawVal === '1') numVal = 1;
+        else numVal = 0; // '0_na', '0_nr', or undefined/null
+      } else {
+        numVal = Number(rawVal) || 0;
+      }
+      
+      details[`Q${i}`] = numVal;
+      score += numVal;
     }
     let interpretationText = "";
     if (score <= 2) {
