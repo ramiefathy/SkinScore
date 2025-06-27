@@ -22,20 +22,20 @@ export const fitzpatrickSkinTypeTool: Tool = {
   sourceType: 'Research',
   icon: Sun,
   displayType: 'staticList',
-  rationale: "The Fitzpatrick Skin Type Classification was developed to categorize individuals based on their skin’s response to ultraviolet (UV) radiation, specifically their tendency to burn and ability to tan. Its primary clinical applications include guiding phototherapy dosing, predicting risk for photodamage and skin cancer, and informing the selection and expected outcomes of cosmetic procedures. The rationale for its development was to provide a practical, clinically relevant method for estimating UV sensitivity, particularly in the context of psoriasis phototherapy, and to stratify risk for adverse outcomes related to sun exposure. The original system was introduced by Thomas B. Fitzpatrick in 1975. The most common approach is direct assignment to one of six types. Some versions use a point-based questionnaire, assigning values to eye color, hair color, skin color, presence of freckles, and sunburn/tan history, with the sum mapping to a skin type. However, the original and most widely used method is categorical assignment based on interview.",
-  clinicalPerformance: "The Fitzpatrick system is not a diagnostic test, so sensitivity and specificity are not applicable. Reliability studies demonstrate moderate inter-rater agreement (kappa 0.4–0.7), with higher reliability when administered by trained dermatologists compared to self-assessment. The system’s accuracy is limited in ethnically diverse populations, particularly for types V and VI, due to conflation of skin color, ethnicity, and photoreactivity. Objective methods such as reflectance spectrophotometry have been proposed as alternatives, showing good correlation with clinician-assigned Fitzpatrick type. Validation studies confirm moderate reliability and highlight the need for local adaptation and standardization, especially in diverse populations. Comparative studies with objective methods (e.g., spectrophotometry) support the use of more precise tools in research settings. The Fitzpatrick system’s main limitations are its subjectivity, moderate reliability, and limited generalizability to non-White populations. The system conflates skin color, ethnicity, and photoreactivity, leading to potential misclassification.",
+  rationale: "The Fitzpatrick Skin Type Classification was developed to categorize individuals based on their skin’s response to ultraviolet (UV) radiation, specifically their tendency to burn and ability to tan. Its primary clinical applications include guiding phototherapy dosing, predicting risk for photodamage and skin cancer, and informing the selection and expected outcomes of cosmetic procedures. The rationale for its development was to provide a practical, clinically relevant method for estimating UV sensitivity, particularly in the context of psoriasis phototherapy, and to stratify risk for adverse outcomes related to sun exposure. The original system was introduced by Thomas B. Fitzpatrick in 1975.",
+  clinicalPerformance: "The Fitzpatrick system is not a diagnostic test, so sensitivity and specificity are not applicable. Reliability studies demonstrate moderate inter-rater agreement (kappa 0.4–0.7), with higher reliability when administered by trained dermatologists compared to self-assessment. The system’s accuracy is limited in ethnically diverse populations, particularly for types V and VI, due to conflation of skin color, ethnicity, and photoreactivity. Objective methods such as reflectance spectrophotometry have been proposed as alternatives, showing good correlation with clinician-assigned Fitzpatrick type. Validation studies confirm moderate reliability and highlight the need for local adaptation and standardization, especially in diverse populations. The Fitzpatrick system’s main limitations are its subjectivity, moderate reliability, and limited generalizability to non-White populations. The system conflates skin color, ethnicity, and photoreactivity, leading to potential misclassification.",
   formSections: [
     {
-      id: "fitzpatrick_type", // ID for ToolInfo to potentially find options
-      label: "Select Fitzpatrick Skin Type", // Not directly displayed in form but good for consistency
-      type: 'select', // So ToolInfo can find the options list
+      id: "fitzpatrick_type",
+      label: "Fitzpatrick Skin Type Categories",
+      type: 'select',
       options: fitzpatrickOptions,
-      defaultValue: 3, // Default, though not used for active selection in 'staticList'
-      validation: getValidationSchema('select', fitzpatrickOptions,1,6) // Not used by UI if staticList
+      defaultValue: 3,
+      validation: getValidationSchema('select', fitzpatrickOptions,1,6)
     }
   ],
-  calculationLogic: (inputs) => { // Not called by UI if displayType='staticList'
-    const type = Number(inputs.fitzpatrick_type); // inputs.fitzpatrick_type won't be present if displayType='staticList'
+  calculationLogic: (inputs) => {
+    const type = Number(inputs.fitzpatrick_type);
     const typeDescriptionObj = fitzpatrickOptions.find(opt => opt.value === type);
     const typeDescription = typeDescriptionObj ? typeDescriptionObj.label : "Invalid type selected.";
     const score = type;
