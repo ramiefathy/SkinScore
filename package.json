@@ -1,0 +1,19 @@
+{
+  "name": "skinscore",
+  "version": "1.0.0",
+  "description": "Ramie Fathy's Personal Website",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Build completed successfully'",
+    "start": "node index.js",
+    "test": "echo 'No tests specified'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ramiefathy/SkinScore.git"
+  },
+  "author": "Ramie Fathy",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
