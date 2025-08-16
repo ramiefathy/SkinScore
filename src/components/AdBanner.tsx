@@ -1,18 +1,38 @@
 
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
 export function AdBanner() {
+  const [isClient, setIsClient] = useState(false);
+
   useEffect(() => {
-    try {
-      // This is necessary to initialize the ad unit.
-      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-    } catch (err) {
-      console.error("AdSense error:", err);
-    }
+    // This ensures the component only renders on the client side
+    setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      try {
+        // This is necessary to initialize the ad unit.
+        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+      } catch (err) {
+        console.error("AdSense error:", err);
+      }
+    }
+  }, [isClient]);
+
+  // Render a placeholder or nothing on the server and initial client render
+  if (!isClient) {
+    return (
+        <div className="my-8">
+            <Card className="shadow-lg border-2 border-primary/20 transition-all min-h-[160px] flex items-center justify-center bg-muted/30">
+                <CardContent className="p-2 w-full"></CardContent>
+            </Card>
+        </div>
+    );
+  }
 
   return (
     <div className="my-8">
@@ -31,6 +51,7 @@ export function AdBanner() {
             data-ad-slot="0000000000"                 // IMPORTANT: Replace with your Ad Slot ID
             data-ad-format="auto"
             data-full-width-responsive="true"
+            key={Math.random()} // Add a unique key to force re-render on client
           ></ins>
         </CardContent>
       </Card>
