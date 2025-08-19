@@ -70,7 +70,7 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
     const dateTime = new Date().toLocaleString();
 
     // Plain Text Version
-    let reportStringText = `SkinScore Report\n`;
+    let reportStringText = `SkinScores Report\n`;
     reportStringText += `Tool: ${tool.name}${tool.acronym ? ` (${tool.acronym})` : ''}\n`;
     reportStringText += `Date & Time: ${dateTime}\n`;
     reportStringText += `--------------------------------------------------\n`;
@@ -83,7 +83,7 @@ export function ResultsDisplay({ result, tool }: ResultsDisplayProps) {
       reportStringText += formatDetailsForCopyText(result.details);
     }
     reportStringText += `--------------------------------------------------\n`;
-    reportStringText += `Calculated with SkinScore\n`;
+    reportStringText += `Calculated with SkinScores\n`;
 
     // HTML Version
     let reportStringHtml = `

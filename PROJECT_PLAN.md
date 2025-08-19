@@ -1,5 +1,5 @@
 
-# SkinScore - Clinical Scoring Tools: Project Plan
+# SkinScores - Clinical Scoring Tools: Project Plan
 
 ## 1. Project Goal
 

@@ -22,11 +22,11 @@ const cdlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i)
       { value: 1, label: 'A little' }, { value: 0, label: 'Not at all' },
   ];
    // Special handling for Question 7 to make values unique
-   if (i === 6) {
+   if (i === 6) { // This is Question 7
        cdlqi_options = [
-           { value: '3', label: 'Very much' }, { value: '2', label: 'A lot' },
-           { value: '1', label: 'A little' }, { value: '0_na', label: 'Not at all' },
-           { value: '0_nr', label: 'Not relevant / Does not apply (Scores 0)' }
+           { value: '3', label: 'Yes' }, // Changed to string
+           { value: '0_no', label: 'No' }, // Changed to unique string
+           { value: '0_nr', label: 'Not relevant / Does not apply' } // Changed to unique string
        ];
    }
 
@@ -35,8 +35,8 @@ const cdlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i)
     label: cdlqiQuestionPrompts[i],
     type: 'select' as 'select',
     options: cdlqi_options,
-    defaultValue: i === 6 ? '0_na' : 0, // Default to a valid unique value for Q7
-    validation: getValidationSchema('select', cdlqi_options, 0, 3),
+    defaultValue: i === 6 ? '0_no' : 0, // Default to a valid unique value for Q7
+    validation: getValidationSchema('select', cdlqi_options),
   } as InputConfig;
 });
 
@@ -60,11 +60,12 @@ export const cdlqiTool: Tool = {
       let numVal = 0;
 
       if (i === 7) {
-        // Q7 uses string values '3', '2', '1', '0_na', '0_nr'
-        if (rawVal === '3') numVal = 3;
-        else if (rawVal === '2') numVal = 2;
-        else if (rawVal === '1') numVal = 1;
-        else numVal = 0; // '0_na', '0_nr', or undefined/null
+        // Q7 uses string values '3', '0_no', '0_nr'
+        if (rawVal === '3') {
+            numVal = 3;
+        } else { // '0_no' and '0_nr' both score 0
+            numVal = 0;
+        }
       } else {
         numVal = Number(rawVal) || 0;
       }
@@ -89,6 +90,7 @@ export const cdlqiTool: Tool = {
     "Salek MS, Jung S, Brincat-Ruffini LA, et al. Clinical Experience and Psychometric Properties of the Children's Dermatology Life Quality Index (CDLQI), 1995-2012. The British Journal of Dermatology. 2013;169(4):734-59. doi:10.1111/bjd.12437.",
     "Gabes M, Apfelbacher C. IDQoL, CDLQI and the 45-Item CADIS Received a Sufficient Content Validity Rating During the HOME VII Meeting in Japan: A Group Discussion Study. Journal of the European Academy of Dermatology and Venereology : JEADV. 2021;35(2):458-463. doi:10.1111/jdv.16848.",
     "Chuh AA. Validation of a Cantonese Version of the Children's Dermatology Life Quality Index. Pediatric Dermatology. 2003 Nov-Dec;20(6):479-81. doi:10.1111/j.1525-1470.2003.20604.x.",
+    "Lacey RE, Minnis H. Practitioner Review: Twenty Years of Research With Adverse Childhood Experience Scores - Advantages, Disadvantages and Applications to Practice. Journal of Child Psychology and Psychiatry, and Allied Disciplines. 2020;61(2):116-130. doi:10.1111/jcpp.13135.",
     "McLennan JD, MacMillan HL, Afifi TO. Questioning the Use of Adverse Childhood Experiences (ACEs) Questionnaires. Child Abuse & Neglect. 2020;101:104331. doi:10.1016/j.chiabu.2019.104331.",
     "Katrak P, Bialocerkowski AE, Massy-Westropp N, Kumar S, Grimmer KA. A Systematic Review of the Content of Critical Appraisal Tools. BMC Medical Research Methodology. 2004;4:22. doi:10.1186/1471-2288-4-22."
     ]

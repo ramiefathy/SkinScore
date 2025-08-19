@@ -1,5 +1,5 @@
 
-# User Project Preferences for SkinScore App
+# User Project Preferences for SkinScores App
 
 This document tracks observed and confirmed user preferences to guide the development of the SkinScore application.
 

@@ -5,7 +5,7 @@ import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'reac
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toolData } from '@/lib/tools';
-import type { Tool, CalculationResult } from '@/lib/types';
+import type { Tool, CalculationResult, InputConfig } from '@/lib/types';
 import { ToolForm } from '@/components/dermscore/ToolForm';
 import { ResultsDisplay } from '@/components/dermscore/ResultsDisplay';
 import { HeaderToolSelector } from '@/components/dermscore/HeaderToolSelector';
@@ -59,25 +59,36 @@ function SkinScorePageContent() {
     return toolData.find(tool => tool.id === selectedToolId) || null;
   }, [selectedToolId]);
 
-  const handleToolSelect = useCallback((toolId: string) => {
-    setSelectedToolId(toolId);
-    setCalculationResult(null);
+  const handleToolSelect = useCallback((toolId: string | null) => {
+    if (toolId) {
+        setSelectedToolId(toolId);
+        setCalculationResult(null);
 
-    if (typeof window !== 'undefined') {
-      setRecentlyUsedTools(prevRecent => {
-        const updatedRecent = [toolId, ...prevRecent.filter(id => id !== toolId)].slice(0, MAX_RECENT_TOOLS);
-        localStorage.setItem(RECENT_TOOLS_STORAGE_KEY, JSON.stringify(updatedRecent));
-        return updatedRecent;
-      });
-    }
+        if (typeof window !== 'undefined') {
+          setRecentlyUsedTools(prevRecent => {
+            const updatedRecent = [toolId, ...prevRecent.filter(id => id !== toolId)].slice(0, MAX_RECENT_TOOLS);
+            localStorage.setItem(RECENT_TOOLS_STORAGE_KEY, JSON.stringify(updatedRecent));
+            return updatedRecent;
+          });
+        }
 
-    if (isClient) {
-        const currentPath = window.location.pathname;
-        router.replace(currentPath, undefined);
-        setTimeout(() => {
-            const toolInfoElement = document.getElementById('tool-info-section');
-            toolInfoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        if (isClient) {
+            const currentPath = window.location.pathname;
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('toolId', toolId);
+            router.replace(newUrl.toString(), { scroll: false });
+            setTimeout(() => {
+                const toolInfoElement = document.getElementById('tool-info-section');
+                toolInfoElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    } else {
+        setSelectedToolId(null);
+        setCalculationResult(null);
+        if (isClient) {
+            const currentPath = window.location.pathname;
+            router.replace(currentPath, { scroll: false });
+        }
     }
   }, [isClient, router]);
 
@@ -90,7 +101,7 @@ function SkinScorePageContent() {
           handleToolSelect(toolIdFromQuery);
         } else {
            const currentPath = window.location.pathname;
-           router.replace(currentPath, undefined);
+           router.replace(currentPath, { scroll: false });
         }
       }
     }
@@ -125,7 +136,7 @@ function SkinScorePageContent() {
             <div className="flex items-center gap-2 shrink-0">
                 <LayoutGrid className="h-8 w-8 text-primary" />
                 <div>
-                    <h1 className="text-3xl font-headline text-primary">SkinScore</h1>
+ <h1 className="text-3xl font-headline text-primary cursor-pointer" onClick={() => handleToolSelect(null)}>SkinScores</h1>
                     <p className="text-xs text-muted-foreground">Clinical Scoring Tools</p>
                 </div>
             </div>
@@ -154,7 +165,7 @@ function SkinScorePageContent() {
           {!selectedTool && (
             <Card className="shadow-xl border">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to SkinScore</CardTitle>
+ <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Welcome to SkinScores</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-base leading-relaxed">
@@ -198,65 +209,6 @@ function SkinScorePageContent() {
             </div>
           )}
 
-          {selectedTool && (
-            <Card className="shadow-xl border">
-              <CardHeader>
-                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><FileText className="text-primary h-7 w-7"/>Tool Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                 <div className="space-y-4">
-                  <Badge variant={badgeProps.variant} className={`self-start ${badgeProps.className || ''}`}>
-                    {selectedTool.sourceType}
-                  </Badge>
-                  
-                  <p className="text-base leading-relaxed">
-                    <span className="font-semibold text-foreground/90">Condition:</span> {selectedTool.condition}
-                  </p>
-                  
-                  <ScrollArea className="h-auto max-h-[150px] pr-3 border rounded-md p-3 bg-muted/20">
-                     <p className="text-sm text-muted-foreground leading-relaxed">{selectedTool.description}</p>
-                  </ScrollArea>
-
-                  {selectedTool.displayType === 'staticList' && selectedTool.formSections && selectedTool.formSections.length > 0 && (
-                    <>
-                      <Separator className="my-3" />
-                      <div className="space-y-2">
-                        <h4 className="text-md font-semibold text-foreground/90">Assessment Levels:</h4>
-                        <ul className="list-none space-y-2">
-                          {selectedTool.formSections.flatMap((section, sectionIndex) => {
-                            if (!('inputs' in section) && section.options) { 
-                              return section.options.map((option, optionIndex) => (
-                                <li 
-                                  key={`${selectedTool.id}-s${sectionIndex}-opt${optionIndex}`} 
-                                  className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm"
-                                >
-                                  {option.label}
-                                </li>
-                              ));
-                            }
-                            if ('inputs' in section && section.inputs) {
-                              return section.inputs.flatMap((inputConfig, inputIndex) => 
-                                inputConfig.options ? inputConfig.options.map((option, optionIndex) => (
-                                  <li 
-                                    key={`${selectedTool.id}-s${sectionIndex}-i${inputIndex}-opt${optionIndex}`}
-                                    className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm"
-                                  >
-                                    {option.label}
-                                  </li>
-                                )) : []
-                              );
-                            }
-                            return [];
-                          })}
-                        </ul>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {selectedTool && selectedTool.displayType !== 'staticList' && (
             <Card className="shadow-xl border">
               <CardHeader>
@@ -265,6 +217,38 @@ function SkinScorePageContent() {
               <ToolForm tool={selectedTool} onCalculate={handleCalculate} />
             </Card>
           )}
+          
+          {selectedTool && selectedTool.displayType === 'staticList' && (
+             <Card className="shadow-xl border">
+              <CardHeader>
+                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><List className="text-primary h-7 w-7"/>Classification Levels</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                    {selectedTool.formSections.flatMap((section) =>
+                        'inputs' in section
+                        ? (section.inputs as InputConfig[]).flatMap(input =>
+                            input.options
+                            ? input.options.map((option, optionIndex) => (
+                                <div key={`${input.id}-${option.value}-${optionIndex}`} className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm">
+                                  {option.label}
+                                </div>
+                            ))
+                            : []
+                        )
+                        : (section as InputConfig).options
+                          ? (section as InputConfig).options!.map((option, optionIndex) => (
+                            <div key={`${section.id}-${option.value}-${optionIndex}`} className="text-sm text-foreground bg-card p-3 rounded-md border shadow-sm">
+                              {option.label}
+                            </div>
+                          ))
+                          : []
+                    )}
+                 </div>
+              </CardContent>
+            </Card>
+          )}
+
 
           <div id="results-section" className="pt-4">
             {calculationResult && selectedTool && selectedTool.displayType !== 'staticList' && (
@@ -272,13 +256,22 @@ function SkinScorePageContent() {
             )}
           </div>
           
-          {selectedTool && (selectedTool.rationale || selectedTool.clinicalPerformance || selectedTool.keywords || selectedTool.references) && (
+          {selectedTool && (
             <Card className="shadow-xl border mt-8">
                <CardHeader>
                 <CardTitle className="text-2xl font-headline flex items-center gap-2"><Info className="text-primary h-7 w-7"/>Details & References</CardTitle>
               </CardHeader>
               <CardContent>
                  <div className="space-y-4">
+                    <p className="text-base leading-relaxed">
+                      <span className="font-semibold text-foreground/90">Condition:</span> {selectedTool.condition}
+                    </p>
+                    <Badge variant={badgeProps.variant} className={`self-start ${badgeProps.className || ''}`}>
+                        {selectedTool.sourceType}
+                    </Badge>
+                     <ScrollArea className="h-auto max-h-[150px] pr-3 border rounded-md p-3 bg-muted/20">
+                         <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">{selectedTool.description}</p>
+                     </ScrollArea>
                     {(selectedTool.rationale || selectedTool.clinicalPerformance) && (
                         <Accordion type="multiple" className="w-full">
                           {selectedTool.rationale && (
@@ -339,8 +332,8 @@ function SkinScorePageContent() {
       </div>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">
-          SkinScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
-        </p>
+          SkinScores &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
+ </p>
       </footer>
     </div>
   );

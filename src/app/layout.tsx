@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'SkinScore - Clinical Scoring Tools',
+  title: 'SkinScores - Clinical Scoring Tools',
   description: 'A collection of dermatological scoring tools with local calculation.',
 };
 
@@ -28,7 +28,7 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
       </head>
-      <body className="font-body antialiased" suppressHydrationWarning={true}>
+      <body className="font-body antialiased">
         {children}
         <Toaster />
       </body>

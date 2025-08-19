@@ -17,27 +17,43 @@ const dlqiQuestionTexts = [
 ];
 
 const dlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i) => {
-    let q_options: InputOption[] = [
-        { value: 3, label: 'Very much' },
-        { value: 2, label: 'A lot' },
-        { value: 1, label: 'A little' },
-        { value: 0, label: 'Not at all' },
-    ];
-    // Special handling for Question 7 to make values unique
-    if (i === 6) {
+    let q_options: InputOption[];
+    let defaultValue: string | number;
+
+    if (i === 6) { // This is Question 7
         q_options = [
             { value: '3', label: 'Yes (Prevented work/study)' },
             { value: '0_no', label: 'No' },
-            { value: '0_nr', label: 'Not relevant (Scores 0)' },
+            { value: '0_nr', label: 'Not relevant' },
         ];
+        defaultValue = '0_no';
+    } else if (i === 8) { // This is Question 9 (sexual difficulties)
+        q_options = [
+            { value: 3, label: 'Very much' },
+            { value: 2, label: 'A lot' },
+            { value: 1, label: 'A little' },
+            { value: 0, label: 'Not at all' },
+            { value: '0_nr', label: 'Not relevant' }, // Add not relevant option
+        ];
+        defaultValue = 0;
     }
+    else {
+        q_options = [
+            { value: 3, label: 'Very much' },
+            { value: 2, label: 'A lot' },
+            { value: 1, label: 'A little' },
+            { value: 0, label: 'Not at all' },
+        ];
+        defaultValue = 0;
+    }
+
     return {
       id: `q${i + 1}`,
       label: `Q${i + 1}: ${dlqiQuestionTexts[i]}`,
       type: 'select' as 'select',
       options: q_options,
-      defaultValue: i === 6 ? '0_no' : 0, // Default to a valid unique value for Q7
-      validation: getValidationSchema('select', q_options, 0, 3),
+      defaultValue: defaultValue,
+      validation: getValidationSchema('select', q_options),
     } as InputConfig;
   });
 
@@ -60,14 +76,23 @@ export const dlqiTool: Tool = {
       const rawVal = inputs[`q${i}`];
       let numVal = 0;
       
+      // For Q7, '3' scores 3, others score 0.
       if (i === 7) {
-        // Q7 uses string values '3', '0_no', '0_nr'
         if (rawVal === '3') {
           numVal = 3;
-        } else {
+        } else { // '0_no' and '0_nr'
           numVal = 0;
         }
-      } else {
+      }
+      // For Q9, '0_nr' scores 0
+      else if (i === 9) {
+          if (rawVal === '0_nr') {
+              numVal = 0;
+          } else {
+              numVal = Number(rawVal) || 0;
+          }
+      }
+      else {
         numVal = Number(rawVal) || 0;
       }
       

@@ -59,7 +59,7 @@ export default function AllToolsPage() {
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <LayoutGrid className="text-primary h-8 w-8"/>
             <div>
-              <h1 className="text-3xl font-headline text-primary">SkinScore</h1>
+              <h1 className="text-3xl font-headline text-primary">SkinScores</h1>
               <p className="text-xs text-muted-foreground">Clinical Scoring Tools</p>
             </div>
           </Link>
@@ -191,7 +191,7 @@ export default function AllToolsPage() {
       </main>
       <footer className="text-center p-6 border-t mt-auto">
         <p className="text-sm text-muted-foreground">
-          SkinScore &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
+          SkinScores &copy; {currentYear}. For educational and informational purposes only. Consult a healthcare professional for medical advice.
         </p>
       </footer>
     </div>
