@@ -23,7 +23,7 @@ export default function RootLayout({
         <Script
           id="adsense-script"
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000" // IMPORTANT: Replace with your AdSense Publisher ID
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2958059905874922"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
