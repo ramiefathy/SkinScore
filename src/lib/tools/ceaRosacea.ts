@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { Palette } from 'lucide-react'; // Or UserCheck if focusing on clinician assessment
 import { getValidationSchema } from '../toolValidation';

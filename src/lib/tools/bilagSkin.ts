@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { FileHeart } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -59,4 +58,3 @@ export const bilagSkinTool: Tool = {
     "Gordon C, Akil M, Isenberg D, et al. The British Isles Lupus Assessment Group's new flare index for lupus nephritis. Lupus. 2003;12(5):408–413."
     ]
 };
-

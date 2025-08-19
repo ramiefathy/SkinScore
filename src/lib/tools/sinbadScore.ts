@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -22,7 +21,6 @@ const sinbadDepthOptions: InputOption[] = [
 
 const sinbadFormSections: FormSectionConfig[] = [
   {
-    type: "InputGroupConfig", // Explicitly defining type for clarity, though not strictly in our type.
     id: "sinbad-components",
     title: "SINBAD Components",
     gridCols: 1,

@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { ClipboardList } from 'lucide-react'; // Assuming this icon is appropriate
 import { getValidationSchema } from '../toolValidation';

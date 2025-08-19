@@ -1,6 +1,6 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
+import { getValidationSchema } from '../toolValidation';
 import { z } from 'zod';
 
 const gradeOptions: InputOption[] = [

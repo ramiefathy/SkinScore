@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig, InputGroupConfig } from '../types';
 import { SearchCheck } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -53,5 +52,3 @@ export const abcdeMelanomaTool: Tool = {
     "Simpson S. Expanding the ABCDEs of melanoma: a guide to recognizing suspicious skin lesions. AMA J Ethics. 2006;8(11):755-758."
   ]
 };
-
-    

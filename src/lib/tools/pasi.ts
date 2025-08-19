@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { Gauge } from 'lucide-react';
 import { getValidationSchema, severityOptions0to4, areaOptions0to6 } from '../toolValidation';

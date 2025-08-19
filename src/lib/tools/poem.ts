@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { MessageSquare } from 'lucide-react'; // Or another suitable icon like FileText
 import { getValidationSchema } from '../toolValidation';
@@ -73,6 +72,6 @@ export const poemTool: Tool = {
     "Silverberg JI, Gelfand JM, Margolis DJ, et al. Severity Strata for POEM, PO-SCORAD, and DLQI in US Adults With Atopic Dermatitis. Annals of Allergy, Asthma & Immunology : Official Publication of the American College of Allergy, Asthma, & Immunology. 2018;121(4):464-468.e3. doi:10.1016/j.anai.2018.07.004.",
     "Howells L, Ratib S, Chalmers JR, Bradshaw L, Thomas KS. How Should Minimally Important Change Scores for the Patient-Oriented Eczema Measure Be Interpreted? A Validation Using Varied Methods. The British Journal of Dermatology. 2018;178(5):1135-1142. doi:10.1111/bjd.16367.",
     "Silverberg JI, Margolis DJ, Boguniewicz M, et al. Validation of Five Patient-Reported Outcomes for Atopic Dermatitis Severity in Adults. The British Journal of Dermatology. 2020;182(1):104-111. doi:10.1111/bjd.18002.",
-    "Silverberg JI, Lei D, Yousaf M, et al. Comparison of Patient-Oriented Eczema Measure and Patient-Oriented Scoring Atopic Dermatitis vs Eczema Area and Severity Index and Other Measures of Atopic Dermatitis: A Validation Study. Annals of Allergy, Asthma & Immunology : Official Publication of the American College of Allergy, Asthma, & Immunology. 2020;125(1):78-83. doi:10.1016/j.anai.2020.03.006."
+    "Silverberg JI, Lei D, Yousaf M, et al. Comparison of Patient-Oriented Eczema Measure and Patient-Oriented Scoring Atopic Dermatitis vs Eczema Area and Severity Index and Other Measures of Atopic Dermatitis: A Validation Study. Annals of Allergy, Asthma & Immunology. 2020;125(1):78-83. doi:10.1016/j.anai.2020.03.006."
   ]
 };

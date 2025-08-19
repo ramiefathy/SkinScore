@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { ScalingIcon } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';

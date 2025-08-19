@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig } from '../types';
 import { FileHeart } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -25,7 +24,7 @@ export const sledaiSkinTool: Tool = {
     if (inputs.rash) { score += 2; details.Rash = "Present (2 pts)"; } else { details.Rash = "Absent (0 pts)"; }
     if (inputs.alopecia) { score += 1; details.Alopecia = "Present (1 pt)"; } else { details.Alopecia = "Absent (0 pts)"; }
     if (inputs.mucosal_ulcers) { score += 2; details.Mucosal_Ulcers = "Present (2 pts)"; } else { details.Mucosal_Ulcers = "Absent (0 pts)"; }
-
+    
     const interpretation = `SLEDAI Skin Descriptors Score: ${score}. This score contributes to the total SLEDAI. Higher score indicates greater skin-related disease activity.`;
     return { score, interpretation, details };
   },

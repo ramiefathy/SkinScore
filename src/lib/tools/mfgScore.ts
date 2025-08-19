@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { Type } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -49,4 +48,3 @@ export const mfgScoreTool: Tool = {
   },
   references: ["Ferriman D, Gallwey JD. Clinical assessment of body hair growth in women. J Clin Endocrinol Metab. 1961;21:1440-7.", "Hatch R, Rosenfield RL, Kim MH, Tredway D. Hirsutism: implications, etiology, and management. Am J Obstet Gynecol. 1981;140(7):815-30.", "Martin KA, Chang RJ, Ehrmann DA, et al. Evaluation and Treatment of Hirsutism in Premenopausal Women: An Endocrine Society Clinical Practice Guideline. J Clin Endocrinol Metab. 2018 Apr 1;103(4):1233-1257."]
 };
-

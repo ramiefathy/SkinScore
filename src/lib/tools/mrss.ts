@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { Atom } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';

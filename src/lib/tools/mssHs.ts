@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { SquarePen } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -88,4 +87,3 @@ export const mssHsTool: Tool = {
     "US Hidradenitis Suppurativa Foundation and Canadian Hidradenitis Suppurativa Foundation recommendations."
     ]
 };
-

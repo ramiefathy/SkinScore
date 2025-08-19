@@ -1,7 +1,6 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { SlidersHorizontal } from 'lucide-react';
-import { getValidationSchema } from '../toolValidation';
+import { getValidationSchema, severityOptions0to4, areaOptions0to6 } from '../toolValidation';
 
 const areaOptionsEASI:InputOption[] = [ {value:0, label:"0 (0%)"}, {value:1, label:"1 (1-9%)"}, {value:2, label:"2 (10-29%)"}, {value:3, label:"3 (30-49%)"}, {value:4, label:"4 (50-69%)"}, {value:5, label:"5 (70-89%)"}, {value:6, label:"6 (90+%"} ];
 const severityOptionsEASI:InputOption[] = [ {value:0, label:"0-None"}, {value:1, label:"1-Mild"}, {value:2, label:"2-Moderate"}, {value:3, label:"3-Severe"} ];

@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig } from '../types';
 import { ShieldAlert } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -61,7 +60,7 @@ export const scortenTool: Tool = {
   references: [
     "Bastuji-Garin S, Fouchard N, Bertocchi M, et al. SCORTEN: A Severity-of-Illness Score for Toxic Epidermal Necrolysis. The Journal of Investigative Dermatology. 2000;115(2):149-53.",
     "Guégan S, Bastuji-Garin S, Poszepczynska-Guigné E, Roujeau JC, Revuz J. Performance of the SCORTEN During the First Five Days of Hospitalization to Predict the Prognosis of Epidermal Necrolysis. The Journal of Investigative Dermatology. 2006;126(2):272-6.",
-    "Torres-Navarro I, Briz-Redón Á, Botella-Estrada R. Accuracy of SCORTEN to Predict the Prognosis of Stevens-Johnson Syndrome/Toxic Epidermal Necrolysis: A Systematic Review and Meta-Analysis. Journal of the European Academy of Dermatology and Venereology : JEADV. 2020;34(9):2066-2077.",
+    "Torres-Navarro I, Briz-Redón Á, Botella-Estrada R. Accuracy of SCORTEN to Predict the Prognosis of Stevens-Johnson Syndrome/­Toxic Epidermal Necrolysis: A Systematic Review and Meta-Analysis. Journal of the European Academy of Dermatology and Venereology : JEADV. 2020;34(9):2066-2077.",
     "Sekula P, Liss Y, Davidovici B, et al. Evaluation of SCORTEN on a Cohort of Patients With Stevens-Johnson Syndrome and Toxic Epidermal Necrolysis Included in the RegiSCAR Study. Journal of Burn Care & Research : Official Publication of the American Burn Association. 2011 Mar-Apr;32(2):237-45.",
     "Koh HK, Fook-Chong S, Lee HY. Assessment and Comparison of Performance of ABCD-10 and SCORTEN in Prognostication of Epidermal Necrolysis. JAMA Dermatology. 2020;156(12):1294-1299.",
     "Koh HK, Fook-Chong SMC, Lee HY. Improvement of Mortality Prognostication in Patients With Epidermal Necrolysis: The Role of Novel Inflammatory Markers and Proposed Revision of SCORTEN (Re-SCORTEN). JAMA Dermatology. 2022;158(2):160-166.",

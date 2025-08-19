@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { UserMinus } from 'lucide-react'; // Example icon, consider better for hair loss
 import { getValidationSchema } from '../toolValidation';

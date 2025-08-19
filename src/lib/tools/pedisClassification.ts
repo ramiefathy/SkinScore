@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -32,7 +31,6 @@ const pedisSensationOptions: InputOption[] = [
 
 const pedisFormSections: FormSectionConfig[] = [
   {
-    type: "InputGroupConfig",
     id: "pedis-components",
     title: "PEDIS Components",
     gridCols: 1,

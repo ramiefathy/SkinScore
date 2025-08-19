@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { ShieldQuestion } from 'lucide-react';
 import { getValidationSchema, ctcaeCriteriaSnippets, ctcaeAdverseEventOptions as skinAdverseEventOptions } from '../toolValidation';

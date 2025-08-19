@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig, InputGroupConfig } from '../types';
 import { ShieldHalf } from 'lucide-react'; // Or another icon like Atom or LayoutList
 import { getValidationSchema } from '../toolValidation';

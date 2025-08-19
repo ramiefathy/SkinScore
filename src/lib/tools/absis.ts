@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -119,5 +118,3 @@ Severity Category (example): ${severityCategory}. (Mild: <17; Moderate: 17-50; S
     "Sebaratnam DF, et al. Outcome measures for pemphigus and pemphigoid. J Dermatol. 2014 Mar;41(3):219-25."
   ]
 };
-
-    

@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { CloudDrizzle } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -40,4 +39,3 @@ export const essdaiCutaneousTool: Tool = {
   },
   references: ["Seror R, et al. EULAR Sjogren's Syndrome Disease Activity Index (ESSDAI): a user guide. RMD Open. 2015.", "Shiboski CH, et al. American College of Rheumatology classification criteria for Sjögren's syndrome: a data-driven, expert consensus approach in the Sjögren's International Collaborative Clinical Alliance cohort. Arthritis Care Res (Hoboken). 2012."]
 };
-

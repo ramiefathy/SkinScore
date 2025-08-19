@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { Palette } from 'lucide-react';
 import { getValidationSchema, masiRegionMultiplierMapData } from '../toolValidation';
@@ -71,4 +70,3 @@ export const masiMmasiTool: Tool = {
   },
   references: ["MASI: Kimbrough-Green CK, et al. Arch Dermatol. 1994.", "mMASI: Pandya AG, et al. J Am Acad Dermatol. 2011."]
 };
-

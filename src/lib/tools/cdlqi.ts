@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { Baby } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -17,25 +16,30 @@ const cdlqiQuestionPrompts = [
 ];
 
 const cdlqiFormSections: FormSectionConfig[] = Array.from({ length: 10 }, (_, i) => {
-  let cdlqi_options: InputOption[] = [
-      { value: 3, label: 'Very much' }, { value: 2, label: 'A lot' },
-      { value: 1, label: 'A little' }, { value: 0, label: 'Not at all' },
-  ];
-   // Special handling for Question 7 to make values unique
-   if (i === 6) { // This is Question 7
-       cdlqi_options = [
-           { value: '3', label: 'Yes' }, // Changed to string
-           { value: '0_no', label: 'No' }, // Changed to unique string
-           { value: '0_nr', label: 'Not relevant / Does not apply' } // Changed to unique string
-       ];
-   }
+  let cdlqi_options: InputOption[];
+  let defaultValue: string | number;
+
+  if (i === 6) { // This is Question 7
+      cdlqi_options = [
+          { value: '3', label: 'Yes' },
+          { value: '0_no', label: 'No' },
+          { value: '0_nr', label: 'Not relevant / Does not apply' }
+      ];
+      defaultValue = '0_no';
+  } else {
+      cdlqi_options = [
+          { value: 3, label: 'Very much' }, { value: 2, label: 'A lot' },
+          { value: 1, label: 'A little' }, { value: 0, label: 'Not at all' },
+      ];
+      defaultValue = 0;
+  }
 
   return {
     id: `cdlqi_q${i + 1}`,
     label: cdlqiQuestionPrompts[i],
     type: 'select' as 'select',
     options: cdlqi_options,
-    defaultValue: i === 6 ? '0_no' : 0, // Default to a valid unique value for Q7
+    defaultValue: defaultValue,
     validation: getValidationSchema('select', cdlqi_options),
   } as InputConfig;
 });

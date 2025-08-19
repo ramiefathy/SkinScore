@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig } from '../types';
 import { User } from 'lucide-react';
 import { getValidationSchema, severityOptions0to4, areaOptions0to6 } from '../toolValidation';

@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig } from '../types';
 import { SquarePen } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -29,7 +28,7 @@ export const ihs4Tool: Tool = {
     if (totalScore <= 3) severity = "Mild HS";
     else if (totalScore <= 10) severity = "Moderate HS";
     else severity = "Severe HS";
-
+    
     const interpretation = `IHS4 Score: ${totalScore}. Severity: ${severity} HS.
 Formula: (Nodules × 1) + (Abscesses × 2) + (Draining Tunnels × 4).
 Severity bands: ≤3 Mild; 4–10 Moderate; ≥11 Severe.`;

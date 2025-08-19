@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -51,7 +50,7 @@ export const pgSuTool: Tool = {
     const minorCriteriaKeys = [
       "pg_su_minor_pathergy",
       "pg_su_minor_history_ibd_arth",
-      "pg_su_minor_histo",
+      "pg_su_minor_ulcer_healing",
       "pg_su_minor_response_immu"
     ];
 

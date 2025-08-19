@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig } from '../types';
 import { ScalingIcon } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -33,6 +32,5 @@ export const issVisTool: Tool = {
       }
     };
   },
-  references: ["Gånemo A, et al. Severity assessment in ichthyoses: a validation study. Acta Derm Venereol. 2003.", "Milstone LM, et al. The Visual Index for Ichthyosis Severity (VIIS): a validated instrument for use in ichthyosis clinical trials. Br J Dermatol. 2020."]
+  references: ["Gånemo A, et al. Severity assessment in ichthyoses: a validation study. Acta Derm Venereol. 2003.", "Milstone LM, et al. The Visual Index for Ichthyosis Severity (VIIS): a validated instrument for use in ichthyosis clinical trials. Br J Dermatol. 2020 (describes VIIS which is related)."]
 };
-

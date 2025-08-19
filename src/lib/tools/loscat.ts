@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, FormSectionConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -75,4 +74,3 @@ LoSDI (Damage): 0 No damage; 1–10 Mild; 11–15 Moderate; ≥16 Severe.`;
     "Kelsey, C. E., & Torok, K. S. (2020). The Localized Scleroderma Cutaneous Assessment Tool (LoSCAT): responsiveness to change in a pediatric clinical population. Journal of the American Academy of Dermatology, 82(1), 173-179."
   ]
 };
-

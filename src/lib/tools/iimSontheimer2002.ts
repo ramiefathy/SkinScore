@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react'; // Assuming ClipboardList as per your spec
 import { getValidationSchema } from '../toolValidation';
@@ -120,7 +119,7 @@ export const iimSontheimer2002Tool: Tool = {
         interpretation = "CADM: Pathognomonic DM rash for ≥6 months WITHOUT clinical muscle weakness AND normal muscle enzymes/EMG/MRI during that period. Carries risk of ILD and malignancy; requires regular screening.";
       } else {
         // 3. Hypomyopathic DM (HDM)
-        // Assuming "muscle_clinical_weakness" input is for "within first 6 months" as per form.
+        // Assuming "muscle_clinical_weakness" input is for "current or within first 6 months" as per form.
         // For HDM explicitly: no clinical weakness during the first 6 months.
         const hdmNoClinicalWeaknessFirst6Mo = !clinicalWeakness; // If clinical_weakness was specifically for "current or within first 6 months"
         const hdmSubclinicalEvidence = muscleEnzymesAbnormal || emgAbnormal || mriAbnormal || biopsyInflammation; // Assuming these are within the first 6 months for HDM.

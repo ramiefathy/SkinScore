@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig, InputGroupConfig } from '../types';
 import { ClipboardList } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
@@ -23,7 +22,7 @@ const pgSuFormSections: FormSectionConfig[] = [
     title: 'Minor Criteria (Need ≥ 2)',
     gridCols: 1,
     inputs: [
-      { id: "pg_su_minor_pathergy", label: "History of pathergy or clinical finding of cribriform scarring", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
+      { id: "pg_su_minor_pathergy", label: "History suggestive of pathergy or clinical finding of cribriform scarring", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
       { id: "pg_su_minor_history_ibd_arth", label: "History of inflammatory bowel disease or inflammatory arthritis", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
       { id: "pg_su_minor_ulcer_healing", label: "History of papule, pustule, or vesicle that rapidly ulcerated", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) },
       { id: "pg_su_minor_response_immu", label: "Rapid response to systemic corticosteroid therapy", type: 'select', options: commonYesNoOptions, defaultValue: 0, validation: getValidationSchema('select', commonYesNoOptions, 0, 1) }
@@ -45,8 +44,8 @@ export const pgSuTool: Tool = {
   formSections: pgSuFormSections,
   calculationLogic: (inputs) => {
     const majorRapidUlcer = Number(inputs.pg_su_major_rapid_ulcer) || 0;
-    const majorBiopsyNeutrophil = Number(inputs.pg_su_major_biopsy_neutrophil) || 0;
-    const majorOK = majorRapidUlcer === 1 && majorBiopsyNeutrophil === 1;
+    const majorBiopsyExclusion = Number(inputs.pg_su_major_biopsy_neutrophil) || 0;
+    const majorOK = majorRapidUlcer === 1 && majorBiopsyExclusion === 1;
 
     const minorCriteriaKeys = [
       "pg_su_minor_pathergy",
@@ -78,7 +77,7 @@ export const pgSuTool: Tool = {
       interpretation,
       details: {
         major_rapid_ulcer: majorRapidUlcer,
-        major_biopsy_exclusion: majorBiopsyNeutrophil,
+        major_biopsy_exclusion: majorBiopsyExclusion,
         minor_criteria_count: minorCriteriaCount,
         minor_criteria_individual_scores: minorCriteriaIndividualScores,
         meets_su_criteria: meetsSuCriteria
@@ -86,6 +85,7 @@ export const pgSuTool: Tool = {
     };
   },
   references: [
+    "Su WP, Davis MD, Weenig RH, Powell FC, Perry HO. Pyoderma gangrenosum: clinicopathologic correlation and proposed diagnostic criteria. Int J Dermatol. 2004;43(11):790-800.",
     "Ashchyan HJ, Butler DC, Nelson CA, et al. The Association of Age With Clinical Presentation and Comorbidities of Pyoderma Gangrenosum. JAMA Dermatology. 2018;154(4):409-413. doi:10.1001/jamadermatol.2017.5978.",
     "Haag C, Hansen T, Hajar T, et al. Comparison of Three Diagnostic Frameworks for Pyoderma Gangrenosum. The Journal of Investigative Dermatology. 2021;141(1):59-63. doi:10.1016/j.jid.2020.04.019.",
     "Maverakis E, Ma C, Shinkai K, et al. Diagnostic Criteria of Ulcerative Pyoderma Gangrenosum: A Delphi Consensus of International Experts. JAMA Dermatology. 2018;154(4):461-466. doi:10.1001/jamadermatol.2017.5980.",

@@ -1,4 +1,3 @@
-
 import type { Tool, InputConfig, InputOption, FormSectionConfig } from '../types';
 import { Puzzle } from 'lucide-react';
 import { getValidationSchema } from '../toolValidation';
