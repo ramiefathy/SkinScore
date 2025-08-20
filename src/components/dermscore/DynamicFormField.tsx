@@ -29,21 +29,20 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
       name={id as Path<TFieldValues>}
       defaultValue={defaultValue}
       render={({ field, fieldState: { error } }) => (
-        <FormItem> {/* Removed mb-4, relies on parent grid gap */}
-          <div className="min-h-[4rem]"> {/* Wrapper for Label and Description/Placeholder with min-height */}
-            <FormLabel>{label}</FormLabel>
-            {fieldDescription ? (
-              <FormDescription className="mt-1 text-sm text-muted-foreground">
-                {fieldDescription}
-              </FormDescription>
-            ) : (
-              // Placeholder to occupy similar space as a single-line FormDescription
-              // text-sm line-height is typically 1.25rem (20px). mt-1 is 0.25rem (4px). Total ~1.5rem.
-              <div className="mt-1 h-[1.25rem]" aria-hidden="true" />
-            )}
-          </div>
+        <FormItem>
+          {type !== 'checkbox' && (
+            <div className="min-h-[4rem]">
+              <FormLabel>{label}</FormLabel>
+              {fieldDescription ? (
+                <FormDescription className="mt-1 text-sm text-muted-foreground">
+                  {fieldDescription}
+                </FormDescription>
+              ) : (
+                <div className="mt-1 h-[1.25rem]" aria-hidden="true" />
+              )}
+            </div>
+          )}
           <FormControl>
-            {/* This div ensures FormControl's Slot always has a single child */}
             <div>
               {type === 'number' && (
                 <Input
@@ -97,21 +96,35 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
                 </Select>
               )}
               {type === 'checkbox' && (
-                <div className="flex items-center space-x-2 pt-2">
+                <div className="flex items-start space-x-2 pt-2 min-h-[4rem]">
                   <Checkbox
                     {...field}
                     checked={!!field.value}
                     onCheckedChange={field.onChange}
                     id={field.name}
+                    className="mt-1"
                   />
-                   <Label htmlFor={field.name} className="text-sm font-normal cursor-pointer">
-                   </Label>
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor={field.name} className="text-sm font-medium cursor-pointer">
+                      {label}
+                    </Label>
+                    {fieldDescription && (
+                      <p className="text-sm text-muted-foreground">{fieldDescription}</p>
+                    )}
+                  </div>
                 </div>
               )}
               {type === 'radio' && options && (
                 <RadioGroup
                   {...field}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    const selectedOption = options.find(opt => String(opt.value) === value);
+                    if (selectedOption && typeof selectedOption.value === 'number') {
+                      field.onChange(Number(value));
+                    } else {
+                      field.onChange(value);
+                    }
+                  }}
                   value={field.value !== null && field.value !== undefined ? String(field.value) : ''}
                   className="flex flex-col space-y-1 pt-1"
                 >
@@ -137,7 +150,6 @@ export function DynamicFormField<TFieldValues extends FieldValues>({
               )}
             </div>
           </FormControl>
-          {/* Give FormMessage a minimum height to contribute to consistent row height, even if empty */}
           <FormMessage className="text-xs min-h-[1rem]" />
         </FormItem>
       )}

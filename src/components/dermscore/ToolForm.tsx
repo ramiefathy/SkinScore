@@ -1,4 +1,3 @@
-
  "use client";
 
 import React, { useEffect } from 'react';
@@ -64,8 +63,8 @@ export function ToolForm({ tool, onCalculate }: ToolFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-0"> {/* Reduced overall form space-y */}
-        <CardContent className="p-6 grid gap-x-6 gap-y-6 md:grid-cols-2"> {/* Main form grid */}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-0">
+        <CardContent className="p-6 grid gap-x-6 gap-y-0 md:grid-cols-2">
           {tool.formSections.map((section, index) => {
             if ('inputs' in section) { // This is an InputGroupConfig
               const group = section as InputGroupConfig;
@@ -75,10 +74,10 @@ export function ToolForm({ tool, onCalculate }: ToolFormProps) {
               if (group.gridCols === 4) groupGridColsClass = 'md:grid-cols-4';
               
               return (
-                <div key={group.id || `group-${index}`} className="md:col-span-2 space-y-3 border p-4 rounded-lg shadow bg-card/50"> {/* Removed mb-2 */}
+                <div key={group.id || `group-${index}`} className="md:col-span-2 space-y-3 border p-4 rounded-lg shadow bg-card/50 my-3">
                   {group.title && <h3 className="text-md font-semibold mb-3 text-foreground">{group.title}</h3>}
                   {group.description && <p className="text-sm text-muted-foreground mb-3 -mt-2">{group.description}</p>}
-                  <div className={`grid gap-x-6 gap-y-1 ${groupGridColsClass}`}> {/* Inner grid for group's inputs */}
+                  <div className={`grid gap-x-6 gap-y-1 ${groupGridColsClass}`}>
                     {group.inputs.map((inputConfig) => (
                       <DynamicFormField
                         key={inputConfig.id}
@@ -101,7 +100,7 @@ export function ToolForm({ tool, onCalculate }: ToolFormProps) {
             }
           })}
         </CardContent>
-        <CardFooter className="p-6 pt-4"> {/* Standard padding for footer */}
+        <CardFooter className="p-6 pt-4">
           <Button type="submit" size="lg" className="w-full md:w-auto">
             Calculate Score
           </Button>
